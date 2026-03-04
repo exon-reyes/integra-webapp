@@ -1,0 +1,147 @@
+<p-drawer (onHide)="cerrarComponente()" [(visible)]="visible" [dismissible]="true" [modal]="true" position="right"
+          styleClass="!w-full md:!w-80 lg:!w-[30rem]">
+    <ng-template #header>
+        <h3>Filtros Personalizados</h3>
+    </ng-template>
+    <form [formGroup]="form" class="flex flex-col gap-4 py-4">
+        <div class="grid grid-cols-1 gap-2">
+            <div class="grid grid-cols-2 gap-2">
+                <div>
+                    <label class="font-medium block">Desde</label>
+                    <p-datePicker
+                        [maxDate]="hoy"
+                        [showButtonBar]="true"
+                        class="w-full"
+                        dateFormat="dd/mm/yy"
+                        formControlName="desde"
+                        id="desde"
+                        placeholder="Seleccionar fecha">
+                    </p-datePicker>
+                </div>
+                <div>
+                    <label class="font-medium block">Hasta</label>
+                    <p-datePicker
+                        [maxDate]="hoy"
+                        [showButtonBar]="true"
+                        dateFormat="dd/mm/yy"
+                        formControlName="hasta"
+                        id="hasta"
+                        placeholder="Seleccionar fecha">
+                    </p-datePicker>
+                </div>
+            </div>
+        </div>
+        <!-- Filtro de Zona -->
+        <div class="flex flex-col gap-2">
+            <label class="font-semibold text-slate-700" for="zona">Zona</label>
+            <p-select
+                [options]="zonas()"
+                [showClear]="true"
+                class="w-full"
+                filter="true"
+                filterBy="nombre" formControlName="zona"
+                id="zona"
+                optionLabel="nombre"
+                placeholder="Seleccionar zona">
+            </p-select>
+        </div>
+
+        <!-- Filtro de Unidad -->
+        <div class="flex flex-col gap-2">
+            <label class="font-semibold text-slate-700" for="unidad">Unidad</label>
+            <p-select
+                [options]="unidades()"
+                [showClear]="true"
+                class="w-full"
+                filter="true"
+                filterBy="clave,nombre"
+                formControlName="unidad" id="unidad"
+                optionLabel="nombre"
+                placeholder="Seleccionar unidad">
+                <ng-template #item let-unidad>
+                    {{ unidad.clave }} {{ unidad.nombre }}
+                </ng-template>
+            </p-select>
+        </div>
+        @if (!usuarioEsSupervisor()) {
+            <div class="flex flex-col gap-2">
+                <label class="font-semibold text-slate-700" for="supervisor">Supervisor</label>
+                <p-select
+                    [options]="supervisores()"
+                    [showClear]="true"
+                    class="w-full"
+                    filter="true" filterBy="nombre,apellidoPaterno,apellidoMaterno"
+                    formControlName="supervisor"
+                    id="supervisor"
+                    optionLabel="nombre"
+                    placeholder="Seleccionar supervisor">
+                    <ng-template #item let-supervisor>
+                        {{ supervisor.nombre }} {{ supervisor.apellidoPaterno }} {{ supervisor.apellidoMaterno }}
+                    </ng-template>
+                </p-select>
+
+            </div>
+        }
+        <!-- Filtro de Supervisor -->
+
+
+        <!-- Filtro de Estatus -->
+        <div class="flex flex-col gap-2">
+            <label class="font-semibold text-slate-700" for="estatus">Estatus</label>
+            <p-select
+                [options]="estatus()"
+                [showClear]="true"
+                class="w-full"
+                formControlName="estatus"
+                id="estatus"
+                optionLabel="nombre"
+                placeholder="Seleccionar estatus">
+            </p-select>
+        </div>
+
+        <!--        &lt;!&ndash; Filtro de Área &ndash;&gt;-->
+        <!--        <div class="field">-->
+        <!--            <label for="area">Área</label>-->
+        <!--            <p-select-->
+        <!--                [options]="areas()"-->
+        <!--                [showClear]="true"-->
+        <!--                filter="true"-->
+        <!--                filterBy="nombre" formControlName="area"-->
+        <!--                id="area"-->
+        <!--                optionLabel="nombre"-->
+        <!--                placeholder="Seleccionar área">-->
+        <!--            </p-select>-->
+        <!--        </div>-->
+
+        <!-- Filtro de Departamento -->
+        <div class="flex flex-col gap-2">
+            <label class="font-semibold text-slate-700" for="departamento">Departamento</label>
+            <p-select
+                [options]="departamentos()"
+                [showClear]="true"
+                class="w-full"
+                filter="true"
+                filterBy="nombre"
+                formControlName="departamento" id="departamento"
+                optionLabel="nombre"
+                placeholder="Seleccionar departamento">
+            </p-select>
+        </div>
+    </form>
+
+    <ng-template #footer>
+        <div class="flex justify-between gap-4 pt-4">
+            <p-button
+                (onClick)="limpiarFiltros()"
+                class="flex-1"
+                label="Limpiar"
+                severity="secondary">
+            </p-button>
+            <p-button
+                (onClick)="aplicarFiltros()"
+                class="flex-1"
+                label="Aplicar Filtros">
+            </p-button>
+        </div>
+    </ng-template>
+</p-drawer>

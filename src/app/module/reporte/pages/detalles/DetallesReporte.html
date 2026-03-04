@@ -1,0 +1,86 @@
+@if (proceso.cargando) {
+    <app-spinner [modal]="true" message="Procesando"/>
+}
+<app-title description="Detalles del estado actual e historial de cambios" imageSrc="assets/icon/ireport.svg"
+           title="Reporte"></app-title>
+<!--BARRA DE OPCIONES-->
+<p-menubar [model]="items" breakpoint="300px" class="mt-1">
+    <ng-template #start>
+        @if (ticket && ticket.estatus.nombre.toLowerCase() !== 'cerrado') {
+            <p-button (onClick)="addSeguimiento=true" icon="pi pi-plus" severity="success"></p-button>
+            @if (!checklist()) {
+                <p-button (onClick)="addChecklist=true" class="ml-2" icon="pi pi-list" label="Checklist"
+                          severity="info"></p-button>
+            }
+        }
+        <button-copy [data]="buildCopyString(ticket)" class="ml-2"></button-copy>
+    </ng-template>
+    <ng-template #end>
+        @if (ticket) {
+            <share-ticket [ticket]="ticket"></share-ticket>
+        }
+    </ng-template>
+</p-menubar>
+<div [ngClass]="historialTieneDatos ? 'grid grid-cols-1 lg:grid-cols-2' : 'grid grid-cols-1'"
+     class="max-h-[calc(100vh-184px)] mt-1 gap-1 overflow-y-auto">
+    <div class="bg-white border border-gray-200 rounded-lg shadow-sm h-full">
+        <div class="bg-gray-50 px-4 pt-4 border-b border-gray-200 rounded-t-lg">
+            <h5 class="text-sm font-semibold text-gray-900">Detalles de registro</h5>
+        </div>
+        <div class="p-4">
+            @if (ticket) {
+                <div class="space-y-4">
+                    <ticket-generales [ticket]="ticket"></ticket-generales>
+                    <ticket-checklist [checklist]="checklist()" [dataId]="ticket.id"
+                                      [readonly]="ticket.estatus.nombre.toLowerCase() === 'cerrado'"></ticket-checklist>
+                </div>
+            }
+        </div>
+    </div>
+    @if (historialTieneDatos) {
+        <div class="bg-white border border-gray-200 rounded-lg shadow-sm w-full">
+            <div class="bg-gray-50 px-4 pt-4 border-b border-gray-200 rounded-t-lg">
+                <h5 class="text-sm font-semibold text-gray-900">Historial de seguimiento</h5>
+            </div>
+            <div class="p-4">
+                @if (ticket) {
+                    <div class="overflow-y-auto md:h-[calc(100vh-50px)]">
+                        <historial-ticket (hasData)="onHistorialDataChange($event)"
+                                          [historial]="historial()"></historial-ticket>
+                    </div>
+                }
+            </div>
+        </div>
+    } @else {
+        @if (ticket) {
+            <div style="display: none;">
+                <historial-ticket (hasData)="onHistorialDataChange($event)"
+                                  [historial]="historial()"></historial-ticket>
+            </div>
+        }
+    }
+</div>
+@defer (when addSeguimiento; prefetch when addSeguimiento) {
+    <app-guardar-actividad (closed)="addSeguimiento=false"
+                           (saveSuccess)="actualizarDetalles()"
+                           [dialogVisible]="addSeguimiento" [ticket]="ticket"></app-guardar-actividad>
+} @loading {
+    <app-spinner [modal]="true"></app-spinner>
+}
+
+@defer (when addChecklist; prefetch when addChecklist) {
+    <agregar-checklist (closed)="addChecklist=false" (saved)="onChecklistSaved()"
+                       [dialogVisible]="addChecklist" [ticketId]="ticket.id"></agregar-checklist>
+} @loading {
+    <app-spinner [modal]="true"></app-spinner>
+}
+
+@defer (when abrirModalGenerales; prefetch when abrirModalGenerales) {
+    <p-dialog [(visible)]="abrirModalGenerales" [breakpoints]="{ '1199px': '75vw', '575px': '98vw' }"
+              [style]="{ width: '50vw' }"
+              header="Generales" modal="true">
+        <!--        <app-generales [id-unidad]="ticket.unidad.id"></app-generales>-->
+    </p-dialog>
+} @loading {
+    <app-spinner [modal]="true"></app-spinner>
+}

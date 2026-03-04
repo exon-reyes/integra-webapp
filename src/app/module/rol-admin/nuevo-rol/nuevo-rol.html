@@ -1,0 +1,72 @@
+<div class="form-container">
+    <app-info-card
+        [items]="infoItems"
+        iconClass="pi pi-cog text-2xl text-indigo-600"
+        title="Flujo de Configuración: Rol + Permisos">
+    </app-info-card>
+
+    <form (ngSubmit)="onSubmit()" [formGroup]="rolForm" class="space-y-6">
+
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1" for="nombre">Nombre <span
+                class="text-red-500">*</span></label>
+            <input [ngClass]="{'ng-invalid ng-touched': f.nombre.invalid && f.nombre.touched}" class="w-full"
+                   formControlName="nombre"
+                   id="nombre"
+                   pInputText
+                   placeholder="Ej: Administrador, Soporte Técnico"/>
+
+            @if (f.nombre.invalid && f.nombre.touched) {
+                <small class="p-error block mt-1">
+                    @if (f.nombre.errors?.['required']) {
+                        Requerido.
+                    } @else if (f.nombre.errors?.['maxlength']) {
+                        Máx. 50 caracteres.
+                    }
+                </small>
+            }
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1" for="descripcion">Descripción (Opcional)</label>
+            <input [ngClass]="{'ng-invalid ng-touched': f.descripcion.invalid && f.descripcion.touched}" class="w-full"
+                   formControlName="descripcion"
+                   id="descripcion"
+                   pInputText
+                   placeholder="Breve resumen de las funciones del rol"/>
+
+            @if (f.descripcion.invalid && f.descripcion.touched) {
+                <small class="p-error block mt-1">
+                    Máx. 255 caracteres.
+                </small>
+            }
+        </div>
+
+        @if (errorMessage) {
+            <div class="p-4 mb-5 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400"
+                 role="alert">
+                {{ errorMessage }}
+            </div>
+        }
+
+        <div class="flex justify-end gap-3 pt-2 border-t border-gray-100">
+            <p-button
+                (onClick)="onCancel()"
+                [disabled]="loading"
+                icon="pi pi-times"
+                label="Cancelar"
+                severity="secondary"
+                type="button">
+            </p-button>
+
+            <p-button
+                [disabled]="rolForm.invalid || loading"
+                [loading]="loading"
+                icon="pi pi-check"
+                label="Crear Rol"
+                type="submit">
+            </p-button>
+        </div>
+
+    </form>
+</div>

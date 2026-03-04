@@ -1,0 +1,91 @@
+<p-dialog
+    (onHide)="cerrarDialogo()"
+    [(visible)]="dialogVisible"
+    [breakpoints]="{ '1199px': '75vw', '575px': '90vw' }"
+    [draggable]="false"
+    [modal]="true"
+    [resizable]="false"
+    [style]="{ width: '35vw'}"
+    header="Seguimiento - {{ ticket.titulo.nombre }}">
+
+    @if (procesando) {
+        <app-spinner message="Procesando"></app-spinner>
+    } @else {
+        <form (ngSubmit)="guardar()" [formGroup]="seguimientoForm" class="formgrid grid grid-cols-12 gap-4">
+            <div class="field col-span-12 md:col-span-6">
+                <label class="font-medium" for="agente">Agente</label>
+                <input
+                    class="w-full mt-1"
+                    formControlName="agente"
+                    id="agente"
+                    pInputText
+                    type="text"
+                >
+                @if (seguimientoForm.get('agente')?.invalid && seguimientoForm.get('agente')?.touched) {
+                    <small class="text-red-400">El agente es requerido</small>
+                }
+            </div>
+
+            <div class="field col-span-12 md:col-span-6">
+                <label class="font-medium" for="estatus">Estado actual</label>
+                <p-select
+                    [options]="estatus"
+                    [showClear]="true"
+                    class="w-full mt-1"
+                    formControlName="estatus"
+                    id="estatus"
+                    optionLabel="nombre"
+                />
+                @if (seguimientoForm.get('estatus')?.invalid && seguimientoForm.get('estatus')?.touched) {
+                    <small class="text-red-400">Debe seleccionar un estado</small>
+                }
+            </div>
+            <div class="field col-span-12">
+                <label class="font-medium" for="descripcion">Comentario</label>
+                <p-editor
+                    [style]="{'max-height':'300px','min-height':'200px','overflow':'auto'}"
+                    class="mt-1"
+                    formControlName="descripcion"
+                    id="descripcion"
+                />
+            </div>
+            <div class="field col-span-12">
+                <label class="font-medium">Adjuntar archivo</label>
+                <div class="flex gap-2 items-center mt-1">
+                    <div class="flex-1 relative">
+                        <input #fileInput (change)="onFileChange($event)" accept=".pdf,.doc,.docx,.jpg,.png"
+                               class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                               type="file">
+                        <div
+                            class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-gray-400 transition-colors">
+                            @if (!archivoSeleccionado) {
+                                <i class="pi pi-upload text-2xl text-gray-400 mb-2"></i>
+                                <p class="text-gray-600">Seleccionar archivo</p>
+                            } @else {
+                                <i class="pi pi-file text-2xl text-blue-500 mb-2"></i>
+                                <p class="text-blue-600 font-medium">{{ archivoSeleccionado.name }}</p>
+                                <p class="text-gray-500 text-sm">{{ formatFileSize(archivoSeleccionado.size) }}</p>
+                            }
+                        </div>
+                    </div>
+                    @if (archivoSeleccionado) {
+                        <button (click)="cancelarArchivo()"
+                                class="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                                title="Cancelar archivo" type="button">
+                            <i class="pi pi-times"></i>
+                        </button>
+                    }
+                </div>
+            </div>
+
+            <div class="flex col-span-12 justify-center">
+                <p-button
+                    [disabled]="seguimientoForm.invalid"
+                    [loading]="procesando" icon="pi pi-check"
+                    label="Guardar"
+                    type="submit"
+                />
+            </div>
+        </form>
+    }
+</p-dialog>

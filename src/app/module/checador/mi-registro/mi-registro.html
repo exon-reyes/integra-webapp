@@ -1,0 +1,148 @@
+<app-title description="Consulta tus registros de asistencia. Entradas/salidas y pausas registradas"
+           imageSrc="assets/icon/icon.svg"
+           title="Mis registros">
+</app-title>
+
+<div class="flex flex-col lg:flex-row gap-3 mt-6 items-start">
+    <div class="flex-shrink-0 lg:sticky lg:top-4 w-full md:w-md">
+        <div class="flex flex-col ">
+            <!--Generales del usuario -->
+            <div
+                class="relative mb-2 w-full mx-auto rounded-xl p-6 overflow-hidden bg-gradient-to-br from-white via-slate-50 to-sky-50 border border-slate-200">
+
+                <!-- OVERLAY TIPO CRISTAL -->
+                <div class="absolute inset-0 bg-white/60 backdrop-blur-sm"></div>
+
+                <!-- ONDAS -->
+                <svg class="absolute bottom-0 left-0 w-full opacity-20"
+                     preserveAspectRatio="none"
+                     viewBox="0 0 1440 150">
+                    <path
+                        class="text-sky-200"
+                        d="M0,80 C120,100 240,20 360,30 480,40 600,120 720,110
+       840,100 960,20 1080,25 1200,30 1320,80 1440,70
+       L1440,150 L0,150 Z"
+                        fill="currentColor">
+                    </path>
+                </svg>
+
+                <!-- CONTENIDO -->
+                <div class="relative z-10">
+                    <div class="flex items-start gap-5">
+
+                        <!-- ICONO -->
+                        <div
+                            class="w-14 h-14 rounded-2xl
+               bg-white text-slate-700
+               flex items-center justify-center
+               shadow-sm border border-slate-200">
+
+                            <svg height="30" viewBox="0 0 14 14" width="30"
+                                 xmlns="http://www.w3.org/2000/svg">
+                                <g fill="none" stroke="currentColor"
+                                   stroke-linecap="round"
+                                   stroke-linejoin="round">
+                                    <circle cx="7" cy="5.5" r="2.5"/>
+                                    <path d="M2.73 11.9a5 5 0 0 1 8.54 0"/>
+                                    <circle cx="7" cy="7" r="6.5"/>
+                                </g>
+                            </svg>
+
+                        </div>
+
+                        <!-- INFO -->
+                        <div class="flex-1 space-y-3">
+
+                            <div>
+                                <div
+                                    class="text-sm font-bold
+                   text-slate-800">
+
+                                    {{ empleadoBuscado()?.nombre }}
+
+                                </div>
+
+                                <span
+                                    class="text-[11px] font-semibold text-slate-500">
+
+            {{ empleadoBuscado()?.puestoNombre }}
+
+          </span>
+                            </div>
+
+                            <div class="flex justify-between items-center">
+
+                                <div>
+                                    <div
+                                        class="text-[10px] font-bold uppercase tracking-widest
+                     text-slate-500">
+                                        ID
+                                    </div>
+
+                                    <p class="font-mono font-semibold text-slate-700">
+                                        {{ empleadoBuscado()?.clave }}
+                                    </p>
+                                </div>
+
+                                <!-- ESTADO -->
+                                <span
+                                    class="px-3 py-1 rounded-full
+                   text-[10px] font-semibold tracking-widest
+                   bg-white text-slate-700
+                   border border-slate-200 shadow-sm">
+
+            {{
+                                        empleadoBuscado()?.jornadaIniciada
+                                            ? (pausaActivaTexto() ? 'En pausa' : 'Activo')
+                                            : 'Sin jornada'
+                                    }}
+
+          </span>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+            <app-calendar (daySelect)="diaSeleccionado()" (monthChange)="consultarFechasTrabajadasMes($event)"
+                          [(ngModel)]="date"
+                          [disableFutureDays]="true"
+                          [showRegisterIndicator]="true"
+                          [taggedDates]="diasTrabajados()"></app-calendar>
+            @if (empleadoBuscado()?.id) {
+                <app-resumen-mes [empleadoId]="empleadoBuscado().id"></app-resumen-mes>
+            }
+
+        </div>
+    </div>
+
+    <div class="flex-1 w-full min-w-0">
+        @if (empleadoBuscado()) {
+            <div class="space-y-2">
+                <p-panel header="Mis registros">
+                    <ng-template #icons>
+                        <p-button (onClick)="actualizarTabla()" class="ml-auto" icon="pi pi-refresh" severity="info"/>
+                    </ng-template>
+                    @if (asistencias().length > 0) {
+                        <div class="">
+                            @for (asistencia of asistencias(); track asistencia.id) {
+                                <asistencia-card
+                                    [apiUrlImagen]="asistenciaService.apiUrlImagen"
+                                    [asistencia]="asistencia"
+                                    [showImg]="false">
+                                </asistencia-card>
+                            }
+                        </div>
+                    } @else {
+                        <app-state
+                            description="No se encontraron jornadas en la fecha seleccionada"
+                            title="Fecha sin jornadas registradas"></app-state>
+                    }
+                </p-panel>
+            </div>
+        }
+    </div>
+</div>

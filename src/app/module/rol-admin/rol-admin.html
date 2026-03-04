@@ -1,0 +1,308 @@
+<!-- Componente: Título principal -->
+<app-title description="Administración jerárquica de roles, módulos y permisos del sistema" iconClass="isc i-exchange"
+           title="Gestión de Roles"/>
+
+<!-- Contenedor principal -->
+<div class="mt-4 bg-white border border-gray-100 rounded-lg shadow-sm">
+
+    <!-- Tabla de roles -->
+    <div class="p-0">
+        <p-table [loading]="loadingRoles()" [resizableColumns]="true" [scrollable]="true"
+                 [tableStyle]="{ 'min-width': '30rem' }" [value]="roles()" class="w-full"
+                 scrollHeight="calc(100vh - 196px)">
+
+            <!-- Caption: acciones -->
+            <ng-template #caption>
+                <div class="flex">
+                    <p-button (onClick)="mostrarDialogoNuevoRol=true" icon="pi pi-plus" label="Nuevo rol"
+                              severity="success"/>
+                </div>
+            </ng-template>
+
+            <!-- Header de la tabla -->
+            <ng-template #header>
+                <tr class="bg-gray-50 border-b border-gray-200">
+                    <th class="py-2.5 px-5 text-xs font-semibold uppercase tracking-wider text-gray-600">Perfiles
+                        administrados
+                    </th>
+                    <th style="width:5%"></th>
+                </tr>
+            </ng-template>
+
+            <!-- Body: roles -->
+            <ng-template #body let-rol>
+                <tr>
+                    <td>
+                        <div class="font-medium text-heading">
+                            <div>{{ rol.nombre }}</div>
+                            <div class="text-sm font-normal text-body">{{ rol.descripcion || '' }}</div>
+                        </div>
+                    </td>
+
+                    <td>
+                        <div class="flex justify-end items-center gap-2">
+                            <p-button (click)="selectRol(rol)" icon="pi pi-list-check" severity="secondary"></p-button>
+                            <p-button (onClick)="eliminarRol(rol)"
+                                      *hasPermission="Autoridades.ROLES_ELIMINAR"
+                                      [class.hover:bg-red-50]="!rol.rolDefault && !loadingPermisos()"
+                                      [class.text-gray-400]="rol.rolDefault"
+                                      [class.text-red-600]="!rol.rolDefault"
+                                      [disabled]="rol.rolDefault || loadingPermisos()"
+                                      icon="pi pi-trash"
+                                      severity="danger">
+                            </p-button>
+
+                        </div>
+                    </td>
+                </tr>
+            </ng-template>
+
+        </p-table>
+    </div>
+    <!-- Dialog: Nuevo rol (deferred) -->
+    @defer (when mostrarDialogoNuevoRol) {
+        <p-dialog (onHide)="cancelarCreacionRol()" [(visible)]="mostrarDialogoNuevoRol" [baseZIndex]="10000"
+                  [breakpoints]="{ '1199px': '75vw', '575px': '90vw' }" [draggable]="false" [modal]="true"
+                  [resizable]="false" [style]="{ width: '44vw' }" header="Registro de Nuevo Rol">
+
+            <app-nuevo-rol (cancelar)="cancelarCreacionRol()" (rolAgregado)="manejarRolAgregado($event)">
+            </app-nuevo-rol>
+
+        </p-dialog>
+    }
+    <!-- Dialog: Permisos -->
+    <p-dialog [(visible)]="mostrarModalPermisos" [breakpoints]="{ '1199px': '75vw', '575px': '90vw' }"
+              [maximizable]="true" [modal]="true" [style]="{ width: '80rem' }" draggable="false" header="Header">
+
+        <!-- Header personalizado del diálogo -->
+        <ng-template #header>
+            <div class="flex items-center justify-between w-full">
+
+                <!-- Título y edición nombre/desc -->
+                <div class="flex items-center gap-4">
+
+                    @if (modoEdicionNombre()) {
+                        <div class="space-y-2 w-72">
+                            <input [(ngModel)]="selectedRol()!.nombre"
+                                   class="w-full px-3 py-1.5 text-lg font-semibold bg-white border border-gray-300 rounded outline-none shadow-sm"
+                                   placeholder="Nombre del rol"
+                                   type="text"/>
+
+                            <input [(ngModel)]="selectedRol()!.descripcion"
+                                   class="w-full px-3 py-1.5 bg-white border border-gray-300 rounded outline-none shadow-sm"
+                                   placeholder="Descripción del rol"
+                                   type="text"/>
+
+                            <div class="flex gap-2 mt-2">
+                                <p-button (onClick)="guardarNombreDescripcion()" label="Guardar"
+                                          size="small"></p-button>
+                                <p-button (onClick)="cancelarEdicionNombre()" label="Cancelar" severity="secondary"
+                                          size="small"></p-button>
+                            </div>
+                        </div>
+
+                    } @else {
+                        <div class="flex items-center gap-2">
+                            <app-title
+                                description="{{ selectedRol()!.descripcion || 'Sin descripción' }}"
+                                iconClass="isc i-member"
+                                title="{{ selectedRol()!.nombre }}"></app-title>
+                            @if (!selectedRol()?.rolDefault) {
+                                <button (click)="editarNombreDescripcion()"
+                                        *hasPermission="Autoridades.ROLES_EDITAR"
+                                        class="p-1 text-gray-400 hover:text-blue-600 rounded-full ml-3"
+                                        title="Editar nombre y descripción">
+                                    <i class="pi pi-pencil text-sm"></i>
+                                </button>
+                            }
+                        </div>
+                    }
+
+                </div>
+
+                <!-- Contador de permisos activos -->
+                <div class="flex items-center gap-2 px-4 py-2 bg-white rounded-xl border border-gray-200">
+                    <i class="pi pi-check-circle text-green-600"></i>
+                    <span class="text-sm font-semibold text-gray-700">{{ contarPermisosActivos() }} Activos</span>
+                </div>
+            </div>
+        </ng-template>
+
+        <!-- Estado de carga -->
+        @if (loadingPermisos()) {
+            <div class="h-[calc(100vh-250px)] flex items-center justify-center">
+                <app-spinner message="Cargando permisos, espere un momento..."></app-spinner>
+            </div>
+
+        } @else {
+
+            <!-- Acciones y Advertencia -->
+            <div class="mb-4 flex items-center justify-between gap-4">
+                @if (modoEdicion()) {
+                    <div class="text-lg flex items-center py-3 space-x-4">
+                        <i class="pi pi-info-circle" style="font-size: 2rem"></i><span>Revisa cuidadosamente los permisos antes de guardar</span>
+                    </div>
+                }
+                <!-- Botones de Acción -->
+                <div class="flex gap-2">
+                    @if (modoEdicion()) {
+                        <p-button (onClick)="guardarPermisos()" icon="pi pi-check" label="Guardar Cambios"
+                                  severity="primary"
+                                  size="small"></p-button>
+                        <p-button (onClick)="cancelarEdicionPermisos()" icon="pi pi-times" label="Cancelar"
+                                  severity="secondary"
+                                  size="small"></p-button>
+                    } @else if (!selectedRol()?.rolDefault) {
+                        <p-button (onClick)="modoEdicion.set(true)" *hasPermission="Autoridades.ROLES_EDITAR" icon="pi pi-lock-open"
+                                  label="Editar Permisos"
+                                  severity="info"
+                                  size="small"></p-button>
+                    }
+                </div>
+            </div>
+
+            <!-- Cuerpo del diálogo: layout principal -->
+            <div
+                class="flex flex-col md:flex-row gap-0 h-full overflow-hidden border border-gray-200 rounded-lg">
+
+                <!-- Sidebar -->
+                <div class="w-full md:w-72 bg-gray-50 flex flex-col border-r border-gray-200 overflow-y-auto">
+                    @if (universos() && universos().length > 0) {
+                        @for (universo of universos(); track universo.id) {
+                            <div class="py-3">
+                                <div
+                                    class="px-4 mb-2 text-xs font-bold  uppercase tracking-wider flex items-center gap-2">
+                                    <i class="pi pi-th-large text-[10px]"></i>
+                                    {{ universo.nombre }}
+                                </div>
+                                <div class="space-y-0.5 px-2">
+                                    @for (modulo of universo.modulos; track modulo.id) {
+                                        <button (click)="selectModulo(modulo)"
+                                                [class.bg-white]="selectedModulo()?.id === modulo.id"
+                                                [class.border-gray-200]="selectedModulo()?.id === modulo.id"
+                                                [class.border]="selectedModulo()?.id === modulo.id"
+                                                [class.font-semibold]="selectedModulo()?.id === modulo.id"
+                                                [class.hover:bg-gray-200]="selectedModulo()?.id !== modulo.id"
+                                                [class.shadow-sm]="selectedModulo()?.id === modulo.id"
+                                                [class.text-blue-700]="selectedModulo()?.id === modulo.id"
+                                                [class.text-gray-600]="selectedModulo()?.id !== modulo.id"
+                                                class="w-full text-left px-3 py-2.5 rounded-md text-sm transition-all flex items-center justify-between group">
+
+                                            <div class="flex items-center gap-2.5">
+                                                <i [class.opacity-70]="selectedModulo()?.id !== modulo.id"
+                                                   [class.text-blue-500]="selectedModulo()?.id === modulo.id"
+                                                   class="pi pi-box text-xs"></i>
+                                                <span class="truncate">{{ modulo.nombre }}</span>
+                                            </div>
+
+                                            @if (modulo.asignado) {
+                                                <div class="w-2 h-2 rounded-full bg-green-500"></div>
+                                            }
+                                        </button>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    } @else {
+                        <div class="p-4 text-center text-gray-500 text-sm">No hay módulos disponibles</div>
+                    }
+                </div>
+
+                <!-- Content Area -->
+                <div class="flex-1 flex flex-col bg-white h-full overflow-hidden relative">
+
+                    @if (selectedModulo(); as modulo) {
+                        <!-- Header of Content -->
+                        <div
+                            class="flex-shrink-0 px-8 py-5 border-b border-gray-100 flex justify-between items-center bg-white z-10">
+                            <div>
+                                <div class="text-3xl font-bold text-sky-700 flex items-center gap-3">
+                                    {{ modulo.nombre }}
+                                    @if (modulo.asignado) {
+                                        <span
+                                            class="px-2 py-0.5 rounded text-xs bg-green-100 text-green-700 font-medium border border-green-200">Activo</span>
+                                    }
+                                </div>
+                                <p class="text-sm">Gestionar acceso y permisos detallados</p>
+                            </div>
+                            <div class="flex items-center gap-4 bg-gray-50 px-4 py-2 rounded-lg border border-gray-200">
+                                <span class="text-sm font-medium text-gray-700 select-none">Habilitar Módulo</span>
+
+                                <!-- Master Toggle -->
+                                <p-checkbox (onChange)="toggleTodosPermisosModulo(modulo, getUniverso(modulo))"
+                                            [binary]="true"
+                                            [disabled]="!modoEdicion()"
+                                            [ngModel]="modulo.asignado" class="scale-110">
+                                </p-checkbox>
+                            </div>
+                        </div>
+
+                        <!-- Scrollable Content -->
+                        <div class="flex-1 overflow-y-auto p-8 space-y-8 bg-gray-100">
+                            @for (submodulo of modulo.submodulos; track submodulo.id) {
+                                <div class="animate-fade-in-up">
+                                    <div class="flex items-center justify-between mb-4 pb-2 border-b border-gray-100">
+                                        <h6 class="flex items-center gap-2">
+                                            <i class="pi pi-inbox text-blue-500"></i>
+                                            {{ submodulo.nombre === 'Permisos' ? 'Permisos Generales' : submodulo.nombre }}
+                                        </h6>
+                                        <div class="flex items-center gap-2">
+                                <span
+                                    (click)="toggleTodosPermisos(submodulo, modulo, getUniverso(modulo))"
+                                    class="text-sm font-medium  tracking-wide cursor-pointer select-none">Seleccionar
+                                    todo</span>
+                                            <p-checkbox
+                                                (onChange)="toggleTodosPermisos(submodulo, modulo, getUniverso(modulo))"
+                                                [binary]="true"
+                                                [disabled]="!modoEdicion()"
+                                                [ngModel]="todosPermisosSeleccionados(submodulo)">
+                                            </p-checkbox>
+                                        </div>
+                                    </div>
+
+                                    <div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
+                                        @for (permiso of submodulo.permisos; track permiso.id) {
+                                            <div
+                                                (click)="modoEdicion() && togglePermiso(permiso, submodulo, modulo, getUniverso(modulo))"
+                                                class="group flex items-start gap-4 p-4 rounded-xl border border-gray-100 hover:border-blue-200 transition-all hover:shadow-md bg-white hover:bg-yellow-50 cursor-pointer">
+
+                                                <div class="pt-1">
+                                                    <p-checkbox (click)="$event.stopPropagation()"
+                                                                (onChange)="togglePermiso(permiso, submodulo, modulo, getUniverso(modulo))"
+                                                                [binary]="true"
+                                                                [disabled]="!modoEdicion()"
+                                                                [ngModel]="permiso.asignado">
+                                                    </p-checkbox>
+                                                </div>
+
+                                                <div class="flex-1 select-none">
+                                                    <div
+                                                        class="font-semibold text-sm text-gray-900 group-hover:text-blue-700 transition-colors">
+                                                        {{ permiso.nombre }}
+                                                    </div>
+                                                    <div class="text-sm text-gray-500 mt-1 leading-relaxed">Permite el
+                                                        acceso a la
+                                                        funcionalidad de {{ permiso.nombre | lowercase }} dentro del
+                                                        sistema.
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    } @else {
+                        <div class="flex-1 flex flex-col items-center justify-center text-gray-400 bg-gray-50/50">
+                            <i class="pi pi-box text-6xl mb-4 opacity-20"></i>
+                            <p class="font-medium">Selecciona un módulo para configurar sus permisos</p>
+                        </div>
+                    }
+
+                </div>
+            </div>
+        }
+
+    </p-dialog>
+
+</div>

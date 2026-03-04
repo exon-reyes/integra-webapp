@@ -1,0 +1,37 @@
+/* You can add global styles to this file, and also import other style files */
+@use './tailwind.css';
+@use './layout/layout.scss';
+@use 'primeicons/primeicons.css';
+@use './demo/demo.scss';
+@use './spinner';
+@use './isc-icon';
+
+@font-face {
+    font-family: "Inter var";
+    font-weight: 100 900;
+    font-display: swap;
+    font-style: normal;
+    font-named-instance: "Regular";
+    src: url("/assets/fonts/Inter-roman.var.woff2?v=3.19") format("woff2");
+}
+
+* {
+    font-family: "Inter var", sans-serif;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    font-variation-settings: normal;
+}
+
+.required:after {
+    content: '*';
+    color: orangered;
+    margin-left: 3px;
+    font-weight: normal;
+}
+
+.status-circle {
+    width: 8px;
+    height: 8px;
+    margin-left: 5px;
+    border-radius: 50%;
+    display: inline-block;
+}

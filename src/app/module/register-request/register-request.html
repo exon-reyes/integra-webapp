@@ -1,0 +1,95 @@
+<div class="min-h-screen flex bg-white">
+    <!-- Left Side: Branding (Hidden on mobile) -->
+    <div class="hidden lg:flex lg:w-1/2 relative bg-slate-900 overflow-hidden">
+        <!-- Background Pattern -->
+        <div class="absolute inset-0 opacity-100 bg-[url('/assets/bg/bg1.svg')] bg-cover bg-center"></div>
+        <div class="absolute inset-0 bg-gradient-to-br from-blue-900/90 to-slate-900/90"></div>
+
+        <!-- Decoration -->
+        <div
+            class="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl mix-blend-overlay animate-pulse">
+        </div>
+        <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-indigo-500/20 rounded-full blur-3xl mix-blend-overlay">
+        </div>
+
+        <!-- Content -->
+        <div class="relative z-10 flex flex-col justify-center items-center w-full h-full p-12 text-white">
+            <div class="mb-8 p-6 bg-white/10 backdrop-blur-md rounded-2xl shadow-2xl border border-white/10">
+                <img alt="Logo" class="w-150 h-auto drop-shadow-lg" src="/assets/img/intro.png">
+            </div>
+            <div
+                class="text-5xl font-extrabold tracking-tight mb-4 text-transparent bg-clip-text bg-gradient-to-r from-blue-200 to-white">
+                INTEGRA
+            </div>
+            <p class="text-xl text-blue-100 font-light tracking-wide max-w-md text-center">
+                Estrategia en Evolución
+            </p>
+            <div class="mt-4 w-16 h-1 bg-blue-500 rounded-full"></div>
+            <div class="absolute bottom-8 text-slate-400 text-sm">
+                &copy; 2026
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Side: Content -->
+    <div class="w-full lg:w-1/2 flex items-center justify-center p-8 lg:p-16 bg-white relative">
+        <div class="lg:hidden absolute inset-0 bg-slate-50 z-0"></div>
+
+        <div class="w-full max-w-md z-10">
+
+            @if (!submitted) {
+                <!-- Header -->
+                <div class="mb-10 text-left">
+                    <p-button icon="pi pi-arrow-left" label="Volver al inicio" routerLink="/auth/login"
+                              severity="secondary"
+                              text></p-button>
+                    <h1>Crear nueva cuenta</h1>
+                    <p>
+                        Ingresa tu código de colaborador para verificar tu identidad y comenzar.
+                    </p>
+                </div>
+
+                <!-- Form -->
+                <form (ngSubmit)="onSubmit()" [formGroup]="form" class="space-y-8">
+
+                    <!-- Employee Code Input -->
+                    <div class="flex flex-col gap-1">
+                        <label class="text-sm font-semibold" for="username">Núm. colaborador</label>
+                        <input class="w-full"
+                               formControlName="employeeCode" id="employeeCode"
+                               pInputText
+                               type="text"/>
+                        @if (isControlInvalid(form, 'employeeCode', submitted)) {
+                            <p-message severity="error" size="small" variant="simple">El número de colaborador es
+                                requerido
+                            </p-message>
+                        }
+                        @if (error) {
+                            <br>
+                            <app-alert [description]="error" title="No se pudo continuar" type="error"></app-alert>
+                        }
+                    </div>
+
+                    <p-button [disabled]="form.invalid||isLoading"
+                              [label]="isLoading?'Procesando, espere un momento...':'Continuar'" [loading]="isLoading"
+                              styleClass="w-full"
+                              type="submit"></p-button>
+                </form>
+
+            } @else {
+                <!-- Success State -->
+                <div class="text-center animate-fade-in-up">
+                    <div
+                        class="mx-auto flex items-center justify-center h-24 w-24 rounded-full bg-green-50 mb-8 ring-8 ring-green-50/50">
+                        <img alt="Email Sent" class="w-100 h-auto" height="128" ngSrc="/assets/img/email.svg"
+                             width="360">
+                    </div>
+
+                    <h2 class="text-3xl font-extrabold text-slate-900 mb-4">¡Solicitud enviada!</h2>
+                    <p>{{ message }}</p>
+                    <p-button label="Volver al inicio" routerLink="/auth/login" styleClass="mt-2"/>
+                </div>
+            }
+        </div>
+    </div>
+</div>

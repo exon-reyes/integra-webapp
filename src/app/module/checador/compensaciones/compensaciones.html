@@ -1,0 +1,233 @@
+<app-title
+    description="Finalizacion de jornadas con traslado a depositar"
+    iconClass="i-expired isc"
+    title="Compensación de tiempos de Jornadas"
+/>
+
+<!-- Panel de filtros -->
+<p-panel [collapsed]="false" [toggleable]="true" class="my-3 border-0" header="Opciones de consulta">
+    <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+
+        <!-- Rango de fechas -->
+        <div>
+            <label class="block text-sm font-medium text-gray-600 mb-1">* Rango de fechas</label>
+            <p-datePicker (onSelect)="cargarCompensacion()" [(ngModel)]="rangeDates" [iconDisplay]="'input'"
+                          [readonlyInput]="true"
+                          [showClear]="true" [showIcon]="true" fluid="true"
+                          placeholder="Seleccionar rango" selectionMode="range">
+            </p-datePicker>
+        </div>
+
+        <!-- Empleado -->
+        <div>
+            <label class="block text-sm font-medium text-gray-600 mb-1">Empleado</label>
+            <p-select (onChange)="cargarCompensacion()" [(ngModel)]="filtroEmpleado" [filter]="true"
+                      [options]="listaEmpleados()"
+                      [showClear]="true" [virtualScrollItemSize]="38" [virtualScroll]="true"
+                      class="w-full" filterBy="codigoEmpleado,nombreCompleto"
+                      optionLabel="nombreCompleto" optionValue="id"
+                      placeholder="Todos los empleados">
+                <ng-template #item let-empleado>
+                    {{ empleado.codigo }} {{ empleado.nombreCompleto }}
+                </ng-template>
+            </p-select>
+        </div>
+
+        <!-- Unidad -->
+        <div>
+            <label class="block text-sm font-medium text-gray-600 mb-1">Unidad</label>
+            <p-select (onChange)="cargarCompensacion()" [(ngModel)]="filtroUnidad" [filter]="true"
+                      [options]="unidades()" [showClear]="true"
+                      class="w-full" filterBy="nombreCompleto"
+                      optionLabel="nombreCompleto" optionValue="id"
+                      placeholder="Todas las unidades">
+            </p-select>
+        </div>
+
+        <!-- Zona -->
+        <div>
+            <label class="block text-sm font-medium text-gray-600 mb-1">Zona</label>
+            <p-select (onChange)="cargarCompensacion()" [(ngModel)]="filtroZona" [filter]="true"
+                      [options]="zonas()" [showClear]="true"
+                      class="w-full" optionLabel="nombre"
+                      optionValue="id" placeholder="Seleccionar">
+            </p-select>
+        </div>
+
+        <!-- Supervisor -->
+        @if (!supRestringido) {
+            <div>
+                <label class="block text-sm font-medium text-gray-600 mb-1">Supervisor</label>
+                <p-select (onChange)="cargarCompensacion()" [(ngModel)]="filtroSupervisor" [filter]="true"
+                          [options]="supervisores()" [showClear]="true"
+                          class="w-full" optionLabel="nombreCompleto"
+                          optionValue="id" placeholder="Seleccionar">
+                </p-select>
+            </div>
+        }
+    </div>
+</p-panel>
+
+
+<!-- Tabla optimizada -->
+<div class="bg-white p-6 rounded-md border border-slate-100 shadow-sm mb-6">
+    <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
+        <app-alert
+            description="Visualiza únicamente los colaboradores que registraron salidas anticipadas por depósito bancario. El sistema compensa automáticamente el tiempo restante, asegurando el cumplimiento de la jornada laboral según la configuración vigente"
+            title="Gestión de Salidas Anticipadas"
+            type="warning"
+        ></app-alert>
+
+        <div class="flex flex-wrap gap-2 pb-1">
+            <div
+                class="group flex items-center gap-2 px-3 py-1">
+                <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+                <span class="text-[10px] font-semibold">Jornada Trabajada</span>
+            </div>
+
+            <div
+                class="group flex items-center gap-2 px-3 py-1">
+                <span class="w-2 h-2 rounded-full bg-orange-400 "></span>
+                <span class="text-[10px] font-semibold">Tiempo Faltante</span>
+            </div>
+
+            <div
+                class="group flex items-center gap-2 px-3 py-1">
+                <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                <span class="text-[10px] font-semibold ">Compensado</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-6 h-px bg-gradient-to-r from-slate-100 via-slate-50 to-transparent"></div>
+
+    <p-table #dt [globalFilterFields]="['colaborador', 'unidad']" [paginator]="true" [rowGroupMode]="'subheader'"
+             [rows]="15"
+             [value]="compensaciones()" class="p-datatable-sm" groupRowsBy="colaborador">
+        <ng-template #caption>
+            <div class="flex gap-2 justify-between md:pt-0">
+                <p-iconfield>
+                    <p-inputicon class="pi pi-search"/>
+                    <input (input)="dt.filterGlobal($any($event.target).value, 'contains')"
+                           class="w-full border-gray-200 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                           pInputText
+                           placeholder="Buscar unidad..."/>
+                </p-iconfield>
+                <div class="flex gap-2 items-center">
+                    <p-button
+                        (onClick)="descargarExcel()"
+                        [loading]="loadingExcel()"
+                        icon="pi pi-file-excel"
+                        label="Exportar"
+                        severity="success"
+                        size="small">
+                    </p-button>
+
+                    <p-button
+                        (onClick)="cargarCompensacion()"
+                        [loading]="loading()"
+                        icon="pi pi-refresh"
+                        label="Actualizar"
+                        severity="info"
+                        size="small">
+                    </p-button>
+                </div>
+
+            </div>
+        </ng-template>
+        <ng-template #header>
+            <tr class="!border-b !border-slate-100 uppercase tracking-widest text-[10px] font-bold text-slate-400">
+                <th class="py-4 px-6 bg-white">Detalle</th>
+                <th class="py-4 bg-white">Fecha</th>
+                <th class="py-4 bg-white text-center">Salida Anticipada</th>
+                <th class="py-4 px-6 bg-white">Balance de Jornada</th>
+            </tr>
+        </ng-template>
+
+        <ng-template #groupheader let-compensacion>
+            <tr class="bg-slate-50/50 border-none" pRowGroupHeader>
+                <td class="py-3 px-6 bg-gray-100" colspan="4">
+                    <div class="flex items-center gap-3">
+                        <div
+                            class="w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center text-[10px] font-bold">
+                            {{ compensacion.colaborador.substring(0, 2).toUpperCase() }}
+                        </div>
+                        <div>
+                            <span class="text-[13px] font-bold text-slate-800">{{ compensacion.colaborador }}</span>
+                            <span
+                                class="ml-2 text-[11px] font-medium text-slate-400 px-2 py-0.5 bg-white border border-slate-200 rounded-md">ID: {{ compensacion.clave }}</span>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        </ng-template>
+
+        <ng-template #body let-compensacion>
+            <tr class="group hover:bg-slate-50/30 transition-all align-middle border-b border-slate-50">
+                <td class="px-6 py-4">
+                    <div class="flex flex-col">
+                        <span
+                            class="text-[12px] font-bold text-slate-700 uppercase tracking-tight">{{ compensacion.unidad }}</span>
+                        <span
+                            class="text-[10px] text-slate-400 font-medium tracking-wide">Unidad Operativa</span>
+                    </div>
+                </td>
+
+                <td class="py-4">
+                    <div class="flex flex-col">
+                    <span class="text-[13px] font-semibold text-slate-800">
+                        {{ compensacion.fecha | date: "dd/MMM/yyyy" | titlecase }}
+                    </span>
+                        <span class="text-sm text-orange-700">
+                        {{ compensacion.fecha | date: "EEEE" | titlecase }}
+                    </span>
+                    </div>
+                </td>
+
+                <td class="py-4 text-center">
+                    <div
+                        class="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-50 rounded-xl border border-blue-100/50">
+                        <i class="pi pi-clock text-[10px] text-blue-500 font-bold"></i>
+                        <span class="text-[13px]  tracking-tight">{{ compensacion.horaSalida }}</span>
+                    </div>
+                </td>
+
+                <td class="px-6 py-4">
+                    <div class="space-y-2">
+                        <!-- Barra comparativa (no proporcional, pero visualmente segmentada) -->
+                        <div class="flex overflow-hidden rounded-full border border-gray-100 bg-gray-50 text-[0.7rem]">
+                            <div
+                                class="flex-1 bg-blue-50 px-2 py-1 text-center text-blue-700 font-medium border-r border-white">
+                                <span class="block uppercase tracking-wide font-bold text-blue-500 mb-0.5">
+                                    Trabajado
+                                </span>
+                                <span>{{ compensacion.horasTrabajadas }}</span>
+                            </div>
+                            <div
+                                class="flex-1 bg-orange-50 px-2 py-1 text-center text-orange-700 font-medium border-r border-white">
+                                <span class="block uppercase  font-bold tracking-wide  text-orange-500 mb-0.5">
+                                    Faltante
+                                </span>
+                                <span>{{ compensacion.horasFaltantes }}</span>
+                            </div>
+                            <div class="flex-1 bg-emerald-50 px-2 py-1 text-center text-emerald-700 font-medium">
+                                <span class="block uppercase tracking-wide font-bold text-emerald-500 mb-0.5">
+                                    Compensado
+                                </span>
+                                <span>{{ compensacion.tiempoCompensado }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        </ng-template>
+
+        <ng-template #emptymessage>
+            <tr>
+                <td class="py-20 text-center" colspan="4">
+                    <app-state description="No se encontraron en el período seleccionado"></app-state>
+                </td>
+            </tr>
+        </ng-template>
+    </p-table>
+</div>

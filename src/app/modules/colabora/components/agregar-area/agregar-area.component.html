@@ -1,0 +1,107 @@
+<p-dialog
+    (onHide)="cancelar()"
+    [closable]="!loading()"
+    [draggable]="false"
+    [modal]="true"
+    [resizable]="false"
+    [visible]="visible()"
+    header="Agregar Nueva Área"
+    styleClass="w-full max-w-lg">
+
+    <form (ngSubmit)="onSubmit()" [formGroup]="areaForm" class="space-y-4">
+
+        <!-- Mensaje de error general -->
+        @if (error()) {
+            <p-message
+                severity="error"
+                styleClass="w-full mb-1 mt-1">{{ error()! }}
+            </p-message>
+        }
+
+        <!-- Campo Nombre -->
+        <div class="field">
+            <label class="block text-sm font-medium text-gray-700 mb-2" for="nombre">
+                Nombre del Área *
+            </label>
+            <input
+                [class.ng-invalid]="tieneError('nombre')"
+                class="w-full"
+                formControlName="nombre"
+                id="nombre"
+                pInputText
+                placeholder="Ingrese el nombre del área"
+                type="text"/>
+
+            @if (tieneError('nombre')) {
+                <small class="text-red-500 mt-1 block">
+                    {{ obtenerMensajeError('nombre') }}
+                </small>
+            }
+        </div>
+
+        <!-- Campo Externo -->
+        <div class="field">
+            <div class="flex items-center">
+                <p-checkbox
+                    binary="true"
+                    formControlName="externo"
+                    id="externo"/>
+                <label class="ml-2 text-sm text-gray-700" for="externo">
+                    Área externa
+                </label>
+            </div>
+            <small class="text-gray-500 mt-1 block">
+                Marque si esta área corresponde a un proveedor o entidad externa
+            </small>
+        </div>
+
+        <!-- Campo Generar Folio -->
+        <div class="field">
+            <div class="flex items-center">
+                <p-checkbox
+                    binary="true"
+                    formControlName="generarFolio"
+                    id="generarFolio"/>
+                <label class="ml-2 text-sm text-gray-700" for="generarFolio">
+                    Generar folio de seguimiento
+                </label>
+            </div>
+            <small class="text-gray-500 mt-1 block">
+                Los reportes de esta área generarán folios automáticamente
+            </small>
+        </div>
+
+        <!-- Debug info (remover en producción) -->
+        <div class="mb-4 p-2 bg-gray-100 rounded text-xs">
+            <strong>Debug Info:</strong><br>
+            Form Valid: {{ areaForm.valid }}<br>
+            Form Status: {{ areaForm.status }}<br>
+            Loading: {{ loading() }}<br>
+            Can Submit: {{ canSubmit() }}<br>
+            <button (click)="debugFormState()" class="mt-1 px-2 py-1 bg-blue-500 text-white rounded text-xs"
+                    type="button">
+                Debug Console
+            </button>
+        </div>
+
+        <!-- Botones de acción -->
+        <div class="flex justify-end gap-2 pt-4 border-t">
+            <p-button
+                (onClick)="cancelar()"
+                label="Cancelar"
+                severity="secondary"
+                size="small"
+                type="button"/>
+
+            <p-button
+                [disabled]="!canSubmit()"
+                [loading]="loading()"
+                label="Guardar"
+                severity="primary"
+                size="small"
+                type="submit"/>
+        </div>
+
+    </form>
+
+</p-dialog>

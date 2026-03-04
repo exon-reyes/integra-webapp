@@ -1,0 +1,304 @@
+<app-title description="Administración centralizada de usuarios, roles y permisos de acceso" iconClass="isc i-user"
+           title="Gestión de Usuarios"/>
+
+<p-table #dt (onLazyLoad)="onPageChange($event)" [first]="currentPage() * pageSize()" [lazy]="true"
+         [loading]="loading()" [paginator]="true" [rowsPerPageOptions]="[10, 25, 50, 100]" [rows]="pageSize()"
+         [scrollable]="true" [totalRecords]="totalRecords()" [value]="usuariosFiltrados()"
+         class="mt-3 rounded-xl p-4 bg-white" scrollHeight="400px">
+
+    <ng-template #caption>
+        <div class="flex justify-between items-center gap-2">
+            <div class="flex gap-2">
+                <p-button (click)="mostrarModalRegistro=true" *hasPermission="Autoridades.USUARIOS_CREAR"
+                          icon="pi pi-plus" label="Nuevo"/>
+                <p-button (click)="cargarUsuarios()" [outlined]="true" icon="pi pi-refresh" severity="secondary"/>
+            </div>
+            <div class="flex items-center gap-3">
+                <span class="text-sm text-gray-600">Total: {{ totalRecords() }}</span>
+                <p-iconfield>
+                    <p-inputicon class="pi pi-search"/>
+                    <input (input)="filtrarUsuarios($any($event.target).value)" [value]="filtroTexto()" pInputText
+                           placeholder="Buscar en página actual" type="text"/>
+                </p-iconfield>
+            </div>
+        </div>
+    </ng-template>
+
+    <ng-template #header>
+        <tr>
+            <th><i class="pi pi-key mr-1"></i>Usuario</th>
+            <th><i class="pi pi-user mr-1"></i>Colaborador</th>
+            <th><i class="pi pi-envelope mr-1"></i>Correo vinculado
+            </th>
+            <th><i class="pi pi-users mr-1"></i>Roles
+            </th>
+            <th class="text-center"><i class="pi pi-shield mr-1"></i>Estatus</th>
+            <th><i class="pi pi-cog mr-1"></i>Acciones</th>
+        </tr>
+    </ng-template>
+
+    <ng-template #body let-user>
+        <tr [class.opacity-50]="isAdmin(user)">
+            <td>{{ user.username }}</td>
+            <td>
+                <div class="flex flex-col">
+                    {{ user.nombreCompleto }}
+                    <div class="text-sm text-slate-400">{{ user.puesto }}</div>
+                </div>
+            </td>
+            <td>{{ user.email }}</td>
+            <td>
+                {{ user.roles }}
+            </td>
+            <td class="text-center">
+                @if (!isAdmin(user)) {
+                    <button (click)="toggleUserStatus(user, $event)" *hasPermission="Autoridades.USUARIOS_DESACTIVAR"
+                            [class.bg-gray-300]="!user.activo" [class.bg-green-500]="user.activo"
+                            class="w-10 h-5 rounded-full transition-colors" role="switch" type="button">
+                    <span [class.translate-x-1]="!user.activo" [class.translate-x-5]="user.activo"
+                          class="block w-4 h-4 bg-white rounded-full transition-transform"></span>
+                    </button>
+                } @else {
+                    <i class="pi pi-lock text-gray-400" title="Usuario administrador protegido"></i>
+                }
+            </td>
+            <td>
+                @if (!isAdmin(user)) {
+                    <div class="flex gap-1">
+                        <p-button (onClick)="abrirModalPermisos(user)" icon="pi pi-list-check"
+                                  severity="secondary"></p-button>
+                        <p-button (onClick)="abrirModalEdicion(user)" *hasPermission="Autoridades.USUARIOS_EDITAR"
+                                  icon="pi pi-pencil" severity="secondary"></p-button>
+                        <p-button (onClick)="confirmarEliminacion(user)" *hasPermission="Autoridades.USUARIOS_ELIMINAR"
+                                  icon="pi pi-trash" severity="warn"></p-button>
+                    </div>
+                } @else {
+                    <span class="text-xs text-gray-400 italic">Protegido</span>
+                }
+            </td>
+        </tr>
+    </ng-template>
+</p-table>
+
+@defer (when mostrarModalRegistro) {
+    <app-registrar-usuario-modal (usuarioGuardado)="onUsuarioGuardado()" [(visible)]="mostrarModalRegistro"/>
+} @loading {
+    <app-spinner/>
+}
+
+@defer (when mostrarModalEdicion) {
+    <app-editar-usuario-modal (usuarioGuardado)="onUsuarioGuardado()" [(visible)]="mostrarModalEdicion"
+                              [usuarioEditar]="usuarioParaEditar"/>
+} @loading {
+    <app-spinner/>
+}
+
+<!-- Dialog: Permisos Especiales -->
+<p-dialog [(visible)]="mostrarModalPermisos" [breakpoints]="{ '1199px': '75vw', '575px': '90vw' }"
+          [modal]="true" [style]="{ width: '80rem' }" draggable="false" header="Header">
+
+    <!-- Header personalizado del diálogo -->
+    <ng-template #header>
+        <div class="flex items-center justify-between w-full">
+
+            <!-- Título -->
+            <div class="flex items-center gap-4">
+                <app-title description="Gestión de permisos especiales del usuario" iconClass="isc i-user"
+                           title="Permisos: {{ usuarioSeleccionadoPermisos?.username || 'Usuario' }}"></app-title>
+            </div>
+
+            <!-- Contador de permisos activos -->
+            <div class="flex items-center gap-2 px-4 py-2 bg-white rounded-xl border border-gray-200">
+                <i class="pi pi-check-circle text-green-600"></i>
+                <span class="text-sm font-semibold text-gray-700">{{ contarPermisosActivos() }} Activos</span>
+            </div>
+        </div>
+    </ng-template>
+
+    <!-- Estado de carga -->
+    @if (loadingPermisos()) {
+        <div class="h-[calc(100vh-250px)] flex items-center justify-center">
+            <app-spinner message="Cargando permisos, espere un momento..."></app-spinner>
+        </div>
+
+    } @else {
+
+        <!-- Acciones y Advertencia -->
+        <div class="mb-4 flex items-center justify-between gap-4">
+            @if (modoEdicion()) {
+                <div class="flex items-center py-3 space-x-4">
+                    <i class="pi pi-info-circle" style="font-size: 2rem"></i>
+                    <div>
+                        <div class="text-lg font-semibold">Revisa cuidadosamente los permisos antes de guardar</div>
+                        <div class="text-sm mt-1">
+                            <i class="pi pi-lock text-xs mr-1"></i>
+                            Los permisos con candado son heredados de roles y no pueden modificarse
+                        </div>
+                    </div>
+                </div>
+            }
+            <!-- Botones de Acción -->
+            <div class="flex gap-2">
+                @if (modoEdicion()) {
+                    <p-button (onClick)="guardarPermisosEspeciales()" icon="pi pi-check" label="Guardar Cambios"
+                              severity="primary" size="small"></p-button>
+                    <p-button (onClick)="cancelarEdicionPermisos()" icon="pi pi-times" label="Cancelar"
+                              severity="secondary"
+                              size="small"></p-button>
+                } @else {
+                    <p-button (onClick)="modoEdicion.set(true)" icon="pi pi-lock-open" label="Editar Permisos"
+                              severity="info"
+                              size="small"></p-button>
+                }
+            </div>
+        </div>
+
+        <!-- Cuerpo del diálogo: layout principal -->
+        <div class="flex flex-col md:flex-row gap-0 h-full overflow-hidden border border-gray-200 rounded-lg">
+
+            <!-- Sidebar -->
+            <div class="w-full md:w-72 bg-gray-50 flex flex-col border-r border-gray-200 overflow-y-auto">
+                @if (universos() && universos().length > 0) {
+                    @for (universo of universos(); track universo.id) {
+                        <div class="py-3">
+                            <div class="px-4 mb-2 text-xs font-bold  uppercase tracking-wider flex items-center gap-2">
+                                <i class="pi pi-th-large text-[10px]"></i>
+                                {{ universo.nombre }}
+                            </div>
+                            <div class="space-y-0.5 px-2">
+                                @for (modulo of universo.modulos; track modulo.id) {
+                                    <button (click)="selectModulo(modulo)"
+                                            [class.bg-white]="selectedModulo()?.id === modulo.id"
+                                            [class.border-gray-200]="selectedModulo()?.id === modulo.id"
+                                            [class.border]="selectedModulo()?.id === modulo.id"
+                                            [class.font-semibold]="selectedModulo()?.id === modulo.id"
+                                            [class.hover:bg-gray-200]="selectedModulo()?.id !== modulo.id"
+                                            [class.shadow-sm]="selectedModulo()?.id === modulo.id"
+                                            [class.text-blue-700]="selectedModulo()?.id === modulo.id"
+                                            [class.text-gray-600]="selectedModulo()?.id !== modulo.id"
+                                            class="w-full text-left px-3 py-2.5 rounded-md text-sm transition-all flex items-center justify-between group">
+
+                                        <div class="flex items-center gap-2.5">
+                                            <i [class.opacity-70]="selectedModulo()?.id !== modulo.id"
+                                               [class.text-blue-500]="selectedModulo()?.id === modulo.id"
+                                               class="pi pi-box text-xs"></i>
+                                            <span class="truncate">{{ modulo.nombre }}</span>
+                                        </div>
+
+                                        @if (modulo.asignado) {
+                                            <div class="w-2 h-2 rounded-full bg-green-500"></div>
+                                        }
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                    }
+                } @else {
+                    <div class="p-4 text-center text-gray-500 text-sm">No hay módulos disponibles</div>
+                }
+            </div>
+
+            <!-- Content Area -->
+            <div class="flex-1 flex flex-col bg-white h-full overflow-hidden relative">
+
+                @if (selectedModulo(); as modulo) {
+                    <!-- Header of Content -->
+                    <div
+                        class="flex-shrink-0 px-8 py-5 border-b border-gray-100 flex justify-between items-center bg-white z-10">
+                        <div>
+                            <div class="text-3xl font-bold text-sky-700 flex items-center gap-3">
+                                {{ modulo.nombre }}
+                                @if (modulo.asignado) {
+                                    <span
+                                        class="px-2 py-0.5 rounded text-xs bg-green-100 text-green-700 font-medium border border-green-200">Activo</span>
+                                }
+                            </div>
+                            <p class="text-sm">Gestionar acceso y permisos detallados</p>
+                        </div>
+                        <div class="flex items-center gap-4 bg-gray-50 px-4 py-2 rounded-lg border border-gray-200">
+                            <span class="text-sm font-medium text-gray-700 select-none">Habilitar Módulo</span>
+
+                            <!-- Master Toggle -->
+                            <p-checkbox (onChange)="toggleTodosPermisosModulo(modulo, getUniverso(modulo))"
+                                        [binary]="true"
+                                        [disabled]="!modoEdicion()" [ngModel]="modulo.asignado" class="scale-110">
+                            </p-checkbox>
+                        </div>
+                    </div>
+
+                    <!-- Scrollable Content -->
+                    <div class="flex-1 overflow-y-auto p-8 space-y-8 bg-gray-100">
+                        @for (submodulo of modulo.submodulos; track submodulo.id) {
+                            <div class="animate-fade-in-up">
+                                <div class="flex items-center justify-between mb-4 pb-2 border-b border-gray-100">
+                                    <h6 class="flex items-center gap-2">
+                                        <i class="pi pi-inbox text-blue-500"></i>
+                                        {{ submodulo.nombre === 'Permisos' ? 'Permisos Generales' : submodulo.nombre }}
+                                    </h6>
+                                    <div class="flex items-center gap-2">
+                            <span (click)="toggleTodosPermisos(submodulo, modulo, getUniverso(modulo))"
+                                  class="text-sm font-medium text-gray-500 tracking-wide cursor-pointer select-none">Seleccionar
+                                todo</span>
+                                        <p-checkbox
+                                            (onChange)="toggleTodosPermisos(submodulo, modulo, getUniverso(modulo))"
+                                            [binary]="true" [disabled]="!modoEdicion()"
+                                            [ngModel]="todosPermisosSeleccionados(submodulo)">
+                                        </p-checkbox>
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
+                                    @for (permiso of submodulo.permisos; track permiso.id) {
+                                        <div
+                                            (click)="modoEdicion() && !permiso.desdeRol && togglePermisoEspecial(permiso, submodulo, modulo, getUniverso(modulo))"
+                                            [class.bg-blue-50]="permiso.desdeRol && permiso.asignado"
+                                            [class.bg-white]="!permiso.desdeRol || !permiso.asignado"
+                                            [class.cursor-not-allowed]="permiso.desdeRol"
+                                            [class.cursor-pointer]="!permiso.desdeRol"
+                                            class="group flex items-start gap-4 p-4 rounded-xl border border-gray-100 hover:border-blue-200 transition-all hover:shadow-md">
+
+                                            <div class="pt-1">
+                                                <p-checkbox (click)="$event.stopPropagation()"
+                                                            (onChange)="togglePermisoEspecial(permiso, submodulo, modulo, getUniverso(modulo))"
+                                                            [binary]="true"
+                                                            [disabled]="!modoEdicion() || permiso.desdeRol"
+                                                            [ngModel]="permiso.asignado">
+                                                </p-checkbox>
+                                            </div>
+
+                                            <div class="flex-1 select-none">
+                                                <div
+                                                    class="font-semibold text-sm text-gray-900 group-hover:text-blue-700 transition-colors flex items-center gap-2">
+                                                    {{ permiso.nombre }}
+                                                    @if (permiso.desdeRol) {
+                                                        <i class="pi pi-lock text-xs text-gray-400"
+                                                           title="Permiso heredado de roles"></i>
+                                                    }
+                                                </div>
+                                                <div class="text-sm text-gray-500 mt-1 leading-relaxed">
+                                                    @if (permiso.desdeRol) {
+                                                        <span class="text-blue-600 font-medium">Heredado de roles asignados</span>
+                                                    } @else {
+                                                        Permite el acceso a la funcionalidad de {{ permiso.nombre | lowercase }} dentro del
+                                                            sistema.
+                                                    }
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+                } @else {
+                    <div class="flex-1 flex flex-col items-center justify-center text-gray-400 bg-gray-50/50">
+                        <i class="pi pi-box text-6xl mb-4 opacity-20"></i>
+                        <p class="font-medium">Selecciona un módulo para configurar sus permisos</p>
+                    </div>
+                }
+
+            </div>
+        </div>
+    }
+
+</p-dialog>

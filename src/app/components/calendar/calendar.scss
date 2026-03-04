@@ -1,0 +1,24 @@
+// Solo si prefieres un triángulo en lugar de un punto circular
+.tag-corner {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 0 8px 8px 0;
+    border-color: transparent #10b981 transparent transparent; // Color emerald-500
+    border-top-right-radius: 9999px; // Para que se ajuste al redondeado del botón
+}
+
+.tag-corner-red {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 0 8px 8px 0;
+    border-color: transparent #ef4444 transparent transparent; // Color red-500
+    border-top-right-radius: 9999px;
+}

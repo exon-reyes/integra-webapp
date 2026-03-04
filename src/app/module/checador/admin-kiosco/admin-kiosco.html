@@ -1,0 +1,474 @@
+<app-title
+    description="Configuración de parámetros de generales y reglas para el tiempo de compensación al finalizar jornadas laborales"
+    imageSrc="assets/icon/timelimit.svg"
+    title="Configuración Reloj Checador"/>
+
+@if (loading()) {
+    <div class="flex justify-center items-center py-12">
+        <div class="animate-spin h-8 w-8 border-4 border-blue-600 border-t-transparent rounded-full"></div>
+        <span class="ml-3 text-gray-600">Cargando kioscos...</span>
+    </div>
+} @else {
+    <!-- Estadísticas -->
+    <div class="my-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        <app-stat-widget [title]="kioscosConCamara()" color="green" icon="pi pi-camera"
+                         subtitle="Unidade con camara habilitada"/>
+        <app-stat-widget [title]="kioscosSinCamara()" color="red" icon="pi pi-eye-slash"
+                         subtitle="Unidades sin camara configurada"/>
+        <app-stat-widget [title]="kioscosConCompensacion()" color="blue" icon="pi pi-clock"
+                         subtitle="Compensaciones asignadas"/>
+    </div>
+
+    <!-- Tabs -->
+    <p-tabs value="0">
+        <p-tablist>
+            <p-tab value="0">
+                <i class="pi pi-cog mr-2"></i>
+                Parámetros Generales
+            </p-tab>
+            <p-tab value="1">
+                <i class="pi pi-exclamation-triangle mr-2"></i>
+                Solicitudes Config. Manual
+                @if (kioscosSolicitudes().length > 0) {
+                    <span
+                        class="ml-2 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white animate-ping bg-red-600 rounded-full">{{ kioscosSolicitudes().length }}</span>
+                }
+            </p-tab>
+        </p-tablist>
+        <p-tabpanels>
+            <p-tabpanel value="0">
+
+                <!--BANNER INFORMATIVO-->
+                <div class="my-3">
+                    <div class="p-3 bg-amber-100 rounded-lg flex items-start gap-3">
+                        <i class="pi pi-info-circle text-lg text-gray-500 flex-shrink-0 mt-0.5"
+                           style="font-size: 1.5rem"></i>
+                        <div>
+                            <div class="font-semibold text-gray-800 leading-snug">Enlace de acceso público al Reloj
+                                Checador
+                            </div>
+                            <p class="text-sm text-gray-700 mt-1">Para el registro<strong>, se requieren permisos de
+                                acceso a la cámara</strong>; si el equipo no dispone de una, puedes configurar el uso
+                                sin cámara o el usuario solicitarlo a través de la aplicación.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="flex flex-col lg:flex-row gap-3 mt-3 mb-10">
+                        <div class="flex-1 group/card">
+                            <div
+                                class="relative h-full bg-slate-50 border border-slate-200 rounded-2xl p-4 transition-all hover:bg-white hover:shadow-xl hover:shadow-slate-200/50 overflow-hidden">
+
+                                <div class="absolute top-3 right-3 flex gap-1">
+                                    <p-button (onClick)="copiarUrl()"
+                                              [text]="true"
+                                              icon="pi pi-copy"
+                                              severity="secondary">
+                                    </p-button>
+                                </div>
+
+                                <div class="flex flex-col gap-4">
+                                    <div class="flex items-center gap-3">
+                                        <div
+                                            class="w-8 h-8 flex items-center justify-center rounded-lg bg-gradient-to-tr from-blue-600 to-cyan-500 text-white shadow-md">
+                                            <i class="pi pi-globe text-[12px]"></i>
+                                        </div>
+                                        <div class="flex flex-col">
+                                            <span class="text-[11px] font-semibold text-slate-400">Reloj Checador</span>
+                                            <span class="text-[13px] font-bold text-slate-800 leading-tight">URL de Acceso</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="flex items-center justify-between px-1">
+                                        <div class="flex-1 min-w-0 pr-4">
+                                            <div
+                                                class="font-mono text-[13px] font-bold text-blue-600 truncate bg-blue-50/50 px-3 py-2 rounded-xl border border-blue-100/50">
+                                                {{ urlRelojChecador || 'configuración pendiente...' }}
+                                            </div>
+                                        </div>
+
+                                        <div class="flex items-center gap-1 mb-1">
+                                            <div class="w-1 h-3 bg-blue-400 rounded-full animate-pulse"></div>
+                                            <div class="w-1 h-5 bg-blue-500 rounded-full"></div>
+                                            <div class="w-1 h-2 bg-blue-300 rounded-full"></div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="absolute bottom-0 left-0 w-full h-1 bg-slate-100">
+                                    <div
+                                        class="h-full bg-gradient-to-r from-blue-500 to-cyan-400 w-full opacity-60"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex-none lg:w-100 group/card">
+                            <div
+                                class="relative h-full bg-slate-50 border border-slate-200 rounded-2xl p-4 transition-all hover:bg-white hover:shadow-xl hover:shadow-slate-200/50 overflow-hidden">
+
+                                <div class="absolute top-3 right-3">
+                                    <p-button (onClick)="editarTiempo()"
+                                              [text]="true"
+                                              icon="pi pi-pencil"
+                                              severity="secondary">
+                                    </p-button>
+                                </div>
+
+                                <div class="flex flex-col gap-4">
+                                    <div class="items-center flex gap-3">
+                                        <div
+                                            class="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-900 text-white shadow-md">
+                                            <i class="pi pi-camera text-[12px]"></i>
+                                        </div>
+                                        <div class="flex flex-col">
+                                            <span
+                                                class="text-[11px] font-semibold text-slate-400">Parámetro Global</span>
+                                            <span class="text-[13px] font-bold text-slate-800 leading-tight">Tiempo de captura</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="flex items-end justify-between px-1">
+                                        <div class="flex items-baseline gap-2">
+                    <span class="text-4xl font-black text-slate-900 tracking-tighter">
+                        {{ tiempoCapturaFotoKiosco() }}
+                    </span>
+                                            <span
+                                                class="text-[12px] font-bold text-orange-600 uppercase tracking-widest pb-1">Segundos</span>
+                                        </div>
+
+                                        <div class="flex gap-1 mb-2">
+                                            <div class="w-1.5 h-4 bg-orange-500 rounded-full"></div>
+                                            <div class="w-1.5 h-4 bg-orange-300 rounded-full"></div>
+                                            <div class="w-1.5 h-4 bg-orange-100 rounded-full"></div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="absolute bottom-0 left-0 w-full h-1 bg-slate-100">
+                                    <div class="h-full bg-gradient-to-r from-orange-500 to-amber-400 w-1/2"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+                <h5>Lista de Unidades Reloj Checador</h5>
+                <div class="bg-white shadow-sm rounded-lg border border-gray-100">
+                    <div class="p-4 border-b border-gray-100">
+                        <div class="flex gap-2 justify-between">
+                            <p-iconfield>
+                                <p-inputicon class="pi pi-search"/>
+                                <input (input)="dt.filterGlobal($any($event.target).value, 'contains')"
+                                       class="w-full border-gray-200 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                                       pInputText
+                                       placeholder="Buscar unidad..."/>
+                            </p-iconfield>
+                            <p-button
+                                (onClick)="cargarKioscos()"
+                                [loading]="loading()"
+                                icon="pi pi-refresh"
+                                label="Actualizar"
+                                severity="info"
+                                size="small">
+                            </p-button>
+                        </div>
+                    </div>
+
+                    <p-table #dt
+                             [globalFilterFields]="['nombreCompleto']"
+                             [paginator]="true"
+                             [rows]="50"
+                             [scrollable]="true"
+                             [showCurrentPageReport]="true"
+                             [value]="kioscos()"
+                             class="border-0"
+                             currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} kioscos"
+                             scrollHeight="calc(100vh - 400px)">
+
+                        <ng-template pTemplate="header">
+                            <tr class="bg-gray-50">
+                                <th class="py-3 px-4" pSortableColumn="nombreCompleto">Unidad
+                                    <p-sortIcon field="nombreCompleto"/>
+                                </th>
+                                @if (puedeCambiarEstatusCamara) {
+                                    <th class="py-3 px-4 text-center" pSortableColumn="requiereCamara">Requiere Cámara
+                                        <p-sortIcon field="requiereCamara"/>
+                                    </th>
+                                }
+                                @if (puedeConfigurarCompensacion) {
+                                    <th>Tiempo compensado para deposito al finalizar jornada</th>
+                                }
+                            </tr>
+                        </ng-template>
+
+                        <ng-template let-kiosco pTemplate="body">
+                            <tr class="text-sm hover:bg-gray-50 transition-colors">
+                                <td>{{ kiosco.nombreCompleto }}</td>
+                                @if (puedeCambiarEstatusCamara) {
+                                    <td>
+                                        <label class="relative inline-flex items-center cursor-pointer">
+                                            <input
+                                                (change)="actualizarEstatusCamara(kiosco)"
+                                                [checked]="kiosco.requiereCamara"
+                                                class="sr-only peer"
+                                                type="checkbox">
+                                            <div
+                                                class="w-9 h-5 bg-gray-200 hover:bg-gray-300 peer-focus:outline-0 peer-focus:ring-transparent rounded-full peer transition-all ease-in-out duration-500 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600 hover:peer-checked:bg-indigo-700"></div>
+                                        </label>
+                                    </td>
+                                }
+                                @if (puedeConfigurarCompensacion) {
+                                    <td>
+                                        @if (editandoCompensacion() === kiosco.id) {
+                                            <div class="flex items-center gap-2">
+                                                <div class="flex items-center gap-1">
+                                                    <input
+                                                        [(ngModel)]="horasTemp"
+                                                        class="w-20 px-1 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent text-center"
+                                                        max="23"
+                                                        min="0"
+                                                        pInputText placeholder="0" type="number">
+                                                    <span class="font-semibold mr-1">Hora</span>
+                                                    <input
+                                                        [(ngModel)]="minutosTemp"
+                                                        class="w-20 px-1 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent text-center"
+                                                        max="59"
+                                                        min="0"
+                                                        pInputText placeholder="0" type="number">
+                                                    <span class="font-semibold mr-2">Minutos</span>
+                                                </div>
+                                                <p-button (onClick)="guardarCompensacion(kiosco)" icon="pi pi-check"
+                                                          label="Aplicar"
+                                                          severity="success">
+                                                </p-button>
+                                                <p-button (onClick)="cancelarEdicionCompensacion()" icon="pi pi-times"
+                                                          label="Cancelar" severity="secondary">
+                                                </p-button>
+                                            </div>
+                                        } @else {
+                                            <div class="flex items-center gap-2">
+                                            <span
+                                                class="font-mono text-sm">{{ kiosco.tiempoCompensacion || '00:00' }}</span>
+                                                <p-button (onClick)="iniciarEdicionCompensacion(kiosco)" [text]="true"
+                                                          icon="pi pi-pencil" pTooltip="Editar tiempo"
+                                                          severity="secondary">
+                                                </p-button>
+                                            </div>
+                                        }
+                                    </td>
+                                }
+
+                            </tr>
+                        </ng-template>
+
+                        <ng-template pTemplate="emptymessage">
+                            <tr>
+                                <td class="text-center py-8 text-gray-500" colspan="5">
+                                    <i class="pi pi-inbox text-4xl mb-2 block"></i>
+                                    <div>No hay kioscos registrados</div>
+                                </td>
+                            </tr>
+                        </ng-template>
+                    </p-table>
+                </div>
+            </p-tabpanel>
+
+            <p-tabpanel value="1">
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+                    <div class="lg:col-span-8">
+                        <p-panel class="custom-panel">
+                            <ng-template #header>
+                                <div class="flex items-center gap-3">
+                                    <span class="text-lg  font-semibold">Solicitudes</span>
+                                    @if (kioscosSolicitudes().length > 0) {
+                                        <span
+                                            class="bg-blue-600 text-white text-sm px-2 py-1 rounded-full shadow-sm">
+                            {{ kioscosSolicitudes().length }} Pendientes
+                        </span>
+                                    }
+                                </div>
+                            </ng-template>
+
+                            <ng-template #icons>
+                                <div class="flex items-center gap-3">
+                                    <div
+                                        class="relative hidden md:block w-48 lg:w-64 transition-all duration-500 focus-within:w-80">
+                                        <input #searchPend
+                                               (input)="dtSolicitudes.filterGlobal(searchPend.value, 'contains')"
+                                               class="w-full pl-9 pr-4 py-2 bg-slate-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-blue-500/20 focus:bg-white transition-all shadow-inner"
+                                               pInputText
+                                               placeholder="Buscar unidad..."/>
+                                    </div>
+                                    <p-button (onClick)="cargarKioscos()" [loading]="loading()" [rounded]="true"
+                                              icon="pi pi-refresh" severity="secondary" size="small"
+                                              variant="text"></p-button>
+                                </div>
+                            </ng-template>
+
+                            <p-table #dtSolicitudes
+                                     [globalFilterFields]="['nombreCompleto']"
+                                     [paginator]="true"
+                                     [rows]="8"
+                                     [value]="kioscosSolicitudes()"
+                                     class="p-datatable-flush">
+
+                                @if (puedeAprobarSolicitudes) {
+                                    <ng-template let-idx="rowIndex" let-kiosco pTemplate="body">
+                                        <div
+                                            class="flex flex-col sm:flex-row items-center justify-between p-4 border-b border-slate-50 last:border-0 hover:bg-slate-50/50 transition-all group">
+
+                                            <div class="flex items-center gap-4 w-full sm:w-auto">
+                            <span class="text-[10px] font-mono font-bold text-slate-300 w-6">
+                                {{ (idx + 1).toString().padStart(2, '0') }}
+                            </span>
+
+                                                <div class="flex flex-col">
+                                <span
+                                    class="font-bold text-slate-700 group-hover:text-blue-600 transition-colors uppercase text-sm tracking-tight">
+                                    {{ kiosco.nombreCompleto }}
+                                </span>
+                                                    <span
+                                                        class="flex items-center gap-1 text-sm font-semibold text-amber-700 tracking-tighter mt-0.5">
+                                    <span class="w-1 h-1  bg-amber-600 rounded-full animate-ping"></span>
+                                    En espera de autorización
+                                </span>
+                                                </div>
+                                            </div>
+
+                                            <div class="flex gap-2 w-full sm:w-auto mt-4 sm:mt-0">
+                                                <p-button (onClick)="generarCodigoConfig(kiosco)"
+                                                          label="Autorizar"></p-button>
+                                                <p-button (onClick)="rechazarSolicitudCodigo(kiosco)" icon="pi pi-trash"
+                                                          severity="warn"
+                                                          text></p-button>
+                                            </div>
+                                        </div>
+                                    </ng-template>
+                                }
+                                <ng-template pTemplate="emptymessage">
+                                    <app-state description="La lista de solicitudes se encuentra vacía"
+                                               title="Sin resultados"/>
+                                </ng-template>
+                            </p-table>
+                        </p-panel>
+                    </div>
+
+                    <div class="lg:col-span-4">
+                        <p-panel>
+                            <ng-template #header>
+                                <div class="flex flex-col">
+                                    <span
+                                        class="text-lg  font-semibold">Últimos Códigos generados sin usar</span>
+                                    <span
+                                        class="text-sm font-medium text-slate-400 mt-1">Códigos de un solo uso</span>
+                                </div>
+                            </ng-template>
+
+                            <div class="flex flex-col gap-2">
+                                @if (puedeVisualizarTokens) {
+                                    @for (kiosco of kioscosAprobados(); track kiosco.id) {
+                                        <div
+                                            class="group  relative flex items-center gap-3 bg-white border border-slate-100 p-2 pr-3 rounded-xl hover:border-emerald-200 hover:shadow-sm transition-all duration-300">
+
+                                            <div
+                                                class="flex-none w-8 h-8 flex items-center justify-center rounded-lg bg-emerald-50 text-emerald-500 transition-all">
+                                                <i class="pi pi-calculator text-[10px]"></i>
+                                            </div>
+
+                                            <div class="flex-1 min-w-0">
+                                                <div
+                                                    class="text-[10px] font-bold text-slate-800 leading-none mb-1 truncate uppercase">
+                                                    {{ kiosco.nombreCompleto }}
+                                                </div>
+                                                <div class="font-mono text-sm font-bold text-slate-500 tracking-widest">
+                                                    {{ kiosco.codigoAutorizacionKiosco }}
+                                                </div>
+                                            </div>
+                                            <button
+                                                (click)="copiarCodigo(kiosco.nombreCompleto,kiosco.codigoAutorizacionKiosco)"
+                                                class="opacity-0 group-hover:opacity-100 p-2  hover:text-slate-900 hover:bg-gray-100 rounded-full transition-all cursor-pointer">
+                                                <i class="pi pi-copy text-xs"></i>
+                                            </button>
+                                        </div>
+                                    } @empty {
+                                        <div class="py-10 text-center opacity-40 italic text-[11px]">
+                                            No hay códigos generados
+                                        </div>
+                                    }
+                                } @else {
+                                    <div class="flex flex-col items-center justify-center p-12 bg-white">
+                                        <div
+                                            class="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center mb-6 border border-slate-100">
+                                            <i class="pi pi-lock text-2xl text-slate-300"></i>
+                                        </div>
+                                        <div class="flex flex-col items-center gap-2">
+                                            <span
+                                                class="text-[10px] font-bold uppercase tracking-[0.3em] text-blue-600 bg-blue-50 px-3 py-1 rounded-full">No disponible</span>
+                                            <p class="text-sm text-slate-800 text-center max-w-[200px]">
+                                                No cuentas con los permisos necesarios para visualizar
+                                            </p>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </p-panel>
+
+
+                    </div>
+                </div>
+
+            </p-tabpanel>
+        </p-tabpanels>
+    </p-tabs>
+}
+
+<!-- Diálogo para configurar tiempo de espera de captura de foto -->
+<p-dialog
+    [(visible)]="mostrarDialogoTiempo"
+    [closable]="true"
+    [dismissableMask]="true"
+    [modal]="true"
+    [style]="{ width: '420px' }">
+    <ng-template #header>
+        <div class="p-dialog-title"><i class="mr-2 pi pi-clock"></i>Tiempo de espera para captura de foto</div>
+    </ng-template>
+    <div class="space-y-4">
+        <p>
+            Establece el tiempo límite (3 a 5 segundos) para completar la fotografía en el reloj checador
+        </p>
+
+        <div class="flex items-center gap-4">
+            <div class="flex-1">
+                <label class="block font-semibold tracking-wide mb-1">
+                    Ingresa el tiempo en segundos
+                </label>
+                <input
+                    [(ngModel)]="tiempoTemp"
+                    class="w-full"
+                    max="5"
+                    min="3"
+                    pInputText
+                    type="number">
+            </div>
+        </div>
+    </div>
+
+    <ng-template pTemplate="footer">
+        <div class="flex justify-end gap-2">
+            <p-button
+                (onClick)="cerrarDialogoTiempo()"
+                label="Cancelar"
+                severity="secondary"
+                size="small">
+            </p-button>
+            <p-button
+                (onClick)="guardarTiempoFoto()"
+                label="Guardar"
+                severity="primary"
+                size="small">
+            </p-button>
+        </div>
+    </ng-template>
+</p-dialog>

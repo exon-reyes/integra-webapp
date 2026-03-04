@@ -1,0 +1,91 @@
+<section class="mt-14 pb-24 w-full">
+    <div class="w-full mx-auto px-4 sm:px-6 lg:px-16">
+
+        <div
+            class="relative overflow-hidden rounded-[2.5rem] bg-white/40 backdrop-blur-[50px] border border-white/70 p-10 md:p-14 mb-20 shadow-[0_8px_32px_0_rgba(31,38,135,0.07)]">
+            <div class="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                <div>
+          <span
+              class="inline-block mb-5 px-5 py-1.5 rounded-full bg-white/80 backdrop-blur-md border border-slate-100 shadow-sm text-cyan-600 text-[10px] font-black uppercase tracking-[0.35em]">
+            SCI 2.0
+          </span>
+                    <div class="text-4xl md:text-6xl font-black text-slate-800 tracking-tight mb-6">
+                        Gestor de <span class="text-cyan-500">Asistencia</span>
+                    </div>
+                    <p class="text-slate-700 text-lg leading-relaxed max-w-2xl font-medium">
+                        Acceso a los módulos de gestión de asistencia, consulta de registros de entrada y salida,
+                        configuración del Reloj Checador y administración de registros manuales.
+                    </p>
+                </div>
+                <div class="flex justify-center md:justify-end">
+                    <div
+                        class="relative bg-white/60 backdrop-blur-2xl p-10 rounded-[2.5rem] border border-white shadow-xl shadow-blue-900/5">
+                        <img alt="Ilustración" class="h-40 md:h-56 drop-shadow-2xl brightness-110"
+                             src="assets/img/data.svg">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @for (section of modulos; track section.title) {
+            @if (section.hasVisibleFeatures) {
+                <div class="mb-24 animate-in fade-in slide-in-from-bottom-4 duration-700">
+
+                    <div class="flex items-center gap-4 mb-10">
+                        <div class="text-3xl  font-bold tracking-wide text-slate-800">
+                            {{ section.title }}
+                        </div>
+                        <div class="flex-1 h-px bg-gradient-to-r from-slate-300 to-transparent"></div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+
+                        @for (feature of section.features; track feature.title) {
+                            <ng-container *hasPermission="feature.permission">
+                                <div
+                                    [routerLink]="feature.urlNavigator"
+                                    class="group relative cursor-pointer bg-white border border-slate-200 rounded-[1.75rem] px-8 py-7 hover:border-cyan-500 hover:shadow-xl hover:shadow-cyan-500/10 transition-all duration-500 overflow-hidden"
+                                    tabindex="0">
+
+                                    <div
+                                        class="absolute -top-10 -right-10 w-32 h-32 rounded-full bg-cyan-400/10 blur-3xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
+
+                                    <div class="relative flex items-start gap-6">
+                                        <div [ngClass]="feature.colorBg"
+                                             class="w-14 h-14 rounded-2xl flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform duration-500">
+                                            @if (feature.srcIconName) {
+                                                <img
+                                                    [alt]="feature.title"
+                                                    [ngSrc]="'/assets/icon/' + feature.srcIconName"
+                                                    height="28" width="28">
+                                            } @else if (feature.inlineSvg) {
+                                                <div [innerHTML]="feature.inlineSvg"></div>
+                                            }
+                                        </div>
+
+                                        <div class="flex-1">
+                                            <div
+                                                class="text-lg font-semibold  text-slate-900 group-hover:text-cyan-700 transition-colors mb-2">
+                                                {{ feature.title }}
+                                            </div>
+                                            <p class="text-sm  leading-relaxed">
+                                                {{ feature.description }}
+                                            </p>
+                                        </div>
+
+                                        <div
+                                            class="self-start w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center opacity-0 invisible -translate-x-2 group-hover:opacity-100 group-hover:visible group-hover:translate-x-0 group-hover:bg-cyan-500 group-hover:text-white transition-all duration-300 ease-out">
+                                            <i class="pi pi-arrow-right text-xs"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </ng-container>
+                        }
+
+                    </div>
+                </div>
+            }
+        }
+
+    </div>
+</section>

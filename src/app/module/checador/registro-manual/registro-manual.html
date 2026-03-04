@@ -1,0 +1,215 @@
+<app-title description="Registro de entradas, salidas del colaborador por eventualidad" imageSrc="assets/icon/touch.svg"
+           title="Registro manual de asistencia">
+</app-title>
+
+<div class="flex flex-col lg:flex-row gap-3 mt-6 items-start">
+    <div class="w-full lg:w-130 flex-shrink-0 lg:sticky lg:top-4">
+        <p-panel header="Selecciona colaborador y fecha a consultar">
+            @if (spinnerService.isLoading()) {
+                <div class="flex items-center justify-center h-[250px]">
+                    <app-spinner></app-spinner>
+                </div>
+            } @else {
+                @defer {
+                    <p-listbox
+                        (onChange)="buscarEmpleado()"
+                        [(ngModel)]="empleadoSeleccionado"
+                        [checkmark]="true"
+                        [filter]="true"
+                        [options]="empleadosActivos"
+                        [virtualScrollItemSize]="40"
+                        [virtualScroll]="true"
+                        class="w-full"
+                        filterBy="codigo,nombreCompleto"
+                        optionLabel="nombreCompleto"
+                        scrollHeight="250px">
+                        <ng-template #item let-data>
+                            <div class="p-2">
+                                <div class="font-semibold text-sm text-gray-900">
+                                    {{ data.codigo }} {{ data.nombreCompleto }}
+                                </div>
+                                <div class="text-xs text-gray-500">
+                                    {{ data.unidad.nombreCompleto }} · {{ data.puesto.nombre }}
+                                </div>
+                            </div>
+                        </ng-template>
+
+                    </p-listbox>
+                } @placeholder {
+                    <div class="flex items-center justify-center h-[250px]">
+                        <app-spinner></app-spinner>
+                    </div>
+                }
+            }
+
+            <ng-template #footer>
+                <app-calendar (daySelect)="diaSeleccionado()"
+                              (monthChange)="consultarDiasTrabajados($event)"
+                              [(ngModel)]="date"
+                              [disableFutureDays]="true"
+                              [showRegisterIndicator]="true"
+                              [taggedDates]="diasTrabajados()"
+                ></app-calendar>
+                @if (empleadoBuscado()) {
+                    <app-resumen-mes [empleadoId]="empleadoBuscado().id"></app-resumen-mes>
+                }
+            </ng-template>
+
+        </p-panel>
+
+    </div>
+    <div class="flex-1 w-full min-w-0">
+        @if (!empleadoBuscado()) {
+            <div
+                class="bg-white border border-slate-200 rounded-xl flex flex-col items-center justify-center py-12 md:py-20 px-6 gap-8 shadow-sm">
+                <div class="p-6 rounded-full bg-slate-50 border border-slate-100">
+                    <img alt="Registro Manual" class="w-48 md:w-64 h-auto opacity-80 lg:w-150" height="292"
+                         ngSrc="/assets/img/rec1.svg" width="433">
+                </div>
+                <div class="max-w-4xl text-center">
+                    <h2 class="text-2xl md:text-3xl font-bold text-slate-800 mb-4">
+                        Registro Manual de Asistencia
+                    </h2>
+                    <p class="text-slate-600 mb-8">
+                        Utiliza este módulo para visualizar, registrar y editar <strong>entradas, salidas y pausas de
+                        forma
+                        manual</strong> del colaborador.
+                    </p>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-left">
+                        <div class="bg-slate-50 p-4 rounded-lg border border-slate-100">
+                            <span class="text-blue-600 font-bold block mb-1">Selecciona un colaborador</span>
+                            <span class="text-sm font-semibold">Consulta por clave o nombre del colaborador</span>
+                        </div>
+                        <div class="bg-slate-50 p-4 rounded-lg border border-slate-100">
+                            <span class="text-blue-600 font-bold block mb-1">2. Selecciona la fecha</span>
+                            <span class="text-sm font-semibold">Selecciona el día del registro.</span>
+                        </div>
+                        <div class="bg-slate-50 p-4 rounded-lg border border-slate-100">
+                            <span class="text-blue-600 font-bold block mb-1">2. Visualiza e ingresa registros</span>
+                            <span class="text-sm font-semibold">Agrega entrada, salida o pausa.</span>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        }
+
+        @if (empleadoBuscado()) {
+            <div class="space-y-2">
+                <div class="bg-white  rounded-xl p-4 shadow-sm">
+                    <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+                        <div class="flex items-center gap-4 w-full sm:w-auto">
+                            <div
+                                class="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center border border-slate-200 shadow-sm">
+                                <i class="pi pi-user text-slate-500 text-xl"></i>
+                            </div>
+                            <div class="min-w-0">
+                                <div class="text-lg font-bold text-slate-900 truncate uppercase">{{
+                                        empleadoBuscado()!.nombre
+                                    }}
+                                </div>
+                                <p class="text-sm text-slate-500 font-medium tracking-wide">
+                                    CLAVE: <span class="text-slate-800 font-bold">{{ empleadoBuscado()!.clave }}</span>
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-3 w-full sm:w-auto justify-end">
+                        <span
+                            [ngClass]="empleadoBuscado()!.jornadaIniciada ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-50 text-slate-600'"
+                            class="px-3 py-1.5 rounded-full text-[10px] font-bold shadow tracking-wider uppercase">
+                            {{
+                                empleadoBuscado()!.jornadaIniciada ? (pausaActivaTexto() ? 'EN PAUSA' : 'JORNADA ACTIVA')
+                                    : 'SIN JORNADA'
+                            }}
+                        </span>
+                        </div>
+                    </div>
+                </div>
+
+                <p-panel header="Jornadas registradas">
+                    <div class="flex justify-between gap-2 mb-5">
+                        <p-button (onClick)="abrirDialogoRegistro()"
+                                  *hasPermission="Autoridades.ASISTENCIA_MANUAL_AGREGAR" label="Añadir nuevo registro"/>
+                        <p-button (onClick)="actualizarTabla()" icon="pi pi-refresh" severity="info"/>
+                    </div>
+                    @if (asistencias().length > 0) {
+                        <div class="space-y-6">
+                            @for (asistencia of asistencias(); track asistencia.id) {
+                                <asistencia-card (addPausaClick)="agregarPausa($event.asistencia)"
+                                                 (deleteClick)="eliminarJornada($event.asistencia)"
+                                                 (deletePausaClick)="eliminarPausa($event.pausa)"
+                                                 (editClick)="editarJornada($event.asistencia)"
+                                                 (editPausaClick)="editarPausa($event.pausa)"
+                                                 (finalizarJornadaClick)="finalizarJornada($event)"
+                                                 (verFotoClick)="verFoto($event.pathFoto, $event.tipo, $event.fecha)"
+                                                 [apiUrlImagen]="asistenciaService.apiUrlImagen"
+                                                 [asistencia]="asistencia"
+                                                 [showEditButtons]="permitirEditar()"
+                                                 [showImg]="true"
+                                >
+                                </asistencia-card>
+                            }
+                        </div>
+                    } @else {
+                        <app-state description="No se encontraron jornadas en la fecha seleccionada"
+                                         title="Fecha sin jornadas registradas"></app-state>
+                    }
+                </p-panel>
+            </div>
+        }
+    </div>
+</div>
+<!-- Contenedor Principal -->
+
+<!-- DIÁLOGO DE REGISTRO -->
+@defer (on viewport) {
+    <registro-entrada-dialog (registroSubmit)="onRegistroSubmit($event)" [(visible)]="showRegistroDialog" [date]="date"
+                             [empleado]="empleadoBuscado()" [isLoading]="isLoading()"
+                             [pausaActivaTexto]="pausaActivaTexto()"
+                             [tiposAccion]="tiposAccion()"
+                             [unidades]="unidades()"/>
+} @loading {
+    <app-spinner [modal]="true"></app-spinner>
+} @placeholder {
+    <span></span>
+}
+
+<!-- DIÁLOGO EDITAR JORNADA -->
+<p-dialog [(visible)]="showEditJornadaDialog" [breakpoints]="{ '960px': '75vw', '640px': '90vw' }" [draggable]="false"
+          [modal]="true" [style]="{width:'450px'}" header="Editar Jornada">
+    <form [formGroup]="editJornadaForm" class="space-y-3">
+        <label class="font-semibold text-slate-700 block text-sm">
+            <i class="pi pi-sign-in mr-1.5"></i> Inicio
+            <input class="w-full mt-1" formControlName="inicioJornada" pInputText type="time"/>
+        </label>
+        <label class="font-semibold text-slate-700 block text-sm">
+            <i class="pi pi-sign-out mr-1.5"></i> Fin
+            <input class="w-full mt-1" formControlName="finJornada" pInputText type="time"/>
+        </label>
+        <p-button (onClick)="guardarJornada()" [disabled]="isLoading()" [loading]="isLoading()" icon="pi pi-check"
+                  label="Guardar Cambios" styleClass="w-full h-11 text-sm font-bold"/>
+    </form>
+</p-dialog>
+<!-- DIÁLOGO EDITAR PAUSA -->
+<p-dialog [(visible)]="showEditPausaDialog" [breakpoints]="{ '960px': '75vw', '640px': '90vw' }" [draggable]="false"
+          [modal]="true" [style]="{width:'450px'}" header="Editar Pausa">
+    <form [formGroup]="editPausaForm" class="space-y-3">
+        <label class="font-semibold text-slate-700 block text-sm">
+            <i class="pi pi-sign-in mr-1.5"></i> Inicio Pausa
+            <input class="w-full mt-1" formControlName="inicio" pInputText type="time"/>
+        </label>
+        <label class="font-semibold text-slate-700 block text-sm">
+            <i class="pi pi-sign-out mr-1.5"></i> Fin Pausa
+            <input class="w-full mt-1" formControlName="fin" pInputText type="time"/>
+        </label>
+        <p-button (onClick)="guardarPausa()" [disabled]="isLoading()" [loading]="isLoading()" icon="pi pi-check"
+                  label="Guardar Cambios" styleClass="w-full h-11 text-sm font-bold"/>
+    </form>
+</p-dialog>
+<!-- COMPONENTE DE VISUALIZACIN DE FOTOGRAFAS -->
+@defer (on viewport) {
+    <photo-viewer/>
+} @placeholder {
+    <span></span>
+}

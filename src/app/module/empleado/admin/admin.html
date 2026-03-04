@@ -1,0 +1,231 @@
+<app-title
+    description="Consulta la información básica de los colaboradores"
+    iconClass="isc i-member"
+    title="Catálago de Colaboradores"/>
+
+<div *hasPermission="Autoridades.EMPLEADOS_VER_INDICADORES" class="mt-4 mb-2 grid grid-cols-1 md:grid-cols-3 gap-4">
+    <app-stat-widget [title]="numEmpleadosActivos" color="green" icon="pi pi-users" subtitle="Empleados activos"/>
+    <app-stat-widget [title]="numEmpleadosReingreso" color="indigo" icon="pi pi-users"
+                     subtitle="Empleados reingresados"/>
+    <app-stat-widget [title]="numEmpleadosInactivos" color="red" icon="pi pi-users" subtitle="Empleados inactivos"/>
+</div>
+<p-panel [collapsed]="false" [toggleable]="true" class="my-1" header="Filtros">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Buscar</label>
+            <p-iconfield>
+                <p-inputicon class="pi pi-search"/>
+                <input (input)="onSearchChange($any($event.target).value)" [(ngModel)]="searchValue"
+                       class="w-full border-gray-200 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                       pInputText
+                       placeholder="Buscar empleados..."/>
+            </p-iconfield>
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Unidad</label>
+            <p-multiSelect (ngModelChange)="onUnidadChange($event)" [(ngModel)]="selectedUnidad"
+                           [options]="unidades"
+                           [panelStyle]="{ minWidth: '16rem' }" optionLabel="name" optionValue="code"
+                           placeholder="Todas las unidades" style="width: 100%">
+                <ng-template #item let-option>
+                    @defer (on viewport) {
+                        <span>{{ option.name }}</span>
+                    } @placeholder {
+                        <span></span>
+                    }
+                </ng-template>
+            </p-multiSelect>
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Puesto</label>
+            <p-multiSelect (ngModelChange)="onPuestoChange($event)" [(ngModel)]="selectedPuesto" [options]="puestos"
+                           [panelStyle]="{ minWidth: '16rem' }" optionLabel="name" optionValue="code"
+                           placeholder="Todos los puestos" style="width: 100%">
+                <ng-template #item let-option><span>{{ option.name }}</span></ng-template>
+            </p-multiSelect>
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Estado</label>
+            <p-multiSelect (ngModelChange)="onEstatusChange($event)" [(ngModel)]="selectedEstatus"
+                           [options]="estatusOptions"
+                           [panelStyle]="{ minWidth: '12rem' }" optionLabel="name" optionValue="code"
+                           placeholder="Todos los estados" style="width: 100%">
+                <ng-template #item let-option><span>{{ option.name }}</span></ng-template>
+            </p-multiSelect>
+        </div>
+    </div>
+</p-panel>
+
+<div class="bg-white shadow-sm rounded-lg border border-gray-100">
+    <div class="p-4 border-b border-gray-100">
+        <div class="flex gap-2">
+            <p-button (onClick)="sincronizar()" icon="pi pi-sync" label="Sincronizar" severity="info" size="small"
+                      styleClass="px-3 py-2 rounded-md transition-colors duration-200"></p-button>
+            <p-button (onClick)="exportarExcel()" *hasPermission="Autoridades.EMPLEADOS_EXPORTAR"
+                      icon="pi pi-file-excel" label="Exportar Excel" severity="success"
+                      size="small"
+                      styleClass="px-3 py-2 rounded-md transition-colors duration-200"></p-button>
+            <p-button (onClick)="imprimir()" *hasPermission="Autoridades.EMPLEADOS_EXPORTAR" icon="pi pi-print"
+                      label="Imprimir" severity="secondary"
+                      size="small"
+                      styleClass="px-3 py-2 rounded-md transition-colors duration-200"></p-button>
+            @if (puedeUsarFiltroAvanzado) {
+                <p-button (onClick)="mostrarFiltroAvanzado()"
+                          [icon]="filtroActivo ? 'pi pi-filter-fill' : 'pi pi-filter'"
+                          [label]="filtroActivo ? 'Filtro Activo' : 'Filtro Avanzado'" severity="secondary"
+                          size="small" styleClass="px-3 py-2 rounded-md transition-colors duration-200"/>
+            }
+        </div>
+    </div>
+
+    <p-table #dt
+             [globalFilterFields]="['codigo','puesto.nombre','nombreCompleto','unidad.nombreCompleto','estatus']"
+             [loading]="loading()"
+             [rowsPerPageOptions]="[200,400,500,1000]"
+             [rows]="200"
+             [showCurrentPageReport]="true"
+             [tableStyle]="{ 'min-width': '50rem' }"
+             [value]="empleados()"
+             currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} entradas"
+             paginator="true"
+             scrollHeight="calc(100vh - 428px)"
+             scrollable="true"
+             size="small">
+        <ng-template #header>
+            <tr class="bg-gray-50">
+                <th class="font-medium text-gray-700 py-3 px-4" pSortableColumn="nombreCompleto">
+                    <p-sortIcon field="nombreCompleto"/>
+                    Colaborador
+                </th>
+                <th class="font-medium text-gray-700 py-3 px-4" pSortableColumn="unidadNombreCompleto">
+                    <p-sortIcon field="unidadNombreCompleto"/>
+                    Unidad asignada
+                </th>
+                <th class="font-medium text-gray-700 py-3 px-4" pSortableColumn="estatus">
+                    <p-sortIcon field="estatus"/>
+                    Estatus
+                </th>
+                <th class="font-medium text-gray-700 py-3 px-4">Cronología</th>
+            </tr>
+        </ng-template>
+        <ng-template #body let-empleado>
+            <tr class="hover:bg-gray-50 transition-colors">
+                <!-- Colaborador -->
+                <td>
+                    {{ empleado.codigo }} {{ empleado.nombreCompleto }}
+                </td>
+
+                <!-- Unidad -->
+                <td>
+                    <div class="space-y-1">
+                        <div class="flex items-center gap-1.5 text-xs text-gray-700">
+                            <i class="pi pi-building text-[10px] text-gray-400"></i>
+                            <span class="font-bold">{{ empleado.unidad.nombreCompleto }}</span>
+                        </div>
+                        <div class="flex items-center gap-1.5 text-xs text-gray-600">
+                            <i class="pi pi-briefcase text-[10px] text-gray-400"></i>
+                            <span>{{ empleado.puesto.nombre }}</span>
+                        </div>
+                    </div>
+                </td>
+
+
+                <!-- Estatus -->
+                <td>
+                    <div [ngClass]="{
+                    'bg-emerald-50 text-emerald-700 border-emerald-200': empleado.estatus === 'A',
+                    'bg-amber-50 text-amber-700 border-amber-200': empleado.estatus === 'R',
+                    'bg-rose-50 text-rose-700 border-rose-200': empleado.estatus === 'B'
+                }" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border">
+                    <span [ngClass]="{
+                        'bg-emerald-500': empleado.estatus === 'A',
+                        'bg-amber-500': empleado.estatus === 'R',
+                        'bg-rose-500': empleado.estatus === 'B'
+                    }" class="w-2 h-2 rounded-full"></span>
+                        <span class="text-xs font-semibold">
+                        @switch (empleado.estatus) {
+                            @case ('A') {
+                                Activo
+                            }
+                            @case ('R') {
+                                Reingreso
+                            }
+                            @default {
+                                Inactivo
+                            }
+                        }
+                    </span>
+                    </div>
+                </td>
+
+                <!-- Cronología -->
+                <td>
+                    <ol class="relative border-s border-gray-200">
+                        <li class="mb-6 ms-4">
+                            <span class="absolute w-2.5 h-2.5 bg-blue-500 -start-[5px] ring-2 ring-white"></span>
+                            <div>
+                                <span
+                                    class="block text-[9px] font-bold tracking-wider text-blue-600">Incorporación</span>
+                                <time class="text-[11px] font-semibold text-gray-700">
+                                    {{ empleado.fechaAlta }}
+                                </time>
+                            </div>
+                        </li>
+                        @if (empleado.fechaBaja) {
+                            <li class="mb-6 ms-4">
+                                <span class="absolute w-2.5 h-2.5 bg-rose-500 -start-[5px] ring-2 ring-white"></span>
+                                <div>
+                                    <span class="block text-[9px] font-bold tracking-wider text-rose-600">Baja registrada</span>
+                                    <time class="text-[11px] font-semibold text-gray-700">
+                                        {{ empleado.fechaBaja }}
+                                    </time>
+                                </div>
+                            </li>
+                        }
+                        @if (empleado.fechaReingreso) {
+                            <li class="ms-4">
+                                <span class="absolute w-2.5 h-2.5 bg-amber-500 -start-[5px] ring-2 ring-white"></span>
+                                <div>
+                                    <span class="block text-[9px] font-bold tracking-wider text-emerald-600">Último reingreso</span>
+                                    <time class="text-[11px] font-semibold text-gray-700">
+                                        {{ empleado.fechaReingreso }}
+                                    </time>
+                                </div>
+                            </li>
+                        }
+                    </ol>
+                </td>
+            </tr>
+        </ng-template>
+    </p-table>
+</div>
+
+<p-dialog [(visible)]="mostrarModal" [closable]="true" [draggable]="false" [modal]="true" [resizable]="false"
+          header="Filtro Avanzado" styleClass="w-96">
+    <div class="space-y-4">
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Supervisor</label>
+            <p-select [(ngModel)]="supervisorSeleccionado" [options]="supervisores"
+                      appendTo="body" class="w-full"
+                      optionLabel="nombreCompleto"
+                      optionValue="id"
+                      placeholder="Seleccionar supervisor">
+            </p-select>
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Zona</label>
+            <p-select [(ngModel)]="zonaSeleccionada" [options]="zonas"
+                      appendTo="body" class="w-full"
+                      optionLabel="nombre"
+                      optionValue="id"
+                      placeholder="Seleccionar zona">
+            </p-select>
+        </div>
+    </div>
+    <ng-template pTemplate="footer">
+        <div class="flex gap-2 justify-end">
+            <p-button (onClick)="limpiarFiltros()" label="Limpiar" severity="secondary" size="small"></p-button>
+            <p-button (onClick)="aplicarFiltroAvanzado()" label="Aplicar" size="small"></p-button>
+        </div>
+    </ng-template>
+</p-dialog>

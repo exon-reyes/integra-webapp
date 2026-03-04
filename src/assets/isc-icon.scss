@@ -1,0 +1,37 @@
+.isc {
+    display: inline-block;
+    width: 1.3rem; /* tamaño default */
+    height: 1.3rem;
+    padding: 0.5rem;
+    background-repeat: no-repeat;
+    background-size: contain;
+    background-position: center;
+}
+
+.i-keypass{
+    background-image: url('/assets/icon/keypass.svg');
+}
+.i-exchange{
+    background-image: url('/assets/icon/exchange.svg');
+}
+.i-member {
+    background-image: url('/assets/icon/member.svg');
+}
+.i-contact{
+    background-image: url('/assets/icon/contact.svg');
+}
+.i-schedule {
+    background-image: url('/assets/icon/schedule.svg');
+}
+.i-expired{
+    background-image: url('/assets/icon/expired.svg');
+}
+.i-user{
+    background-image: url('/assets/icon/username.svg');
+}
+.i-layout{
+    background-image: url('/assets/icon/layout.svg');
+}
+.i-register{
+    background-image: url('/assets/icon/icon.svg');
+}

@@ -1,0 +1,89 @@
+@if (obteniendoDatos) {
+    <app-spinner/>
+} @else {
+    @defer (when errorService.error(); prefetch when errorService.error()) {
+        @if (errorService.error()) {
+            <app-error [errorService]="errorService"></app-error>
+        }
+    }
+    <form (ngSubmit)="guardar()" [formGroup]="myForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="col-span-2">
+            <label class="required">Unidad de negocio</label>
+            <p-select
+                [options]="unidades"
+                class="w-full mt-1"
+                filter="true"
+                filterBy="clave,nombre"
+                formControlName="unidad"
+                optionLabel="nombre"
+                placeholder="Seleccionar unidad"
+                scrollHeight="140px">
+                <ng-template #item let-unidad>
+                    <div class="w-full">
+                        <div>{{ unidad.clave }} {{ unidad.nombre }}</div>
+                    </div>
+                </ng-template>
+                <ng-template #selectedItem let-u>
+                    <div class="flex items-center gap-2">
+                        {{ u.clave }} {{ u.nombre }}
+                    </div>
+                </ng-template>
+            </p-select>
+            @if (isValidField('unidad')) {
+                <span class="text-sm text-red-400">Selecciona una unidad</span>
+            }
+        </div>
+
+        <div class="col-span-2">
+            <label class="required">Departamento</label>
+            <p-select
+                [options]="departamentos"
+                class="w-full mt-1"
+                formControlName="departamento"
+                optionLabel="nombre"
+                placeholder="Seleccionar departamento"/>
+            @if (isValidField('departamento')) {
+                <span class="text-sm text-red-400">Selecciona un departamento</span>
+            }
+        </div>
+
+        <div class="col-span-2">
+            <label class="required">Usuario</label>
+            <input
+                class="w-full mt-1"
+                formControlName="usuario"
+                pInputText
+                placeholder="Ingrese usuario"/>
+            @if (isValidField('usuario')) {
+                <span class="text-sm text-red-400">Ingrese usuario</span>
+            }
+        </div>
+
+        <div class="col-span-2">
+            <label class="required">Clave</label>
+            <input
+                class="w-full mt-1"
+                formControlName="clave"
+                pInputText
+                placeholder="Ingrese la clave"/>
+            @if (isValidField('clave')) {
+                <span class="text-sm text-red-400">Ingrese clave</span>
+            }
+        </div>
+
+        <div class="col-span-2">
+            <label>Nota</label>
+            <textarea
+                class="w-full mt-1"
+                formControlName="descripcion"
+                pTextarea
+                placeholder="Información adicional"
+                rows="2"
+                style="resize: none"></textarea>
+        </div>
+
+        <div class="col-span-2 flex justify-center gap-2">
+            <p-button label="Guardar" type="submit"/>
+        </div>
+    </form>
+}

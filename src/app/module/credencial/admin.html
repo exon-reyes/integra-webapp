@@ -1,0 +1,223 @@
+<app-title
+    description="Administración de credenciales de acceso"
+    iconClass="isc i-keypass"
+    title="Accesos"/>
+<p-panel [collapsed]="false" [toggleable]="true" class="mb-1 mt-3" header="Filtros">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Buscar</label>
+            <p-iconfield>
+                <p-inputicon class="pi pi-search"/>
+                <input (input)="dt.filterGlobal($any($event.target).value, 'contains')" [(ngModel)]="searchValue"
+                       class="w-full border-gray-200 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                       pInputText
+                       placeholder="Buscar credenciales..."/>
+            </p-iconfield>
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Tipo de cuenta</label>
+            <p-multiSelect (onChange)="onTipoChange($event.value)" [(ngModel)]="selectedTipo"
+                           [options]="tiposCuenta()"
+                           [panelStyle]="{ minWidth: '12rem' }" optionLabel="nombre" optionValue="nombre"
+                           placeholder="Todos los tipos" style="width: 100%">
+            </p-multiSelect>
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Unidad</label>
+            <p-multiSelect (onChange)="onUnidadChange($event.value)" [(ngModel)]="selectedUnidad"
+                           [options]="unidades()"
+                           [panelStyle]="{ minWidth: '16rem' }" optionLabel="nombre" optionValue="id"
+                           placeholder="Todas las unidades" style="width: 100%">
+            </p-multiSelect>
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Departamento</label>
+            <p-multiSelect (onChange)="onDepartamentoChange($event.value)" [(ngModel)]="selectedDepartamento"
+                           [options]="departamentos()"
+                           [panelStyle]="{ minWidth: '16rem' }" optionLabel="nombre" optionValue="id"
+                           placeholder="Todos los departamentos" style="width: 100%">
+            </p-multiSelect>
+        </div>
+    </div>
+</p-panel>
+
+<div class="bg-white shadow-sm rounded-lg border border-gray-100 mt-2">
+    <div class="p-4 border-b border-gray-100">
+        <div class="flex gap-2">
+            <p-button (onClick)="nuevaCredencial()" icon="pi pi-plus" label="Nueva Credencial" severity="success"
+                      size="small"
+                      styleClass="px-3 py-2 rounded-md transition-colors duration-200"></p-button>
+            <p-button (onClick)="gestionarTipos()" icon="pi pi-cog" label="Tipos de Cuenta" severity="info"
+                      size="small"
+                      styleClass="px-3 py-2 rounded-md transition-colors duration-200"></p-button>
+            <p-button (onClick)="exportarExcel()" icon="pi pi-file-excel" label="Exportar Excel" severity="success"
+                      size="small"
+                      styleClass="px-3 py-2 rounded-md transition-colors duration-200"></p-button>
+        </div>
+    </div>
+
+    <p-table #dt
+             [globalFilterFields]="['usuario','tipoNombre','departamentoNombre','unidadNombreCompleto','nota']"
+             [rowsPerPageOptions]="[30,50,100,200]"
+             [rows]="30"
+             [tableStyle]="{ 'min-width': '50rem' }"
+             [value]="credenciales()"
+             class="border-0"
+             currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} entradas"
+             paginator="true"
+             scrollHeight="calc(100vh - 354px)"
+             scrollable="true"
+             showCurrentPageReport="true"
+             size="small">
+        <ng-template #header>
+            <tr class="bg-gray-50">
+                <th class="font-medium text-gray-700 py-3 px-4">N°</th>
+                <th class="font-medium text-gray-700 py-3 px-4" pSortableColumn="usuario">
+                    <p-sortIcon field="usuario"/>
+                    Usuario
+                </th>
+                <th class="font-medium text-gray-700 py-3 px-4" pSortableColumn="tipoNombre">
+                    <p-sortIcon field="tipoNombre"/>
+                    Tipo
+                </th>
+                <th class="font-medium text-gray-700 py-3 px-4" pSortableColumn="departamentoNombre">
+                    <p-sortIcon field="departamentoNombre"/>
+                    Departamento
+                </th>
+                <th class="font-medium text-gray-700 py-3 px-4" pSortableColumn="unidadNombreCompleto">
+                    <p-sortIcon field="unidadNombreCompleto"/>
+                    Unidad
+                </th>
+                <th class="font-medium text-gray-700 py-3 px-4" pSortableColumn="nota">
+                    <p-sortIcon field="nota"/>
+                    Nota
+                </th>
+                <th class="font-medium text-gray-700 py-3 px-4">Contraseña</th>
+                <th class="font-medium text-gray-700 py-3 px-4">Acciones</th>
+            </tr>
+        </ng-template>
+        <ng-template #body let-credencial let-rowIndex="rowIndex">
+            <tr class="text-sm">
+                <td class="py-3 px-4 font-medium text-gray-800">{{ rowIndex + 1 }}</td>
+                <td class="font-mono">{{ credencial.usuario }}</td>
+                <td>
+                    {{ credencial.tipoNombre }}
+                </td>
+                <td>{{ credencial.departamentoNombre }}</td>
+                <td>{{ credencial.unidadNombreCompleto }}</td>
+                <td class="max-w-xs truncate" title="{{ credencial.nota }}">{{ credencial.nota }}</td>
+                <td class="font-mono">
+                    <div class="flex items-center gap-2">
+                        @if (!credencial.mostrarClave) {
+                            <span class="text-gray-400">••••</span>
+                        }
+                        @if (credencial.mostrarClave) {
+                            <span class="text-gray-800">{{ credencial.clave }}</span>
+                        }
+                        <p-button
+                            (onClick)="toggleVerClaveDirecto(credencial)"
+                            [icon]="credencial.mostrarClave ? 'pi pi-eye-slash' : 'pi pi-eye'"
+                            [text]="true"
+                            pTooltip="Ver/Ocultar contraseña"
+                            severity="secondary"
+                            size="small"
+                            styleClass="p-1 hover:bg-gray-100 rounded transition-colors"
+                            tooltipPosition="top">
+                        </p-button>
+                    </div>
+                </td>
+                <td>
+                    <div class="flex justify-center">
+                        <p-button
+                            (click)="toggleMenu($event, credencial)"
+                            [text]="true"
+                            icon="pi pi-ellipsis-v"
+                            severity="secondary"
+                            size="small"
+                            styleClass="p-2 hover:bg-gray-100 rounded-md transition-colors">
+                        </p-button>
+                    </div>
+                </td>
+            </tr>
+        </ng-template>
+    </p-table>
+</div>
+
+<!-- Dialog para nueva/editar credencial -->
+<p-dialog [(visible)]="credencialDialog" [closable]="true" [header]="dialogHeader" [modal]="true"
+          [style]="{width: '500px'}">
+    <form (ngSubmit)="guardarCredencial()" [formGroup]="credencialForm">
+        <div class="grid gap-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Usuario *</label>
+                <input
+                    [class.ng-invalid]="credencialForm.get('usuario')?.invalid && credencialForm.get('usuario')?.touched"
+                    class="w-full" formControlName="usuario" pInputText
+                    placeholder="Ingrese el usuario"/>
+                @if (credencialForm.get('usuario')?.invalid && credencialForm.get('usuario')?.touched) {
+                    <small class="text-red-500">El usuario es requerido</small>
+                }
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Contraseña *</label>
+                <p-password [feedback]="false" [toggleMask]="true" class="w-full" formControlName="clave"
+                            inputStyleClass="w-full" placeholder="Ingrese la contraseña"/>
+                @if (credencialForm.get('clave')?.invalid && credencialForm.get('clave')?.touched) {
+                    <small class="text-red-500">La contraseña es requerida</small>
+                }
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Tipo de Cuenta *</label>
+                <p-select [options]="tiposCuenta()" class="w-full" formControlName="idTipoCuenta" optionLabel="nombre"
+                          optionValue="id" placeholder="Seleccione el tipo"/>
+                @if (credencialForm.get('idTipoCuenta')?.invalid && credencialForm.get('idTipoCuenta')?.touched) {
+                    <small class="text-red-500">El tipo de cuenta es requerido</small>
+                }
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Unidad *</label>
+                <p-select [options]="unidades()" class="w-full" formControlName="unidadId" optionLabel="nombre"
+                          optionValue="id" placeholder="Seleccione la unidad" scrollHeight="200px"/>
+                @if (credencialForm.get('unidadId')?.invalid && credencialForm.get('unidadId')?.touched) {
+                    <small class="text-red-500">La unidad es requerida</small>
+                }
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Departamento *</label>
+                <p-select [options]="departamentos()" class="w-full" formControlName="departamentoId"
+                          optionLabel="nombre"
+                          optionValue="id" placeholder="Seleccione el departamento" scrollHeight="140px"/>
+                @if (credencialForm.get('departamentoId')?.invalid && credencialForm.get('departamentoId')?.touched) {
+                    <small class="text-red-500">El departamento es requerido</small>
+                }
+            </div>
+
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Nota</label>
+                <textarea class="w-full" formControlName="nota" pTextarea placeholder="Ingrese una nota (opcional)"
+                          rows="5"></textarea>
+            </div>
+        </div>
+
+        <div class="flex justify-end gap-2 mt-4">
+            <p-button (onClick)="credencialDialog = false" label="Cancelar" severity="secondary" type="button"/>
+            <p-button [loading]="loading" label="Guardar" type="submit"/>
+        </div>
+    </form>
+</p-dialog>
+
+<!-- Menú contextual para acciones -->
+<p-menu #menuRef [appendTo]="'body'" [model]="menuItems" [popup]="true" [style]="{ minWidth: '180px' }"></p-menu>
+
+<!-- Diálogo de confirmación -->
+<p-confirmDialog></p-confirmDialog>
+
+<!-- Diálogo para gestionar tipos de cuenta -->
+<p-dialog (onHide)="onTiposDialogClose()" [(visible)]="tiposDialog" [closable]="true" [modal]="true"
+          [style]="{width: '600px'}" header="Gestionar Tipos de Cuenta">
+    <app-tipos-cuenta></app-tipos-cuenta>
+</p-dialog>

@@ -1,0 +1,80 @@
+@if (obteniendoDatos) {
+    <app-spinner/>
+} @else {
+    <form (ngSubmit)="guardar()" [formGroup]="form" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="col-span-2">
+            <label class="required">Proveedor</label>
+            <p-select
+                [options]="proveedores"
+                class="w-full"
+                formControlName="proveedor"
+                optionLabel="nombre"/>
+        </div>
+
+        <div class="col-span-2">
+            <label class="required">Unidad de negocio</label>
+            <p-select
+                [options]="unidades"
+                class="w-full mt-1"
+                filter="true"
+                filterBy="clave,nombre"
+                formControlName="unidad"
+                optionLabel="nombre"
+                scrollHeight="140px">
+                <ng-template #item let-unidad>
+                    <div class="w-full">
+                        <div>{{ unidad.clave }} {{ unidad.nombre }}</div>
+                    </div>
+                </ng-template>
+                <ng-template #selectedItem let-u>
+                    <div class="flex items-center gap-2">
+                        {{ u.clave }} {{ u.nombre }}
+                    </div>
+                </ng-template>
+            </p-select>
+        </div>
+
+        <div class="col-span-2">
+            <label>Departamento</label>
+            <p-select
+                [options]="departamentos"
+                class="w-full mt-1"
+                formControlName="departamento"
+                optionLabel="nombre"
+                scrollHeight="120px"/>
+        </div>
+
+        <div class="col-span-2">
+            <label>Usuario</label>
+            <input
+                class="w-full mt-1"
+                formControlName="usuario"
+                pInputText
+                placeholder="Ingrese usuario"/>
+        </div>
+
+        <div class="col-span-2">
+            <label>Clave</label>
+            <input
+                class="w-full mt-1"
+                formControlName="clave"
+                pInputText
+                placeholder="Ingrese la clave"/>
+        </div>
+
+        <div class="col-span-2">
+            <label>Nota</label>
+            <textarea
+                class="w-full mt-1"
+                formControlName="descripcion"
+                pTextarea
+                placeholder="Ingrese sus comentarios"
+                rows="2"
+                style="resize: none"></textarea>
+        </div>
+
+        <div class="col-span-2 flex justify-center gap-2">
+            <p-button label="Guardar" type="submit"/>
+        </div>
+    </form>
+}

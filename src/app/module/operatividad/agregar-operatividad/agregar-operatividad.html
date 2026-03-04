@@ -1,0 +1,153 @@
+<div class="w-full">
+    <!-- Header -->
+    <div class="my-5">
+        <div class="text-lg font-semibold">Horarios de operación</div>
+        <p class="text-sm">Configure los horarios de atención a cliente para la unidad registrada.</p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+        <!-- Formulario -->
+        <div class="lg:col-span-1">
+
+            <div class="bg-slate-50 border border-slate-200 rounded-xl p-6 space-y-5">
+                <!-- Select operatividad -->
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2" for="operatividad-select">
+                        Operatividad
+                    </label>
+                    <p-select
+                        inputId="operatividad-select"
+                        [ngModel]="selectedOperatividad()"
+                        (ngModelChange)="selectedOperatividad.set($event)"
+                        [options]="operatividades()"
+                        optionLabel="nombre"
+                        placeholder="Seleccionar"
+                        class="w-full"
+                    />
+                </div>
+
+                <!-- Apertura -->
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2" for="hora-apertura">
+                        Hora de apertura
+                    </label>
+                    <input
+                        id="hora-apertura"
+                        type="time"
+                        [value]="apertura()"
+                        (change)="apertura.set($any($event.target).value)"
+                        class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition"
+                    />
+                </div>
+
+                <!-- Cierre -->
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2" for="hora-cierre">
+                        Hora de cierre
+                    </label>
+                    <input
+                        id="hora-cierre"
+                        type="time"
+                        [value]="cierre()"
+                        (change)="cierre.set($any($event.target).value)"
+                        class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition"
+                    />
+                </div>
+
+                <!-- Activo -->
+                <div class="flex items-center gap-3 mt-4">
+                    <p-toggleswitch
+                        [ngModel]="activo()"
+                        (ngModelChange)="activo.set($event)"
+                        inputId="toggle-activo"
+                    />
+                    <label class="block text-sm font-medium text-slate-700" for="toggle-activo">
+                        Estatus de registro (Activo)
+                    </label>
+                </div>
+
+                <!-- Botón agregar -->
+                <div class="pt-2">
+                    <p-button
+                        severity="warn"
+                        icon="pi pi-plus"
+                        label="Precargar horario operativo"
+                        styleClass="w-full"
+                        (onClick)="agregarHorario()"
+                    />
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Tabla de horarios -->
+        <div class="lg:col-span-2">
+            <div class="border border-slate-200 rounded-xl overflow-hidden">
+                <div class="px-6 py-4 bg-slate-50 border-b border-slate-200">
+                    <div class="text-lg font-semibold">Horarios precargados</div>
+                    <p class="text-sm">Los siguientes horarios serán asignados a la unidad, verifique antes de guardar</p>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left">
+                        <thead class="bg-slate-100 text-slate-600 uppercase text-xs tracking-wide">
+                        <tr>
+                            <th class="px-6 py-3 font-semibold" scope="col">Operatividad</th>
+                            <th class="px-6 py-3 font-semibold" scope="col">Apertura</th>
+                            <th class="px-6 py-3 font-semibold" scope="col">Cierre</th>
+                            <th class="px-6 py-3 font-semibold text-center" scope="col">Estatus</th>
+                            <th class="px-6 py-3 font-semibold text-center" scope="col">Acción</th>
+                        </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-200 text-slate-700">
+                            @for (h of horariosPendientes(); track h.operatividad.id) {
+                                <tr class="hover:bg-slate-50 transition">
+                                    <td class="px-6 py-4 font-medium">{{ h.operatividad.nombre }}</td>
+                                    <td class="px-6 py-4">{{ h.apertura }}</td>
+                                    <td class="px-6 py-4">{{ h.cierre }}</td>
+                                    <td class="px-6 py-4 text-center">
+                    <span
+                        class="px-2 py-1 rounded-full text-xs font-medium"
+                        [class.bg-emerald-100]="h.activo"
+                        [class.bg-red-100]="!h.activo"
+                        [class.text-emerald-700]="h.activo"
+                        [class.text-red-700]="!h.activo"
+                    >
+                      {{ h.activo ? 'Activo' : 'Inactivo' }}
+                    </span>
+                                    </td>
+                                    <td class="px-6 py-4 text-center">
+                                        <button
+                                            type="button"
+                                            class="text-red-500 hover:text-red-600 text-sm font-medium transition"
+                                            (click)="eliminarHorario(h.operatividad.id)"
+                                            [attr.aria-label]="'Eliminar horario ' + h.operatividad.nombre"
+                                        >
+                                            Eliminar
+                                        </button>
+                                    </td>
+                                </tr>
+                            } @empty {
+                                <tr>
+                                    <td class="px-6 py-8 text-center text-slate-500" colspan="5">
+                                    <app-state description="Sin registros asociados, ingrese horarios de apertura y cierre" title="Horarios precargados"></app-state>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Botón guardar -->
+            <div class="flex justify-end mt-6">
+                <p-button
+                    label="Guardar configuración"
+                    [loading]="saving()"
+                    (onClick)="guardarConfiguracion()"
+                />
+            </div>
+        </div>
+    </div>
+</div>

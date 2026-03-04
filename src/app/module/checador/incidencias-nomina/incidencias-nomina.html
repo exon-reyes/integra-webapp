@@ -1,0 +1,188 @@
+<!--<app-title class="mb-4" description="Exporta las incidencias por periodo personalizado" imageSrc="assets/icon/excel.svg"-->
+<!--           title="Incidencias">-->
+<!--</app-title>-->
+
+<!--<app-info-card [items]="infoItems" iconClass="pi pi-cog text-2xl text-indigo-600" title="Aviso de Pre-llenado">-->
+<!--</app-info-card>-->
+
+<!--<p-panel class="mt-3" header="Filtro de reporte">-->
+<!--    <div class="p-4">-->
+<!--        <div class="flex flex-wrap gap-4 items-end">-->
+<!--            <div class="flex flex-col">-->
+<!--                <label class="text-sm font-medium text-gray-700 mb-1">Rango de fechas:</label>-->
+<!--                <p-datePicker [(ngModel)]="rangeDates" [iconDisplay]="'input'"-->
+<!--                              [readonlyInput]="true" [showClear]="true" [showIcon]="true" fluid="true"-->
+<!--                              inputId="icondisplay"-->
+<!--                              placeholder="Selecciona rango de fechas" selectionMode="range"></p-datePicker>-->
+<!--            </div>-->
+
+<!--            <div class="flex flex-col">-->
+<!--                <label class="text-sm font-medium text-gray-700 mb-1">Unidad:</label>-->
+<!--                <app-unidad (selectedUnit)="unidadSeleccionada=$event"></app-unidad>-->
+<!--            </div>-->
+<!--            <div class="flex flex-col">-->
+<!--                <label class="text-sm font-medium text-gray-700 mb-1">Supervisor:</label>-->
+<!--                <app-supervisor (selectedSupervisor)="supervisorSeleccionado=$event"></app-supervisor>-->
+<!--            </div>-->
+<!--            <div class="flex flex-col">-->
+<!--                <label class="text-sm font-medium text-gray-700 mb-1">Zona:</label>-->
+<!--                <app-zona (selectedZona)="zonaSeleccionada=$event"></app-zona>-->
+<!--            </div>-->
+<!--            <div class="flex gap-2">-->
+<!--                <p-button (onClick)="generarReporte()" icon="pi pi-search" label="Generar"/>-->
+<!--                <p-button (onClick)="exportarExcel()" icon="pi pi-file-excel" label="Exportar"></p-button>-->
+<!--            </div>-->
+<!--        </div>-->
+<!--    </div>-->
+<!--</p-panel>-->
+<!--<div class="mt-3 border border-slate-300 bg-white rounded-md p-2 text-[10px]">-->
+<!--    <div class="font-semibold text-center text-[10px] mb-2">-->
+<!--        Nomenclatura de Incidencias-->
+<!--    </div>-->
+<!--    <div class="flex flex-wrap gap-2 justify-center text-[10px] leading-tight mb-2">-->
+<!--        <span class="px-1.5 py-0.5 bg-red-200 border border-slate-300 rounded">-->
+<!--            <b>F</b>: Falta-->
+<!--        </span>-->
+<!--        <span class="px-1.5 py-0.5 bg-blue-200 border border-slate-300 rounded">-->
+<!--            <b>P</b>: Permiso-->
+<!--        </span>-->
+<!--        <span class="px-1.5 py-0.5 bg-orange-200 border border-slate-300 rounded">-->
+<!--            <b>S</b>: Suspensión-->
+<!--        </span>-->
+<!--        <span class="px-1.5 py-0.5 bg-purple-200 border border-slate-300 rounded">-->
+<!--            <b>V</b>: Vacaciones-->
+<!--        </span>-->
+<!--        <span class="px-1.5 py-0.5 bg-gray-800 text-white border border-slate-300 rounded">-->
+<!--            <b>B</b>: Baja-->
+<!--        </span>-->
+<!--        <span class="px-1.5 py-0.5 bg-green-200 border border-slate-300 rounded">-->
+<!--            <b>C</b>: Capacitación-->
+<!--        </span>-->
+<!--        <span class="px-1.5 py-0.5 bg-yellow-200 border border-slate-300 rounded">-->
+<!--            <b>D</b>: Descanso-->
+<!--        </span>-->
+<!--        <span class="px-1.5 py-0.5 bg-pink-200 border border-slate-300 rounded">-->
+<!--            <b>I</b>: Incapacidad-->
+<!--        </span>-->
+<!--        <span class="px-1.5 py-0.5 bg-gray-600 text-white border border-slate-300 rounded whitespace-nowrap">-->
+<!--            <b>PF</b>: Fallecimiento-->
+<!--        </span>-->
+<!--        <span class="px-1.5 py-0.5 bg-indigo-200 border border-slate-300 rounded whitespace-nowrap">-->
+<!--            <b>LP</b>: Lic. Paternidad-->
+<!--        </span>-->
+<!--    </div>-->
+<!--</div>-->
+
+<!--<p-panel class="mt-3" header="Resumen de incidencias">-->
+<!--    <p-table [scrollable]="true" [value]="empleadosData" scrollHeight="600px" styleClass="p-datatable-sm text-xs">-->
+<!--        <ng-template pTemplate="header">-->
+<!--            <tr>-->
+<!--                <th class="text-center" rowspan="2">CLAVE</th>-->
+<!--                <th class="text-center" rowspan="2">COLABORADOR</th>-->
+<!--                <th class="text-center" rowspan="2">PUESTO DE TRABAJO</th>-->
+<!--                <th class="text-center" rowspan="2">UNIDAD ASIGNADA</th>-->
+<!--                <th class="text-center" rowspan="2">ZONA OPERATIVA</th>-->
+
+<!--                <th class="text-center" colspan="11">TOTALES INCIDENCIAS</th>-->
+<!--                <th class="text-center" colspan="3">HORAS EXTRAS</th>-->
+<!--                <th class="text-center" rowspan="2">COMENTARIO</th>-->
+
+<!--                @for (fecha of fechasRango; track fecha) {-->
+<!--                    <th class="text-center" colspan="2">{{ formatearFecha(fecha) }}</th>-->
+<!--                }-->
+<!--            </tr>-->
+<!--            <tr>-->
+<!--                <th class="text-center">Venta</th>-->
+<!--                <th class="text-center">Falta</th>-->
+<!--                <th class="text-center">Permiso</th>-->
+<!--                <th class="text-center">Suspensión</th>-->
+<!--                <th class="text-center">Vacaciones</th>-->
+<!--                <th class="text-center">Baja</th>-->
+<!--                <th class="text-center">Capacitación</th>-->
+<!--                <th class="text-center">Descanso</th>-->
+<!--                <th class="text-center">Incapacidad</th>-->
+<!--                <th class="text-center">Permiso Fallecimiento</th>-->
+<!--                <th class="text-center">Licencia Paternidad</th>-->
+
+<!--                <th class="text-center">T. Horas extras</th>-->
+<!--                <th class="text-center">Autorizó</th>-->
+<!--                <th class="text-center">Motivo</th>-->
+
+<!--                @for (fecha of fechasRango; track fecha) {-->
+<!--                    <th class="text-center">Incidencia</th>-->
+<!--                    <th class="text-center">T. Ventas</th>-->
+<!--                }-->
+<!--            </tr>-->
+<!--        </ng-template>-->
+
+<!--        <ng-template let-empleado pTemplate="body">-->
+<!--            <tr>-->
+<!--                <td class="text-center">{{ empleado.clave }}</td>-->
+<!--                <td>{{ empleado.nombre }}</td>-->
+<!--                <td class="text-center">{{ empleado.puesto }}</td>-->
+<!--                <td class="text-center">{{ empleado.unidad }}</td>-->
+<!--                <td class="text-center">{{ empleado.zona }}</td>-->
+
+<!--                <td class="text-center bg-gray-50">-->
+<!--                </td>-->
+<!--                <td class="text-center bg-gray-50">{{ empleado.totales.falta }}</td>-->
+<!--                <td class="text-center bg-gray-50">{{ empleado.totales.permiso }}</td>-->
+<!--                <td class="text-center bg-gray-50">{{ empleado.totales.suspension }}</td>-->
+<!--                <td class="text-center bg-gray-50">{{ empleado.totales.vacaciones }}</td>-->
+<!--                <td class="text-center bg-gray-50">{{ empleado.totales.baja }}</td>-->
+<!--                <td class="text-center bg-gray-50">{{ empleado.totales.capacitacion }}</td>-->
+<!--                <td class="text-center bg-gray-50">{{ empleado.totales.descanso }}</td>-->
+<!--                <td class="text-center bg-gray-50">{{ empleado.totales.incapacidad }}</td>-->
+<!--                <td class="text-center bg-gray-50">{{ empleado.totales.permisoFallecimiento }}</td>-->
+<!--                <td class="text-center bg-gray-50">{{ empleado.totales.licenciaPaternidad }}</td>-->
+
+<!--                <td class="text-center p-1">-->
+<!--                    <input [(ngModel)]="empleado.horasExtras.total"-->
+<!--                           class="w-full bg-transparent text-center text-xs outline-none border-0" min="0"-->
+<!--                           type="number">-->
+<!--                </td>-->
+<!--                <td class="text-center p-1">-->
+<!--                    <input [(ngModel)]="empleado.horasExtras.autorizo"-->
+<!--                           class="w-full p-1 border border-gray-300 rounded text-xs text-center" type="text">-->
+<!--                </td>-->
+<!--                <td class="text-center p-1">-->
+<!--                    <input [(ngModel)]="empleado.horasExtras.motivo"-->
+<!--                           class="w-full p-1 border border-gray-300 rounded text-xs text-center" type="text">-->
+<!--                </td>-->
+
+<!--                <td class="text-center p-1">-->
+<!--                    <input [(ngModel)]="empleado.comentario" [title]="empleado.comentario || 'Sin comentario'"-->
+<!--                           class="w-full p-1 border border-gray-300 rounded text-xs text-center" type="text">-->
+<!--                </td>-->
+
+<!--                @for (fecha of fechasRango; track fecha) {-->
+<!--                    <td [ngClass]="obtenerClaseIncidencia(empleado.incidencias[fecha])" class="text-center p-1">-->
+<!--                        <input (input)="validarIncidencia($event, empleado, fecha)" [(ngModel)]="empleado.incidencias[fecha]"-->
+<!--                               class="w-full bg-transparent text-center text-xs outline-none min-w-[40px] px-1 border-0"-->
+<!--                               list="incidencias-list"-->
+<!--                               maxlength="2" placeholder="-" type="text">-->
+<!--                    </td>-->
+<!--                    <td class="text-center p-1">-->
+<!--                        <div class="relative">-->
+<!--                            <span class="absolute left-1 top-0 text-xs text-gray-500">$</span>-->
+<!--                            <input [(ngModel)]="empleado.ventas[fecha]" class="w-full bg-transparent text-center text-xs outline-none border-0 min-w-[80px] pl-4 pr-2" min="0" step="0.01"-->
+<!--                                   type="number">-->
+<!--                        </div>-->
+<!--                    </td>-->
+<!--                }-->
+<!--            </tr>-->
+<!--        </ng-template>-->
+<!--    </p-table>-->
+<!--</p-panel>-->
+<!--<datalist id="incidencias-list">-->
+<!--    <option value="F">F - Falta</option>-->
+<!--    <option value="P">P - Permiso</option>-->
+<!--    <option value="S">S - Suspensión</option>-->
+<!--    <option value="V">V - Vacaciones</option>-->
+<!--    <option value="B">B - Baja</option>-->
+<!--    <option value="C">C - Capacitación</option>-->
+<!--    <option value="D">D - Descanso</option>-->
+<!--    <option value="I">I - Incapacidad</option>-->
+<!--    <option value="PF">PF - Fallecimiento</option>-->
+<!--    <option value="LP">LP - Lic. Paternidad</option>-->
+<!--</datalist>-->

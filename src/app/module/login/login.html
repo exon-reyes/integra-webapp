@@ -1,0 +1,88 @@
+<div class="min-h-screen flex bg-white">
+    <div class="hidden lg:flex lg:w-1/2 relative bg-slate-900 overflow-hidden">
+        <div class="absolute inset-0 opacity-100 bg-[url('/assets/bg/bg1.svg')] bg-cover bg-center"></div>
+        <div class="absolute inset-0 bg-gradient-to-br from-blue-900/90 to-slate-900/90"></div>
+
+        <div
+            class="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl mix-blend-overlay animate-pulse"></div>
+        <div
+            class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-indigo-500/20 rounded-full blur-3xl mix-blend-overlay"></div>
+
+        <div class="relative z-10 flex flex-col justify-center items-center w-full h-full p-12 text-white">
+            <div class="mb-8 p-6 bg-white/10 backdrop-blur-md rounded-2xl shadow-2xl border border-white/10">
+                <img alt="Logo Integra" class="w-150 h-auto drop-shadow-lg" height="794" ngSrc="/assets/img/intro.png"
+                     priority width="981">
+            </div>
+            <div
+                class="text-5xl font-extrabold tracking-tight mb-4 text-transparent bg-clip-text bg-gradient-to-r from-blue-200 to-white">
+                INTEGRA
+            </div>
+            <p class="text-xl text-blue-100 font-light tracking-wide max-w-md text-center">
+                Estrategia en Evolución
+            </p>
+            <div class="mt-4 w-16 h-1 bg-blue-500 rounded-full"></div>
+            <div class="absolute bottom-8 text-slate-400 text-sm"> © 2026</div>
+        </div>
+    </div>
+
+    <div class="w-full lg:w-1/2 flex items-center justify-center p-8 lg:p-16 bg-white relative">
+        <div class="lg:hidden absolute inset-0 bg-slate-50 z-0"></div>
+
+        <div class="w-full max-w-md z-10">
+            <div class="mb-8 text-left">
+                <img alt="Icono SCI" class="mb-6" src="/assets/icon/sci.svg">
+                <div class="text-4xl font-bold tracking-tight mb-3 text-slate-900">¡Hola, nos alegra verte de nuevo!
+                </div>
+                <p> Ingresa tus credenciales para continuar. </p>
+            </div>
+
+            @if (showError) {
+                <app-alert [description]="errorMessage" title="No se pudo continuar" type="error"></app-alert>
+                <br>
+            }
+            <form (ngSubmit)="onSubmit()" [formGroup]="loginForm" class="space-y-6">
+                <div class="flex flex-col gap-1">
+                    <label class="text-sm font-semibold" for="username">Usuario</label>
+                    <input class="w-full"
+                           formControlName="username" id="username"
+                           pInputText
+                           type="text"/>
+                    @if (isControlInvalid(loginForm, 'username', submitted)) {
+                        <p-message severity="error" size="small" variant="simple">El usuario es requerido</p-message>
+                    }
+                </div>
+                <div class="flex flex-col gap-1">
+                    <div class="flex justify-between">
+                        <label class="text-sm font-semibold" for="password">Contraseña</label>
+                        <a class="text-sm font-medium text-blue-700 hover:text-blue-900 transition-colors"
+                           routerLink="/auth/forgot-password">
+                            ¿Olvidaste tu contraseña?
+                        </a>
+                    </div>
+                    <p-password [feedback]="false" fluid formControlName="password"
+                                id="password"
+                                type="text"/>
+                    @if (isControlInvalid(loginForm, 'password', submitted)) {
+                        <p-message severity="error" size="small" variant="simple">La contraseña es requerida</p-message>
+                    }
+                </div>
+
+
+                <p-button [disabled]="isLoading||loginForm.invalid"
+                          [label]="isLoading?'Iniciando sesión':'Iniciar sesión'"
+
+                          [loading]="isLoading"
+                          fluid
+                          size="large" type="submit"/>
+
+                <div class="text-center pt-6 text-sm font-medium">
+                    ¿Aún no tienes cuenta?<a
+                    class="ml-2 text-blue-700 hover:text-blue-900 hover:underline transition-all"
+                    routerLink="/auth/register-request">
+                    Regístrate como colaborador
+                </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
