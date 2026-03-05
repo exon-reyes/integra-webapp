@@ -42,6 +42,18 @@ export class JWTService {
         localStorage.setItem(this.EMPLOYEE_KEY, JSON.stringify(data.employeeName));
     }
 
+    /**
+     * Actualiza los datos del empleado en el almacenamiento local.
+     * Útil cuando se actualiza información como el avatar.
+     * @param employeeName Datos actualizados del empleado.
+     */
+    updateEmployeeName(employeeName: CatalogoEmpleado): void {
+        this._cachedEmployeeName=employeeName;
+        localStorage.setItem(this.EMPLOYEE_KEY, JSON.stringify(employeeName));
+        // Invalidar el caché de usuario para que se reconstruya con los nuevos datos
+        this._cachedUser=null;
+    }
+
     logout(): void {
         localStorage.removeItem(this.TOKEN_KEY);
         localStorage.removeItem(this.UI_PERMS_KEY);
