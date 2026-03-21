@@ -13,7 +13,7 @@ import { NgOptimizedImage } from "@angular/common";
             <h3 [class]="titleSize + ' font-bold text-slate-800 mb-2'">
                 {{ title }}
             </h3>
-            <p [class]="descriptionSize + ' text-slate-600 text-center max-w-md mx-auto leading-relaxed'">
+            <p [class]="descriptionSize + ' font-medium text-center max-w-md mx-auto leading-relaxed'">
                 {{ description }}
             </p>
         </div>

@@ -45,6 +45,7 @@ export interface CatalogoEmpleado {
     tipoProceso?: string;
     fechaAlta?: Date;
     fechaReingreso?: Date;
+    antiguedadAnios?: number;
     primerResponsable?: CatalogoEmpleado;
     segundoResponsable?: CatalogoEmpleado;
     fechaBaja?: Date;

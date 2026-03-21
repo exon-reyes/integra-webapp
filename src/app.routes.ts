@@ -76,6 +76,10 @@ export const appRoutes: Routes=[
                 data: {permission: Autoridades.USUARIOS_CONSULTAR},
                 loadChildren: () => import('./app/routes/usuario.routes'),
             },
+            {
+                path: 'vacaciones',
+                loadChildren: () => import('./app/modules/vacacion/vacacion.routes'),
+            },
         ],
     },
     {path: 'notfound', loadComponent: () => import('@/pages/notfound').then((value) => value.Notfound)},

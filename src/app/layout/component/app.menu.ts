@@ -24,10 +24,7 @@ export interface CustomMenuItem extends MenuItem {
 }
 
 @Component({
-    selector: 'app-menu',
-    standalone: true,
-    imports: [CommonModule, AppMenuitem, RouterModule],
-    template: `
+    selector: 'app-menu', standalone: true, imports: [CommonModule, AppMenuitem, RouterModule], template: `
         <ul class="layout-menu">
             @for (item of filteredModel; track item; let i = $index) {
                 @if (!item.separator) {
@@ -56,11 +53,8 @@ export class AppMenu implements OnInit {
                 id: 'p1',
                 label: 'Panel Principal',
                 items: [{id: 'vista-general', label: 'Vista General', icon: 'isc i-layout', routerLink: ['/integra']}],
-            },
-            {
-                id: 'ug',
-                label: 'Generales',
-                items: [
+            }, {
+                id: 'ug', label: 'Generales', items: [
                     {
                         id: 'mu',
                         label: 'Unidades',
@@ -69,12 +63,8 @@ export class AppMenu implements OnInit {
                         icon: 'isc i-contact',
                     },
                 ],
-            },
-            {
-                id: 'urrhh',
-                label: 'GESTIÓN RRHH',
-                icon: 'isc i-member',
-                items: [
+            }, {
+                id: 'urrhh', label: 'GESTIÓN RRHH', icon: 'isc i-member', items: [
                     {
                         id: 'me',
                         label: 'Empleados',
@@ -84,10 +74,18 @@ export class AppMenu implements OnInit {
                     },
                 ],
             }, {
-                id: 'ga',
-                label: 'GESTIÓN DE ASISTENCIA',
-                icon: 'isc i-schedule',
+                id: 'gv', label: 'Gestión de vacaciones',
+                icon: 'isc i-register',
                 items: [
+                    {
+                        id: 'mv',
+                        label: 'Mis vacaciones',
+                        icon: 'isc i-vacation',
+                        routerLink: ['vacaciones/dashboard'],
+                    },
+                ],
+            }, {
+                id: 'ga', label: 'GESTIÓN DE ASISTENCIA', icon: 'isc i-schedule', items: [
                     {
                         id: 'mga',
                         label: 'Gestor de asistencias',
@@ -101,26 +99,21 @@ export class AppMenu implements OnInit {
                         routerLink: ['asistencia/mi-registro'],
                     },
                 ],
-            },
-            {
-                id: 'ui',
-                label: 'INFRAESTRUCTURA TI',
-                items: [
+            }, {
+                id: 'ui', label: 'INFRAESTRUCTURA TI', items: [
                     {
                         id: 'mgc',
                         label: 'Gestión de Credenciales',
                         permission: Autoridades.CREDENCIALES_VER,
                         routerLink: ['credenciales/admin'],
                         icon: 'isc i-keypass',
-                    },
-                    {
+                    }, {
                         id: 'mgr',
                         label: 'Gestión de Roles',
                         permission: Autoridades.ROLES_VER_DETALLE,
                         routerLink: ['roles/admin'],
                         icon: 'isc i-exchange',
-                    },
-                    {
+                    }, {
                         id: 'mgu',
                         label: 'Gestión de usuarios',
                         permission: Autoridades.USUARIOS_CONSULTAR,
@@ -137,9 +130,7 @@ export class AppMenu implements OnInit {
     private hasVisibleChildren(item: CustomMenuItem): boolean {
         if(item.permission) {
             const required=Array.isArray(item.permission) ? item.permission : [item.permission];
-            return item.permissionOperator === 'AND'
-                ? required.every(p => this.jwtService.hasAuthority(p))
-                : required.some(p => this.jwtService.hasAuthority(p));
+            return item.permissionOperator === 'AND' ? required.every(p => this.jwtService.hasAuthority(p)) : required.some(p => this.jwtService.hasAuthority(p));
         }
 
         // Si no tiene items, mostrar (elementos sin hijos como separadores)
