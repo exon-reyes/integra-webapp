@@ -7,7 +7,7 @@ import {
     provideZoneChangeDetection,
 } from '@angular/core';
 import {provideNoopAnimations} from '@angular/platform-browser/animations';
-import {provideRouter, withEnabledBlockingInitialNavigation, withInMemoryScrolling} from '@angular/router';
+import {provideRouter, withComponentInputBinding, withEnabledBlockingInitialNavigation, withInMemoryScrolling} from '@angular/router';
 import Aura from '@primeuix/themes/aura';
 import {providePrimeNG} from 'primeng/config';
 import {appRoutes} from './app.routes';
@@ -17,14 +17,31 @@ import {ErrorResponseInterceptor} from '@/core/error-response.interceptor';
 import {NavigationLoadingInterceptor} from '@/core/interceptors/navigation-loading.interceptor';
 import {registerLocaleData} from '@angular/common';
 import localeEs from '@angular/common/locales/es';
+import {definePreset} from "@primeuix/themes";
 
 registerLocaleData(localeEs);
-
+const MyPreset = definePreset(Aura, {
+    semantic: {
+        primary: {
+            50: '{blue.50}',
+            100: '{blue.100}',
+            200: '{blue.200}',
+            300: '{blue.300}',
+            400: '{blue.400}',
+            500: '{blue.500}',
+            600: '{blue.600}',
+            700: '{blue.700}',
+            800: '{blue.800}',
+            900: '{blue.900}',
+            950: '{blue.950}'
+        }
+    }
+});
 export const appConfig: ApplicationConfig={
     providers: [
         provideRouter(appRoutes, withInMemoryScrolling({
             anchorScrolling: 'enabled', scrollPositionRestoration: 'enabled',
-        }), withEnabledBlockingInitialNavigation()),
+        }), withEnabledBlockingInitialNavigation(), withComponentInputBinding()),
         provideHttpClient(withFetch(), withInterceptors([authInterceptor, ErrorResponseInterceptor])),
         provideBrowserGlobalErrorListeners(),
         provideZoneChangeDetection({eventCoalescing: true}),
@@ -38,7 +55,7 @@ export const appConfig: ApplicationConfig={
         },
         {provide: LOCALE_ID, useValue: 'es-MX'},
         providePrimeNG({
-            theme: {preset: Aura, options: {darkModeSelector: '.app-dark'}}, translation: {
+            theme: {preset: MyPreset, options: {darkModeSelector: '.app-dark'}}, translation: {
                 emptyMessage: 'Sin registros',
                 emptyFilterMessage: 'Sin resultados',
                 monthNames: [

@@ -19,6 +19,7 @@ import {Select} from 'primeng/select';
 import {CatalogoEmpleado, CatalogoEmpleadoService, FiltroEmpleado} from "@/service/catalogo-empleado.service";
 import {finalize} from "rxjs";
 import {StatWidgetComponent} from "@/components/stat-widget";
+import {StatusBadgeComponent} from "@/components/StatusBadgeComponent";
 
 @Component({
     selector: 'app-admin',standalone:true, imports: [
@@ -36,6 +37,7 @@ import {StatWidgetComponent} from "@/components/stat-widget";
         DialogModule,
         Select,
         StatWidgetComponent,
+        StatusBadgeComponent,
 
     ], templateUrl: './admin.html', styleUrl: './admin.scss',
 })

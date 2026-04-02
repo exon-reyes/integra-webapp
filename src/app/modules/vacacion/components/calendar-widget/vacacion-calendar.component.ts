@@ -244,8 +244,13 @@ function midnightTs(y: number,
                         <!-- Grid de información -->
                         <div class="grid grid-cols-2 gap-x-4 gap-y-3 px-3 py-4 text-sm">
                             <div class="font-semibold">Estatus:</div>
-                            <div><span class="px-2 py-0.5 rounded-full font-semibold"
-                                       [class]="kindBadgeCls(data.kind)">{{ data.label }}</span></div>
+                            <div>
+
+
+                                <span class="px-2 py-0.5 rounded-md font-semibold"
+                                       [class]="kindBadgeCls(data.kind)">{{ data.label }}</span>
+
+                            </div>
 
                             @if (data.fechaSolicitud) {
                                 <div class="font-semibold ">Fecha de solicitud:</div>
@@ -261,17 +266,17 @@ function midnightTs(y: number,
 
                         <!-- Acciones -->
                         <div class="flex flex-col gap-2 mt-3">
-                            <p-button label="Ver Historial" icon="pi pi-history" severity="secondary"
-                                      styleClass="w-full" variant="outlined" size="small"
+                            <p-button label="Ver Historial" icon="pi pi-history"
+                                      styleClass="w-full"
                                       (onClick)="verHistorial()"></p-button>
                             @if (data.cancelable) {
                                 <p-button label="Cancelar día solicitado" severity="danger" styleClass="w-full"
-                                          size="small"
+
                                           (onClick)="confirmarCancelacion()"></p-button>
                             }
                             @if (data.reactivable) {
-                                <p-button label="Volver a solicitar" icon="pi pi-replay" severity="info"
-                                          styleClass="w-full" size="small"
+                                <p-button label="Volver a solicitar" icon="pi pi-replay" severity="warn"
+                                          styleClass="w-full"
                                           (onClick)="confirmarReactivacion()"></p-button>
                             }
                         </div>
@@ -280,52 +285,90 @@ function midnightTs(y: number,
             </p-popover>
 
             <!-- ── Dialog de Historial ────────────────────────────────────── -->
-            <p-dialog header="Historial de la solicitud" [modal]="true" [(visible)]="displayHistorial"
-                      [style]="{ width: '28rem' }" [dismissableMask]="true">
+            <p-dialog header="Historial de eventos"
+                      [modal]="true"
+                      [(visible)]="displayHistorial"
+                      [style]="{ width: '32rem' }"
+                      [dismissableMask]="true">
+
                 @if (historialData()) {
                     @if (historialData()?.length > 0) {
-                        <ol class="relative border-s border-gray-200 dark:border-gray-700 ml-3">
-                            <li class="mb-10 ms-6">
-                                @for (item of historialData(); track item.id) {
-                                    <span
-                                        class="absolute flex items-center justify-center w-6 h-6 bg-blue-100 rounded-full -start-3 ring-8 ring-white dark:ring-gray-900 dark:bg-blue-900">
-            <svg class="w-2.5 h-2.5 text-blue-800 dark:text-blue-300" aria-hidden="true"
-                 xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
-                <path
-                    d="M20 4a2 2 0 0 0-2-2h-2V1a1 1 0 0 0-2 0v1h-3V1a1 1 0 0 0-2 0v1H6V1a1 1 0 0 0-2 0v1H2a2 2 0 0 0-2 2v2h20V4ZM0 18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8H0v10Zm5-8h10a1 1 0 0 1 0 2H5a1 1 0 0 1 0-2Z"/>
-            </svg>
-        </span>
-                                    <div
-                                        class="flex items-center mb-1 text-lg font-semibold text-gray-900 dark:text-white">{{ item.tipoEvento }}
-                                        <span
-                                            class="bg-blue-100 text-blue-800 text-sm font-medium me-2 px-2.5 py-0.5 rounded-sm dark:bg-blue-900 dark:text-blue-300 ms-3">{{ item.fechaEvento | date:'dd/MM/yyyy HH:mm' }}</span>
-                                    </div>
-                                    <time
-                                        class="block mb-2 text-sm font-normal leading-none text-gray-400 dark:text-gray-500">
-                                        Registrado el {{ item.fechaEvento | date:'dd/MM/yyyy HH:mm' }}
-                                    </time>
-                                    <div class="mb-4 text-base font-normal text-gray-500 dark:text-gray-400"
-                                         [innerHTML]="item.comentario"></div>
+
+                        <!-- Contenedor principal -->
+                        <div class="relative max-h-[70vh] overflow-y-auto pr-2">
+
+                            <!-- Línea vertical con gradiente -->
+                            <div class="absolute left-4 top-0 bottom-0 w-[2px] bg-gradient-to-b from-blue-500 via-indigo-400 to-transparent"></div>
+
+                            <ol class="space-y-6 ml-6">
+
+                                @for (item of historialData(); track item.id; let last = $last) {
+
+                                    <li class="relative">
+
+                                        <!-- Card -->
+                                        <div class="group relative bg-white/70 backdrop-blur-md border border-white/40 shadow-lg rounded-xl p-4 hover:shadow-xl transition-all duration-300">
+
+                                            <!-- Glow hover -->
+                                            <div class="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-500/0 via-blue-500/10 to-indigo-500/0 opacity-0 group-hover:opacity-100 transition"></div>
+
+                                            <!-- Header -->
+                                            <div class="flex justify-between items-start mb-2">
+                                                <div class="flex flex-col">
+                                        <span class="text-sm font-semibold text-blue-700 tracking-wide uppercase">
+                                            {{ item.tipoEvento }}
+                                        </span>
+                                                    <span class="text-sm text-gray-500">
+                                            {{ item.fechaEvento | date:'dd MMM yyyy · HH:mm' }}
+                                        </span>
+                                                </div>
+
+                                                <!-- Badge decorativo -->
+                                                <span class="text-[10px] px-2 py-1 rounded-full bg-blue-100 text-blue-700 font-semibold shadow-sm">
+                                        Evento
+                                    </span>
+                                            </div>
+
+                                            <!-- Divider -->
+                                            <div class="h-px w-full bg-gradient-to-r from-transparent via-gray-300 to-transparent my-2"></div>
+
+                                            <!-- Contenido -->
+                                            <div class="text-sm text-gray-700 leading-relaxed"
+                                                 [innerHTML]="item.comentario">
+                                            </div>
+
+                                        </div>
+
+                                    </li>
+
                                 }
-                            </li>
-                        </ol>
+
+                            </ol>
+
+                        </div>
 
                     } @else {
-                        <app-state title="Sin registros" iconSrc="/assets/img/calendar.webp" description="No se han registrado eventos de la solicitud"></app-state>
+
+                        <!-- Empty state más moderno -->
+                        <div class="flex flex-col items-center justify-center py-10 text-center">
+
+                            <div class="h-14 w-14 rounded-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center shadow-inner mb-4">
+                                <i class="pi pi-inbox text-gray-500 text-xl"></i>
+                            </div>
+
+                            <span class="text-gray-700 font-semibold text-sm">
+                    Sin registros
+                </span>
+
+                            <span class="text-gray-500 text-xs mt-1">
+                    No se han registrado eventos de la solicitud
+                </span>
+
+                        </div>
+
                     }
                 }
 
-
-
-                <!--                <p-timeline [value]="historialData()">-->
-                <!--                    <ng-template pTemplate="content" let-event>-->
-                <!--                        <small class="text-slate-500">{{ event.fechaEvento | date:'dd/MM/yyyy HH:mm' }}</small>-->
-                <!--                        <div class="font-bold text-slate-700 mt-1">{{ event.tipoEvento }}</div>-->
-                <!--                        @if (event.comentario) {-->
-                <!--                            <div class="text-sm mt-1 text-slate-600 block">{{ event.comentario }}</div>-->
-                <!--                        }-->
-                <!--                    </ng-template>-->
-                <!--                </p-timeline>-->
             </p-dialog>
 
         </div>
@@ -342,7 +385,6 @@ export class VacacionCalendarComponent {
     readonly descansos=input<SolicitudEmpleado[]>([]);
     readonly descansosPendientes=input<SolicitudEmpleado[]>([]);
     readonly aprobadas=input<SolicitudEmpleado[]>([]);
-    readonly aprobadasPorTomar=input<SolicitudEmpleado[]>([]);
     readonly disfrutadas=input<SolicitudEmpleado[]>([]);
     readonly pendientes=input<SolicitudEmpleado[]>([]);
     readonly canceladas=input<SolicitudEmpleado[]>([]);
@@ -362,6 +404,10 @@ export class VacacionCalendarComponent {
      * Por defecto `false` — actívalo solo en vistas de gestión de vacaciones.
      */
     readonly allowCancelSolicitud=input<boolean>(false);
+    /**
+     * Habilita la selección de días festivos en modo 'multiple' emitiendo dayClicked en lugar de abrir el popover.
+     */
+    readonly allowFestivoSelection=input<boolean>(false);
     readonly dayClicked=output<{ date: string; jsDate: Date }>();
 
     // ── Outputs ───────────────────────────────────────────────────────────
@@ -466,8 +512,7 @@ export class VacacionCalendarComponent {
         };
 
         this.disfrutadas().forEach(s => addSolicitud(s, 'disfrutada', 'Disfrutada', false));
-        this.aprobadasPorTomar().forEach(s => addSolicitud(s, 'aprobada', 'Aprobada', this.allowCancelSolicitud()));
-        this.aprobadas().forEach(s => addSolicitud(s, 'aprobada', 'Aprobada', this.allowCancelSolicitud()));
+        this.aprobadas().forEach(s => addSolicitud(s, 'aprobada', 'Aprobada', false)); // aprobadas: el usuario no puede cancelar
         // Solicitudes PENDIENTES
         this.pendientes().forEach(s => addSolicitud(s, 'pendiente', 'Pdte. validar', this.allowCancelSolicitud()));
 
@@ -544,6 +589,20 @@ export class VacacionCalendarComponent {
         const marker=this.markerMap().get(date);
 
         if(marker) {
+            if (marker.kind === 'festivo' && this.selectionMode() === 'multiple' && this.allowFestivoSelection()) {
+                const [y, m, d]=date.split('-').map(Number);
+                const currentTs = new Date(y, m - 1, d).getTime();
+                const minTs = this.minDateTs();
+                const maxTs = this.maxDateTs();
+
+                const isOutOfRange = (minTs !== null && currentTs < minTs) || (maxTs !== null && currentTs > maxTs);
+
+                if (!isOutOfRange) {
+                    this.dayClicked.emit({date, jsDate: new Date(y, m - 1, d)});
+                    return;
+                }
+            }
+
             this.popoverData.set({
                 kind: marker.kind,
                 label: marker.label,

@@ -84,11 +84,12 @@
                 <td>{{ unidad.supervisor?.nombreCompleto }}</td>
                 <td class="py-3 px-4">{{ unidad.contacto?.zona?.nombre }}</td>
                 <td class="py-3 px-4">
-          <span
-              class="inline-flex items-center gap-2 px-2 py-1 rounded-full text-xs font-medium {{ unidad.activo ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-            <i class="pi {{ unidad.activo ? 'pi-check-circle' : 'pi-arrow-circle-down' }}"></i>
-              {{ unidad.activo ? 'Activo' : 'Inactivo' }}
-          </span>
+                    @if (unidad.activo) {
+                        <app-status-badge label="Activo" color="green"></app-status-badge>
+                    }
+                    @else {
+                        <app-status-badge label="Inactivo" color="yellow"></app-status-badge>
+                    }
                 </td>
                 <td class="py-3 px-4">
                     <div class="flex gap-1">

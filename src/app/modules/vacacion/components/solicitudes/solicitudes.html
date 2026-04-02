@@ -1,0 +1,124 @@
+<app-title description="Gestor de autorizaciones" iconClass="i-autcalendar"
+           title="Gestión de ausencias"></app-title>
+
+<p-panel class="mt-3">
+    <ng-template #header>
+        <p-selectButton
+            (ngModelChange)="onFilterChange($event)"
+            [ngModel]="statusFilter()"
+            [options]="filterOptions"
+            optionLabel="label"
+            optionValue="value"/>
+    </ng-template>
+    <p-table #dt (onLazyLoad)="onPageChange($event)"
+             [first]="currentPage() * pageSize()"
+             [lazy]="true"
+             [loading]="loading()"
+             [paginator]="true"
+             [rowsPerPageOptions]="[10, 20, 30]"
+             [rows]="pageSize()"
+             [showCurrentPageReport]="true"
+             [totalRecords]="totalRecords()"
+             [value]="solicitudes"
+             currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} registros">
+        <ng-template #header>
+            <tr>
+                <th>Colaborador</th>
+                <th>Flujo de aprobación</th>
+                <th>Estatus</th>
+                <th>Fechas solicitadas</th>
+                <th class="text-center">Autorizados</th>
+                <th>Acciones</th>
+            </tr>
+        </ng-template>
+        <ng-template #body let-item>
+            <tr>
+
+                <!-- Colaborador -->
+                <td class="py-3">
+                    <div class="flex flex-col gap-1.5">
+                        <div class="flex items-center gap-2">
+                            <img alt="icon" height="18" ngSrc="/assets/icon/cheque.png" width="18"><span
+                            class="font-semibold text-blue-900">
+                                {{ item.colaborador.nombreCompleto }}</span>
+                        </div>
+                        <div class="text-sm font-medium">
+                            <span>{{ item.unidad }}</span>
+                            <div class="mt-3">Solicitud:  {{ item.tipoSolicitud }} - #{{ item.folioSolicitud }}</div>
+                        </div>
+                    </div>
+                </td>
+                <td class="py-3">
+                    <app-pipeline-aprobacion [estatusJefe]="item.estatusJefe"
+                                             [estatusRrhh]="item.estatusRRHH"></app-pipeline-aprobacion>
+                </td>
+                <td class="py-3">
+                    @if (item.estatusGeneral === 'APROBADA') {
+                        <app-status-badge [label]="item.estatusGeneral" color="green"></app-status-badge>
+
+                    } @else if (item.estatusGeneral === 'PENDIENTE') {
+                        <app-status-badge [label]="item.estatusGeneral" color="yellow"></app-status-badge>
+                    } @else {
+                        <app-status-badge [label]="item.estatusGeneral" color="red"></app-status-badge>
+                    }
+                </td>
+
+                <!-- Fechas solicitadas -->
+                <td class="py-3">
+                    <div class="flex flex-wrap gap-1 max-w-37.5">
+                        @for (day of item.solicitudes; track day.id) {
+                            <div
+                                class="flex flex-col items-center justify-center w-8 h-10 overflow-hidden shadow-md rounded-b-md">
+                                <div
+                                    [class.bg-amber-200]="day.estatus === 'PENDIENTE'"
+                                    [class.bg-green-700]="day.estatus === 'APROBADA'"
+                                    [class.bg-red-700]="day.estatus === 'CANCELADA'"
+                                    [class.text-amber-900]="day.estatus === 'PENDIENTE'"
+                                    [class.text-white]="day.estatus === 'APROBADA' || day.estatus === 'CANCELADA'"
+                                    class="w-full text-[8px] font-semibold uppercase text-center py-px">
+                                    {{ day.fecha | date:'MMM' }}
+                                </div>
+
+                                <!-- Día -->
+                                <div [ngClass]="{
+       'text-emerald-800': day.estatus==='APROBADA',
+       'text-rose-500': day.estatus==='CANCELADA',
+       'text-amber-600': day.estatus==='PENDIENTE'
+     }" class="flex-1 w-full flex items-center justify-center">
+      <span [class.line-through]="day.estatus==='CANCELADA'"
+            class="text-[11px] font-bold">
+        {{ day.fecha | date:'dd' }}
+      </span>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </td>
+
+                <!-- Total días -->
+                <td class="text-center">
+                    <div
+                        class="flex flex-col items-center justify-center">
+                        <span class="text-md font-bold">{{ item.diasAprobados }}/{{ item.diasTotalSolicitud }}</span>
+                        <span class="text-sm">Días</span>
+                    </div>
+                </td>
+
+                <!-- Acciones -->
+                <td>
+                    <p-button [routerLink]="['detalles',item.folioSolicitud]" icon="pi pi-eye" label="Ver solicitud"/>
+                </td>
+
+            </tr>
+        </ng-template>
+        <ng-template #emptymessage>
+            <tr>
+                <td class="text-center py-8 text-gray-500" colspan="6">
+                    <app-state description="No se encontraron solicitudes" title="Sin registros"/>
+                </td>
+            </tr>
+        </ng-template>
+    </p-table>
+</p-panel>
+
+

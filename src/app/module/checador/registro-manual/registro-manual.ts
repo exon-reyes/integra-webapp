@@ -17,7 +17,7 @@ import {Panel} from "primeng/panel";
 import {StateComponent} from "@/components/state.component";
 import {PhotoViewerComponent} from '@/shared/component/photo-viewer/photo-viewer.component';
 import {PhotoViewerService} from '@/shared/component/photo-viewer/photo-viewer.service';
-import {AsistenciaCardComponent} from '@/shared/component/asistencia-card/asistencia-card.component';
+import {AsistenciaCardComponent} from '@/components/asistencia/asistencia-card/asistencia-card.component';
 import {ConfirmationService, MessageService} from "primeng/api";
 import {ConfirmDialogModule} from 'primeng/confirmdialog';
 import {

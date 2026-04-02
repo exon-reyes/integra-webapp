@@ -7,24 +7,27 @@ import {VacacionCalendarComponent} from '../calendar-widget/vacacion-calendar.co
 import {DashboardVacacion, Festivo} from '../../models/vacacion.model';
 import {Button} from "primeng/button";
 import {RouterLink} from "@angular/router";
+import {ResumenVacaciones} from "@/components/resumen-vacaciones";
+import {ResumenDescansos} from "@/components/resumen-descansos";
 
 @Component({
     selector: 'app-dashboard-vacaciones', standalone: true, changeDetection: ChangeDetectionStrategy.OnPush, imports: [
-        Title, SpinnerComponent, VacacionCalendarComponent, Button, RouterLink,
+        Title, SpinnerComponent, VacacionCalendarComponent, Button, RouterLink, ResumenVacaciones, ResumenDescansos,
     ], template: `
         <!-- mis-vacaciones.component.html -->
         @if (dashboard()) {
             <div class="font-sans">
-                <app-title title="Mis vacaciones" imageSrc="/assets/icon/vacation.svg"
-                           description="Gestiona y solicita tus días de descanso"/>
+                <app-title title="Mis solicitudes" imageSrc="/assets/icon/vacation.svg"
+                           description="Gestión de vacaciones dignas y solicitudes de descanso"/>
 
                 <hr class="border-gray-200 mb-6"/>
                 <div class="flex flex-row gap-2 mb-4 justify-between">
                     <div class="flex flex-row gap-2">
-                        <p-button label="Registrar descansos" routerLink="/integra/vacaciones/descansos"></p-button>
-                        <p-button label="Solicitar vacaciones" routerLink="/integra/vacaciones/solicitar"></p-button>
+                        <p-button label="Solicitar vacaciones" icon="pi pi-crown" severity="warn"
+                                  routerLink="/integra/vacaciones/solicitar"></p-button>
+                        <p-button label="Registrar descansos" icon="pi pi-calendar-clock"
+                                  routerLink="/integra/vacaciones/descansos"></p-button>
                     </div>
-                    <p-button icon="pi pi-history"></p-button>
                 </div>
                 <div class="flex gap-6">
                     <!-- Sidebar -->
@@ -50,97 +53,17 @@ import {RouterLink} from "@angular/router";
                                 </button>
                             </div>
                         </div>
-
-                        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 w-full">
-                            <h6>
-                                Resumen de Vacaciones
-                            </h6>
-
-                            <div class="space-y-3">
-
-                                <!-- Disponibles -->
-                                <div class="flex flex-col border-b pb-3">
-            <span class="text-3xl font-semibold text-blue-600">
-                {{ dashboard().periodoVacacional.diasRestantes }}
-            </span>
-                                    <span class="text-sm text-gray-600">
-                Días disponibles
-            </span>
-                                    <span class="text-xs text-gray-400">
-                de {{ dashboard().periodoVacacional.diasHabilitados }} totales del año
-            </span>
-                                </div>
-
-                                <!-- Aprobados por tomar -->
-                                <div class="flex flex-col border-b pb-3">
-            <span class="text-2xl font-semibold text-blue-500">
-                {{ dashboard().vacaciones.sumaAprobadosPorTomar }}
-            </span>
-                                    <span class="text-sm text-gray-500">
-                Días aprobados (por tomar)
-            </span>
-                                </div>
-
-                                <!-- Pendientes -->
-                                <div class="flex flex-col border-b pb-3">
-            <span class="text-2xl font-semibold text-amber-600">
-                {{ dashboard().vacaciones.sumaPendientesAprobacion }}
-            </span>
-                                    <span class="text-sm text-gray-500">
-                Pendientes de aprobación
-            </span>
-                                </div>
-
-                                <!-- Disfrutados -->
-                                <div class="flex flex-col border-b pb-3">
-            <span class="text-2xl font-semibold text-green-600">
-                {{ dashboard().vacaciones.sumaDisfrutados }}
-            </span>
-                                    <span class="text-sm text-gray-500">
-                Días disfrutados
-            </span>
-                                </div>
-
-
-
-                                <!-- Cancelados -->
-                                <div class="flex flex-col">
-            <span class="text-2xl font-semibold text-gray-400">
-{{ dashboard().vacaciones.sumaCancelados }}
-            </span>
-                                    <span class="text-sm text-gray-500">
-                Días cancelados
-            </span>
-                                </div>
-
-                            </div>
-                        </div>
-
+                        <!--Resumen vacaciones-->
+                        <app-resumen-vacaciones
+                            [vacaciones]="dashboard().vacaciones"
+                            [periodo]="dashboard().periodoVacacional">
+                        </app-resumen-vacaciones>
+                        <div class="mt-3"></div>
 
                         <!-- Resumen de Descansos/Permisos -->
-                        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 w-full">
-                            <h6>Permisos / Descansos</h6>
-                            <div class="space-y-3">
-                                <div class="flex flex-col border-b pb-3">
-                                    <span class="text-2xl font-semibold text-amber-600">
-                                        {{ dashboard().descansos?.pendientes?.length || 0 }}
-                                    </span>
-                                    <span class="text-sm text-gray-500">Pendientes</span>
-                                </div>
-                                <div class="flex flex-col border-b pb-3">
-                                    <span class="text-2xl font-semibold text-emerald-600">
-                                        {{ dashboard().descansos?.aprobadas?.length || 0 }}
-                                    </span>
-                                    <span class="text-sm text-gray-500">Aprobados</span>
-                                </div>
-                                <div class="flex flex-col">
-                                    <span class="text-2xl font-semibold text-gray-400">
-                                        {{ dashboard().descansos?.sumaCanceladas || 0 }}
-                                    </span>
-                                    <span class="text-sm text-gray-500">Cancelados</span>
-                                </div>
-                            </div>
-                        </div>
+                        <app-resumen-descansos
+                            [descansos]="dashboard().descansos">
+                        </app-resumen-descansos>
 
                         <div class="border-t border-gray-200 py-4 space-y-3 text-sm">
 
@@ -180,7 +103,7 @@ import {RouterLink} from "@angular/router";
                             [descansos]="dashboard()?.descansos?.aprobadas || []"
                             [descansosPendientes]="dashboard()?.descansos?.pendientes || []"
                             [aprobadas]="dashboard()?.vacaciones?.aprobadas || []"
-                            [aprobadasPorTomar]="dashboard()?.vacaciones?.aprobadasPorTomar || []"
+
                             [disfrutadas]="dashboard()?.vacaciones?.disfrutadas ||[]"
                             [pendientes]="dashboard()?.vacaciones?.pendientes || []"
                             [canceladas]="dashboard()?.vacaciones?.canceladas || []"

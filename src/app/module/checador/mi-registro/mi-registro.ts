@@ -20,7 +20,7 @@ import {Autoridades} from "@/core/Autoridades";
 import {JWTService} from "@/core/security/JWTService";
 import {DateTimeService} from "@/module/checador/registro-manual/services/datetime.service";
 
-import {AsistenciaCardComponent} from "@/shared/component/asistencia-card/asistencia-card.component";
+import {AsistenciaCardComponent} from "@/components/asistencia/asistencia-card/asistencia-card.component";
 import {StateComponent} from "@/components/state.component";
 import {Title} from "@/components/title";
 import {Button} from "primeng/button";

@@ -39,8 +39,7 @@ export const Autoridades={
     // ================== GESTIÓN ASISTENCIA ==================
     // Visualización del espacio Gestión de asistencia
     ASISTENCIA_VER: 'C',
-    ASISTENCIA_MI_REGISTRO: 'CF1',
-    // === RELOJ CHECADOR ===
+    ASISTENCIA_MI_REGISTRO: 'CF1', // === RELOJ CHECADOR ===
     // Acceso a la aplicación Reloj Checador
     RELOJ_CHECADOR_ACCESO: 'CA1',
 
@@ -118,6 +117,14 @@ export const Autoridades={
     TIPO_CUENTA_CONSULTAR_PROVEEDORES: 'DD2', // Editar información del proveedor de acceso
     TIPO_CUENTA_EDITAR_PROVEEDOR: 'DD3', // Eliminar proveedores de acceso
     TIPO_CUENTA_ELIMINAR_PROVEEDOR: 'DD4',
+
+    //GESTION-VACACIONES
+    VACACIONES_CREAR_SOLICITUD_AUSENCIAS: 'EA2',
+    VACACIONES_CONSULTAR_SOLICITUDES: 'EA1',
+    VACACIONES_GESTOR_CONSULTAR:'EB1',
+    VACACIONES_AUTORIZACION_NIVEL1: 'EB4',
+    VACACIONES_AUTORIZACION_NIVEL2: 'EB5',
+
 
 } as const;
 

@@ -4,71 +4,93 @@ import {Button} from 'primeng/button';
 import {MessageService} from 'primeng/api';
 import {VacacionAdminService, VacacionService} from '../../services/vacacion.service';
 import {DashboardVacacion, Festivo, SolicitudVacacionRequest} from '../../models/vacacion.model';
-import {Panel} from 'primeng/panel';
 import {JWTService} from '@/core/security/JWTService';
 import {VacacionCalendarComponent} from '../calendar-widget/vacacion-calendar.component';
 import {Title} from '@/components/title';
 import {Dialog} from 'primeng/dialog';
 import {DatePicker} from 'primeng/datepicker';
 import {InputText} from 'primeng/inputtext';
+import {ResumenVacaciones} from '@/components/resumen-vacaciones';
+import {RouterLink} from "@angular/router";
+import {HasPermissionDirective} from "@/core/security/HasPermissionDirective";
+import {Autoridades} from "@/core/Autoridades";
 
 @Component({
     selector: 'app-solicitud-vacaciones', standalone: true, imports: [
-        FormsModule, Button, Panel, VacacionCalendarComponent, Title, Dialog, DatePicker, InputText,
+        FormsModule, Button, VacacionCalendarComponent, Title, Dialog, DatePicker, InputText, ResumenVacaciones,
+        RouterLink, HasPermissionDirective,
     ], template: `
         <app-title imageSrc="/assets/icon/vacation.svg"
-                   title="Solicitar Vacaciones"
+                   title="Gestión de vacaciones"
                    description="Selecciona los días que deseas tomar como vacaciones">
         </app-title>
 
-        <p-panel class="mt-3">
-            <ng-template #header>
-                <div class="flex items-center gap-2 my-4">
-                    <button (click)="cambiarAnio(-1)" class="p-1 text-gray-400 hover:text-gray-600 transition-colors">
-                        <i class="pi pi-chevron-left"></i>
-                    </button>
-                    <span class="text-sm font-semibold text-gray-700">{{ calendarYear() }}</span>
-                    <button (click)="cambiarAnio(1)" class="p-1 text-gray-400 hover:text-gray-600 transition-colors">
-                        <i class="pi pi-chevron-right"></i>
-                    </button>
-                </div>
-            </ng-template>
-            <div class="flex items-center gap-4 p-4 mb-6">
-                <!-- Imagen -->
-                <img src="/assets/img/calendar.webp" alt="Imagen descriptiva" class="w-30 h-20 rounded">
+        <hr class="border-gray-200 mb-6"/>
+        <div class="flex flex-row gap-2 mb-4 justify-between">
+            <div class="flex flex-row gap-2">
+                <p-button label="Registrar descansos" icon="pi pi-calendar-clock"
+                          routerLink="/integra/vacaciones/descansos" severity="warn"></p-button>
 
-                <!-- Texto -->
-                <div class="flex flex-col">
-                    <div class="text-lg font-semibold text-orange-600">Proceso de cancelación</div>
-                    <div class="text-gray-600">Para cancelar una solicitud de vacaciones, haga clic en la fecha del
-                        calendario y seleccione 'Cancelar día solicitado'. No es posible cancelar días disfrutados.
+                <p-button label="Mis solicitudes" icon="pi pi-home"
+                          routerLink="/integra/vacaciones/dashboard"></p-button>
+            </div>
+            <p-button icon="pi pi-refresh"></p-button>
+        </div>
+        <div class="flex gap-6">
+            <!-- Sidebar -->
+            <div class="w-60 shrink-0 space-y-3">
+                <!-- Year selector -->
+                <div class="flex items-center gap-2 mb-4">
+                    <span class="text-sm font-medium text-gray-600">Vacaciones</span>
+                    <div class="flex items-center gap-1 ml-auto">
+                        <button (click)="cambiarAnio(-1)"
+                                class="p-1 text-gray-400 hover:text-gray-600 transition-colors">
+                            <svg class="w-6 h-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                      d="M15 19l-7-7 7-7"/>
+                            </svg>
+                        </button>
+                        <span class="text-sm font-semibold text-gray-700">{{ calendarYear() }}</span>
+                        <button (click)="cambiarAnio(1)"
+                                class="p-1 text-gray-400 hover:text-gray-600 transition-colors">
+                            <svg class="w-6 h-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                      d="M9 5l7 7-7 7"/>
+                            </svg>
+                        </button>
                     </div>
                 </div>
+
+                <app-resumen-vacaciones
+                    [vacaciones]="dashboard()?.vacaciones"
+                    [periodo]="dashboard()?.periodoVacacional">
+                </app-resumen-vacaciones>
             </div>
 
-            <!-- Calendario -->
-            <br>
-            <app-vacacion-calendar
-                [year]="calendarYear()"
-                selectionMode="multiple"
-                [festivos]="festivos()"
-                [minDate]="hoy"
-                [maxDate]="maxDate()"
-                [anioGestion]="dashboard()?.periodoVacacional?.anioGestion"
-                [descansos]="dashboard()?.descansos?.aprobadas || []"
-                [descansosPendientes]="dashboard()?.descansos?.pendientes || []"
-                [aprobadas]="dashboard()?.vacaciones?.aprobadas || []"
-                [aprobadasPorTomar]="dashboard()?.vacaciones?.aprobadasPorTomar || []"
-                [disfrutadas]="dashboard()?.vacaciones?.disfrutadas || []"
-                [pendientes]="dashboard()?.vacaciones?.pendientes || []"
-                [canceladas]="dashboard()?.vacaciones?.canceladas || []"
-                [descansosCancelados]="dashboard()?.descansos?.canceladas || []"
-                [allowCancelSolicitud]="true"
-                (dayClicked)="onDayClicked($event)"
-                (solicitudCancel)="cancelarSolicitud($event)"
-                (solicitudReactivar)="reactivarSolicitud($event)">
-            </app-vacacion-calendar>
-        </p-panel>
+            <!-- Calendar section -->
+            <div class="flex-1 bg-white rounded-xl border border-gray-200 p-5">
+                <app-vacacion-calendar
+                    [year]="calendarYear()"
+                    selectionMode="multiple"
+                    [festivos]="festivos()"
+                    [minDate]="hoy"
+                    [maxDate]="maxDate()"
+                    [anioGestion]="dashboard()?.periodoVacacional?.anioGestion"
+                    [descansos]="dashboard()?.descansos?.aprobadas || []"
+                    [descansosPendientes]="dashboard()?.descansos?.pendientes || []"
+                    [aprobadas]="dashboard()?.vacaciones?.aprobadas || []"
+
+                    [disfrutadas]="dashboard()?.vacaciones?.disfrutadas || []"
+                    [pendientes]="dashboard()?.vacaciones?.pendientes || []"
+                    [canceladas]="dashboard()?.vacaciones?.canceladas || []"
+                    [descansosCancelados]="dashboard()?.descansos?.canceladas || []"
+                    [allowCancelSolicitud]="true"
+                    (dayClicked)="onDayClicked($event)"
+                    (solicitudCancel)="cancelarSolicitud($event)"
+                    (solicitudReactivar)="reactivarSolicitud($event)">
+                </app-vacacion-calendar>
+            </div>
+        </div>
 
         <!-- Dialog para registrar vacaciones -->
         <p-dialog
@@ -158,6 +180,7 @@ import {InputText} from 'primeng/inputtext';
                         (onClick)="dialogVisible = false">
                     </p-button>
                     <p-button
+                        *hasPermission="Autoridades.VACACIONES_CREAR_SOLICITUD_AUSENCIAS"
                         label="Confirmar"
                         icon="pi pi-check"
                         [disabled]="guardando() || !puedeEnviar()"
@@ -209,9 +232,7 @@ export class SolicitudVacacionesComponent implements OnInit {
         vac?.pendientes?.forEach(v => {
             if(v.fecha) set.add(v.fecha);
         });
-        vac?.aprobadasPorTomar?.forEach(v => {
-            if(v.fecha) set.add(v.fecha);
-        });
+
         vac?.disfrutadas?.forEach(v => {
             if(v.fecha) set.add(v.fecha);
         });
@@ -395,4 +416,6 @@ export class SolicitudVacacionesComponent implements OnInit {
         const d=String(date.getDate()).padStart(2, '0');
         return `${y}-${m}-${d}`;
     }
+
+    protected readonly Autoridades=Autoridades;
 }

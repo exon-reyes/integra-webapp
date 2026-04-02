@@ -91,7 +91,7 @@ const ALERT_CONFIG: Record<AlertType, AlertConfig>={
                         </div>
                         @if (description) {
                             <div class="mt-1">
-                                <p class="text-sm" [ngClass]="config().descriptionClass">
+                                <p class="text-sm font-medium" [ngClass]="config().descriptionClass">
                                     {{ description }}
                                 </p>
                             </div>

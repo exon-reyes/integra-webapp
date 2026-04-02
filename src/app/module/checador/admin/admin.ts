@@ -28,7 +28,7 @@ import {InputText} from 'primeng/inputtext';
 import {SpinnerService} from '@/shared/service/spinner.service';
 import {PhotoViewerComponent} from '@/shared/component/photo-viewer/photo-viewer.component';
 import {PhotoViewerService} from '@/shared/component/photo-viewer/photo-viewer.service';
-import {AsistenciaCardComponent} from '@/shared/component/asistencia-card/asistencia-card.component';
+import {AsistenciaCardComponent} from '@/components/asistencia/asistencia-card/asistencia-card.component';
 import {CatalogoEmpleado, CatalogoEmpleadoService} from "@/service/catalogo-empleado.service";
 import {StatWidgetComponent} from "@/components/stat-widget";
 import {EmpleadoSesionService} from "@/core/empleado-sesion-service";

@@ -4,6 +4,7 @@ import {environment} from '@env/environment';
 import {HttpClient} from '@angular/common/http';
 import {Observable, shareReplay} from 'rxjs';
 import {Gestor} from '@/models/Gestor';
+import {PeriodoVacacional} from "@/modules/vacacion/models/vacacion.model";
 
 export interface FiltroEmpleado {
     id?: number;
@@ -35,8 +36,7 @@ export interface CatalogoEmpleado {
         nombre?: string;
     };
     contacto?: {
-        email?: string;
-        telefono?: string;
+        email?: string; telefono?: string;
     };
     gestores?: Gestor[];
     estatus?: string;
@@ -49,6 +49,7 @@ export interface CatalogoEmpleado {
     primerResponsable?: CatalogoEmpleado;
     segundoResponsable?: CatalogoEmpleado;
     fechaBaja?: Date;
+    periodoVacacional?: PeriodoVacacional;
 }
 
 @Injectable({

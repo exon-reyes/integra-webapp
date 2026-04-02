@@ -14,7 +14,7 @@
             <!-- Caption: acciones -->
             <ng-template #caption>
                 <div class="flex">
-                    <p-button (onClick)="mostrarDialogoNuevoRol=true" icon="pi pi-plus" label="Nuevo rol"
+                    <p-button *hasPermission="Autoridades.ROLES_CREAR" (onClick)="mostrarDialogoNuevoRol=true" icon="pi pi-plus" label="Nuevo rol"
                               severity="success"/>
                 </div>
             </ng-template>

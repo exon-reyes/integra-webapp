@@ -74,15 +74,21 @@ export class AppMenu implements OnInit {
                     },
                 ],
             }, {
-                id: 'gv', label: 'Gestión de vacaciones',
-                icon: 'isc i-register',
-                items: [
+                id: 'gv', label: 'Gestión de vacaciones', icon: 'isc i-register', items: [
                     {
                         id: 'mv',
-                        label: 'Mis vacaciones',
+                        label: 'Mis solicitudes',
+                        permission: Autoridades.VACACIONES_CONSULTAR_SOLICITUDES,
                         icon: 'isc i-vacation',
                         routerLink: ['vacaciones/dashboard'],
-                    },
+
+                    }, {
+                        id: 'gsv',
+                        label: 'Gestor de solicitudes',
+                        icon: 'isc i-autcalendar',
+                        permission: Autoridades.VACACIONES_GESTOR_CONSULTAR,
+                        routerLink: ['vacaciones/autorizacion'],
+                    }
                 ],
             }, {
                 id: 'ga', label: 'GESTIÓN DE ASISTENCIA', icon: 'isc i-schedule', items: [
