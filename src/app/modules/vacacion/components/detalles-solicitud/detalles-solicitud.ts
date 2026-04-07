@@ -14,7 +14,13 @@ import {JWTService} from "@/core/security/JWTService";
 import {Autoridades} from "@/core/Autoridades";
 import {SpinnerComponent} from "@/components/spinner.component";
 import {Title} from "@/components/title";
-
+import {AlertComponent} from "@/components/alert";
+import {ConfirmationService} from "primeng/api";
+import {ConfirmDialogModule} from "primeng/confirmdialog";
+import {DialogModule} from "primeng/dialog";
+import {CheckboxModule} from "primeng/checkbox";
+import {SelectButtonModule} from "primeng/selectbutton";
+import {FormsModule} from "@angular/forms";
 
 @Component({
     selector: 'app-detalles-solicitud', changeDetection: ChangeDetectionStrategy.OnPush, imports: [
@@ -27,18 +33,34 @@ import {Title} from "@/components/title";
         NgOptimizedImage,
         Button,
         SpinnerComponent,
-        Title
-    ], templateUrl: './detalles-solicitud.html', styleUrl: './detalles-solicitud.scss'
+        Title,
+        Title,
+        AlertComponent,
+        ConfirmDialogModule,
+        DialogModule,
+        CheckboxModule,
+        SelectButtonModule,
+        FormsModule
+    ], providers: [ConfirmationService], templateUrl: './detalles-solicitud.html', styleUrl: './detalles-solicitud.scss'
 })
 export class DetallesSolicitud {
     folio=input.required<number, unknown>({transform: numberAttribute});
     detalles=signal<DetalleSolicitudDTO | undefined>(undefined);
     loading=signal(false);
+    mostrarDialogoDias=signal(false);
+    diasSeleccionados=signal<FechaSolicitudDetalle[]>([]);
+    estatusSeleccionado=signal<string | null>(null);
+    opcionesEstatus=[
+        {label: 'Aprobar', value: 'APROBADA', icon: 'pi pi-check', severity: 'success'},
+        {label: 'Cancelar', value: 'CANCELADA', icon: 'pi pi-times', severity: 'danger'},
+        {label: 'Pendiente', value: 'PENDIENTE', icon: 'pi pi-clock', severity: 'warn'}
+    ];
     protected readonly getBadgeClasses=getBadgeClasses;
     protected readonly Autoridades=Autoridades;
     private readonly vacacionService=inject(VacacionAdminService);
     private userSession=inject(JWTService);
     protected currentUserId=this.userSession.getUser().employeeName.id;
+    private readonly confirmationService=inject(ConfirmationService);
 
     constructor() {
         console.log(this.currentUserId);
@@ -87,37 +109,34 @@ export class DetallesSolicitud {
         return d.fechaSolicituds.filter(f => f.estatus === status).length;
     }
 
-    marcarDia(day: FechaSolicitudDetalle, estatus: string): void {
-        const nivel = this.resolverNivelActual();
-        if (!nivel) return;
+    abrirDialogoDias() {
+        this.diasSeleccionados.set([]);
+        this.estatusSeleccionado.set(null);
+        this.mostrarDialogoDias.set(true);
+    }
+
+    guardarCambiosDias() {
+        const nivel=this.resolverNivelActual();
+        const seleccionados=this.diasSeleccionados();
+        const estatus=this.estatusSeleccionado();
+
+        if(!nivel || seleccionados.length === 0 || !estatus) return;
+
         this.loading.set(true);
-        
-        this.vacacionService.actualizarEstatusSolicitudGranular(day.id, {
-            empleadoId: this.currentUserId,
-            nuevoEstatus: estatus, nivel,
+        const diasIds=seleccionados.map(d => d.id);
+
+        this.vacacionService.actualizarEstatusSolicitudGranular({
+            empleadoId: this.currentUserId, nuevoEstatus: estatus, nivel, diasIds
         }).subscribe({
-            next: () => this.recargarDetalles(),
-            error: () => this.loading.set(false),
+            next: () => {
+                this.mostrarDialogoDias.set(false);
+                this.recargarDetalles();
+            }, error: () => this.loading.set(false),
         });
     }
 
-    /** Determina el nivel de autorización del usuario actual (1 o 2), o null si no aplica. */
-    private resolverNivelActual(): 1 | 2 | null {
-        const d = this.detalles();
-        if (!d) return null;
-        if (this.currentUserId === d.primerJefe?.id || this.puedeActualizarNivel1) return 1;
-        if (this.currentUserId === d.segundoJefe?.id || this.puedeActualizarNivel2) return 2;
-        return null;
-    }
-
-    private recargarDetalles(): void {
-        this.vacacionService.obtenerDetallesSolicitud(this.folio()).subscribe({
-            next: (res) => {
-                this.detalles.set(res.data);
-                this.loading.set(false);
-            },
-            error: () => this.loading.set(false),
-        });
+    isSelected(day: any) {
+        return this.diasSeleccionados().some(d => d.id === day.id);
     }
 
     actualizarEstatusNivel(nivel: 1 | 2,
@@ -125,10 +144,10 @@ export class DetallesSolicitud {
         const currentDetalles=this.detalles();
         if(currentDetalles) {
             this.loading.set(true);
-
             this.vacacionService.actualizarEstatusSolicitud({
                 empleadoId: this.currentUserId,
                 folioSolicitud: this.folio(),
+                id: currentDetalles.id,
                 nuevoEstatus: estatus,
                 tipoSolicitud: currentDetalles.tipoSolicitud || 'VACACION',
                 nivel: nivel
@@ -144,6 +163,40 @@ export class DetallesSolicitud {
                 }, error: () => this.loading.set(false)
             });
         }
+    }
+
+    confirmarActualizacionGlobal(nivel: 1 | 2,
+                                 estatus: string) {
+        const accion=estatus === 'CANCELADA' ? 'cancelar' : (estatus === 'APROBADA' ? 'aprobar' : 'revertir a pendiente');
+        this.confirmationService.confirm({
+            message: `¿Estás seguro de que deseas ${accion} esta solicitud globalmente? Esto aplicará de forma incondicional el estatus <b>${estatus}</b> a todos los días de la solicitud para el nivel que operas.`,
+            header: 'Confirmar actualización global',
+            acceptLabel: 'Sí, continuar',
+            rejectLabel: 'Cerrar',
+            rejectButtonStyleClass: 'p-button-text',
+            acceptButtonStyleClass: estatus === 'CANCELADA' ? 'p-button-danger' : 'p-button-primary',
+            accept: () => {
+                this.actualizarEstatusNivel(nivel, estatus);
+            }
+        });
+    }
+
+    /** Nivel más alto disponible: 2 tiene prioridad sobre 1. */
+    private resolverNivelActual(): 1 | 2 | null {
+        const d=this.detalles();
+        if(!d) return null;
+        if(this.currentUserId === d.segundoJefe?.id || this.puedeActualizarNivel2) return 2;
+        if(this.currentUserId === d.primerJefe?.id || this.puedeActualizarNivel1) return 1;
+        return null;
+    }
+
+    private recargarDetalles(): void {
+        this.vacacionService.obtenerDetallesSolicitud(this.folio()).subscribe({
+            next: (res) => {
+                this.detalles.set(res.data);
+                this.loading.set(false);
+            }, error: () => this.loading.set(false),
+        });
     }
 
 }

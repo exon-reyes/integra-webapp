@@ -17,7 +17,7 @@ import {ResumenDescansos} from "@/components/resumen-descansos";
         <!-- mis-vacaciones.component.html -->
         @if (dashboard()) {
             <div class="font-sans">
-                <app-title title="Mis solicitudes" imageSrc="/assets/icon/vacation.svg"
+                <app-title title="Dashboard Solicitudes" imageSrc="/assets/icon/vacation.svg"
                            description="Gestión de vacaciones dignas y solicitudes de descanso"/>
 
                 <hr class="border-gray-200 mb-6"/>
@@ -136,7 +136,7 @@ export class DashboardVacacionesComponent implements OnInit {
     cambiarAnio(delta: number) {
         this.calendarYear.update(y => y + delta);
         this.cargarFestivos(this.calendarYear())
-
+        this.cargarDashboard();
     }
 
     private cargarFestivos(anio: number) {
@@ -147,7 +147,7 @@ export class DashboardVacacionesComponent implements OnInit {
 
     private cargarDashboard() {
         this.loading.set(true);
-        this.vacacionService.getDashboard(this.empleadoId()).subscribe({
+        this.vacacionService.getDashboard(this.empleadoId(), this.calendarYear()).subscribe({
             next: (data) => this.dashboard.set(data.data), error: (err) => {
                 console.error('Error cargando dashboard:', err);
                 this.loading.set(false);

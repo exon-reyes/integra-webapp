@@ -151,6 +151,7 @@ export interface FechaSolicitudDetalle {
 
 export interface DetalleSolicitudDTO {
     anioGestion: number;
+    id?:number;
     diasHabilitados: number;
     diasSolicitados: number;
     diasTomados: number;
@@ -158,6 +159,7 @@ export interface DetalleSolicitudDTO {
     empleado: CatalogoEmpleado;
     estatusPrimerResponsable: string;
     estatusSegundoResponsable: string;
+    fechaCreacion: string;
     fechaSolicituds: FechaSolicitudDetalle[];
     folioSolicitud: number;
     primerJefe?: {
@@ -175,8 +177,9 @@ export interface DetalleSolicitudDTO {
 export interface NuevoEstatusSolicitud {
     empleadoId: number;
     folioSolicitud?: number;
-    idSolicitud?: number;
+    id?: number;
     nuevoEstatus: string;
     tipoSolicitud?: string;
     nivel: number;
+    diasIds?: number[];
 }

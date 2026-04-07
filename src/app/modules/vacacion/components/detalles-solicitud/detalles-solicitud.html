@@ -1,23 +1,25 @@
 @if (loading()) {
     <app-spinner [modal]="true"></app-spinner>
 } @else if (detalles(); as data) {
-    <div class="flex items-center gap-4 w-full justify-between">
-        <app-title [description]="'#'+ detalles().folioSolicitud+ ' - '+ detalles().empleado.unidad.nombreCompleto || 'Unidad no especificada'"
-                   [title]="detalles().tipoSolicitud.toUpperCase() + ' - ' + detalles().empleado.nombreCompleto"
-                   imageSrc="/assets/icon/cheque.png"></app-title>
+    <div class="flex items-center gap-4 w-full justify-between mb-3">
+        <app-title
+            [description]="'#'+ detalles().folioSolicitud+ ' - '+ detalles().empleado.nombreCompleto+' - '+detalles().empleado.unidad.nombreCompleto || 'Unidad no especificada'"
+            [title]="detalles().tipoSolicitud==='VACACION' ? 'SOLICITUD DE VACACIONES' : 'SOLICITUD DE DESCANSO'"
+            imageSrc="/assets/icon/cheque.png"></app-title>
         <app-status-badge [color]="getBadgeClasses(detalles().estatusGlobal)"
                           [label]="detalles().estatusGlobal"></app-status-badge>
     </div>
-    <div class="mt-3 flex items-center gap-2 text-sm bg-slate-50 border border-slate-200 rounded-md px-3 py-2">
-        <i class="pi pi-info-circle text-blue-500"></i>
-        <span class="leading-snug">
-        Se marcará como <span class="font-semibold text-green-600">Aprobada</span> cuando todos los días activos estén
-        aprobados.</span>
-    </div>
+    <app-alert
+        description="El estatus global y el saldo de vacaciones del colaborador se actualizarán una vez que Recursos Humanos realice la validación final"
+        title="Actualización de estatus"
+        type="info"/>
 
     <div class="flex flex-col gap-3 py-2">
         <!-- Saldos -->
-        <p-panel header="Saldos ({{ data.anioGestion }})">
+        <p-panel>
+            <ng-template #header>
+                <app-title [title]="'Saldos '+data.anioGestion" imageSrc="/assets/icon/saldos.svg" description="Indicadores generales"></app-title>
+            </ng-template>
             <div class="flex flex-col gap-2.5 mb-5">
                 <div class="flex justify-between items-center text-sm pb-1 border-b border-slate-100">
                     <span class="text-slate-600 font-medium">Días habilitados</span>
@@ -28,14 +30,14 @@
                         <span class="w-3 h-3 rounded bg-green-400 border border-green-400 block"></span>
                         <span class="text-slate-600 font-medium">Usados</span>
                     </div>
-                    <span class="font-mono font-bold text-slate-500">−{{ data.diasTomados }}</span>
+                    <span class="font-mono font-bold text-slate-500">{{ data.diasTomados }}</span>
                 </div>
                 <div class="flex justify-between items-center text-sm pb-3 border-b border-slate-200">
                     <div class="flex items-center gap-2">
                         <span class="w-3 h-3 rounded bg-blue-100 border-2 border-blue-400 block animate-pulse"></span>
                         <span class="text-blue-600 font-bold">Esta solicitud (pendientes/aprobados)</span>
                     </div>
-                    <span class="font-mono font-bold text-blue-600">−{{
+                    <span class="font-mono font-bold text-blue-600">{{
                             data.diasHabilitados - data.diasTomados - data.restanteSiAprueba
                         }}</span>
                 </div>
@@ -71,7 +73,10 @@
             }
         </p-panel>
 
-        <p-panel header="Niveles de autorización">
+        <p-panel>
+            <ng-template #header>
+                <app-title imageSrc="/assets/icon/autorice.svg" title="Niveles de autorización" description="Flujo de aprobación global"></app-title>
+            </ng-template>
             <div class="flex items-start">
                 <div class="flex items-start flex-1 group">
                     <div class="flex flex-col items-center flex-1">
@@ -112,26 +117,26 @@
                                     class="mt-5 flex items-center justify-center gap-2 w-full border-t border-slate-100 pt-3">
                                     @switch (data.estatusPrimerResponsable) {
                                         @case ('PENDIENTE') {
-                                            <p-button (onClick)="actualizarEstatusNivel(1,'APROBADA')"
+                                            <p-button (onClick)="confirmarActualizacionGlobal(1,'APROBADA')"
                                                       icon="pi pi-check"
                                                       label="Aprobar"/>
-                                            <p-button (onClick)="actualizarEstatusNivel(1, 'CANCELADA')"
+                                            <p-button (onClick)="confirmarActualizacionGlobal(1, 'CANCELADA')"
                                                       icon="pi pi-times"
                                                       label="Cancelar"/>
                                         }
                                         @case ('APROBADA') {
-                                            <p-button (onClick)="actualizarEstatusNivel(1,'PENDIENTE')"
+                                            <p-button (onClick)="confirmarActualizacionGlobal(1,'PENDIENTE')"
                                                       icon="pi pi-refresh"
                                                       label="Revertir estatus"/>
-                                            <p-button (onClick)="actualizarEstatusNivel(1, 'CANCELADA')"
+                                            <p-button (onClick)="confirmarActualizacionGlobal(1, 'CANCELADA')"
                                                       icon="pi pi-times"
                                                       label="Cancelar"/>
                                         }
                                         @case ('CANCELADA') {
-                                            <p-button (onClick)="actualizarEstatusNivel(1,'PENDIENTE')"
+                                            <p-button (onClick)="confirmarActualizacionGlobal(1,'PENDIENTE')"
                                                       icon="pi pi-refresh"
                                                       label="Revertir estatus"/>
-                                            <p-button (onClick)="actualizarEstatusNivel(1, 'APROBADA')"
+                                            <p-button (onClick)="confirmarActualizacionGlobal(1, 'APROBADA')"
                                                       icon="pi pi-check"
                                                       label="Aprobar"/>
                                         }
@@ -201,26 +206,26 @@
 
                                     @switch (data.estatusSegundoResponsable) {
                                         @case ('PENDIENTE') {
-                                            <p-button (onClick)="actualizarEstatusNivel(2,'APROBADA')"
+                                            <p-button (onClick)="confirmarActualizacionGlobal(2,'APROBADA')"
                                                       icon="pi pi-check"
                                                       label="Aprobar"/>
-                                            <p-button (onClick)="actualizarEstatusNivel(2, 'CANCELADA')"
+                                            <p-button (onClick)="confirmarActualizacionGlobal(2, 'CANCELADA')"
                                                       icon="pi pi-times"
                                                       label="Cancelar"/>
                                         }
                                         @case ('APROBADA') {
-                                            <p-button (onClick)="actualizarEstatusNivel(2,'PENDIENTE')"
+                                            <p-button (onClick)="confirmarActualizacionGlobal(2,'PENDIENTE')"
                                                       icon="pi pi-refresh"
                                                       label="Revertir estatus"/>
-                                            <p-button (onClick)="actualizarEstatusNivel(2, 'CANCELADA')"
+                                            <p-button (onClick)="confirmarActualizacionGlobal(2, 'CANCELADA')"
                                                       icon="pi pi-times"
                                                       label="Cancelar"/>
                                         }
                                         @case ('CANCELADA') {
-                                            <p-button (onClick)="actualizarEstatusNivel(2,'PENDIENTE')"
+                                            <p-button (onClick)="confirmarActualizacionGlobal(2,'PENDIENTE')"
                                                       icon="pi pi-refresh"
                                                       label="Revertir estatus"/>
-                                            <p-button (onClick)="actualizarEstatusNivel(2, 'APROBADA')"
+                                            <p-button (onClick)="confirmarActualizacionGlobal(2, 'APROBADA')"
                                                       icon="pi pi-check"
                                                       label="Aprobar"/>
                                         }
@@ -235,125 +240,268 @@
             </div>
         </p-panel>
         <!-- Días solicitados -->
-        <p-panel header="Días de la solicitud">
-            <ng-template #icons>
-                <div class="flex items-center rounded-md overflow-hidden border border-slate-200 text-[10px]">
-                    <div class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-700">
-                        <i class="pi pi-check text-[10px] opacity-80"></i>
-                        {{ countStatus('APROBADA') }}
-                    </div>
-                    <div class="flex items-center gap-1 px-2 py-1 bg-amber-50 text-amber-700 border-l border-slate-200">
-                        <i class="pi pi-clock text-[10px] opacity-80"></i>
-                        {{ countStatus('PENDIENTE') }}
-                    </div>
-                    <div class="flex items-center gap-1 px-2 py-1 bg-red-50 text-red-600 border-l border-slate-200">
-                        <i class="pi pi-times text-[10px] opacity-80"></i>
-                        {{ countStatus('CANCELADA') }}
-                    </div>
+        <p-panel class="management-panel-solid border-none shadow-none bg-slate-50/50 rounded-3xl overflow-hidden">
+            <ng-template pTemplate="header">
+                <div class="flex items-center justify-between w-full py-1">
+                    <app-title imageSrc="/assets/icon/calendar.svg" title="Gestión de ausencias"  description="Días solicitados"></app-title>
+                    <p-button (onClick)="abrirDialogoDias()"
+                              class="h-9 font-bold"
+                              icon="pi pi-plus"
+                              label="Modificar Fechas"
+                              rounded
+                              severity="success"
+                              size="small">
+                    </p-button>
                 </div>
             </ng-template>
-            <div class="px-2 pb-3 text-[11px] space-y-1.5">
-                <div class="h-1 rounded bg-slate-200 overflow-hidden">
-                    <div [style.width.%]="approvalPercentage" class="h-full bg-green-500 transition-all duration-300">
+
+            <div class="flex flex-col lg:flex-row gap-6 p-4">
+
+                <div class="flex-1 flex flex-col gap-2.5 max-h-[500px] overflow-y-auto pr-2 scrollbar-thin">
+                    @for (day of data.fechaSolicituds; track day.id) {
+                        <div
+                            class="flex items-center bg-white border border-slate-200/60 rounded-2xl p-3 hover:border-emerald-300 transition-colors duration-200 shadow-sm">
+
+                            <div
+                                class="flex flex-col items-center justify-center min-w-[54px] h-[54px] bg-slate-50 rounded-xl border border-slate-100">
+                                <span
+                                    class="text-[9px] font-black text-emerald-600 uppercase">{{ day.fecha | date:'MMM' }}</span>
+                                <span class="text-xl font-extrabold text-slate-800">{{ day.fecha | date:'dd' }}</span>
+                                <span
+                                    class="text-[8px] font-bold text-slate-400 uppercase tracking-tighter">{{ day.fecha | date:'EEEE' }}</span>
+                            </div>
+
+                            <div
+                                class="flex flex-1 flex-col sm:flex-row items-start sm:items-center justify-between ml-4 gap-3">
+                                <div class="flex flex-col">
+                                    <span
+                                        class="text-[11px] font-bold text-slate-700">{{ day.fecha | date:'fullDate' }}</span>
+                                    <div class="flex items-center gap-2 mt-1">
+                                <span
+                                    class="text-[9px] font-mono py-0.5 px-2 bg-blue-50 text-blue-600 rounded-md border border-blue-100">
+                                    REF-{{ day.id }}
+                                </span>
+                                        <span [ngClass]="day.estatusSegundoJefe === 'APROBADA' ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'"
+                                              class="text-[9px] font-bold px-2 py-0.5 rounded-md">
+                                    {{ day.estatusSegundoJefe === 'APROBADA' ? 'CONSOLIDADO' : 'PENDIENTE' }}
+                                </span>
+                                    </div>
+                                </div>
+
+                                <div class="flex-none">
+                                    <app-pipeline-aprobacion
+                                        [estatusJefe]="day.estatusPrimerJefe"
+                                        [estatusRrhh]="day.estatusSegundoJefe">
+                                    </app-pipeline-aprobacion>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <div
+                    class="hidden lg:flex w-72 flex-col bg-blue-900 rounded-3xl p-6 text-white relative overflow-hidden shadow-xl">
+                    <div class="absolute -top-10 -right-10 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
+
+                    <div class="relative z-10">
+                        <span
+                            class="text-[10px] font-bold text-blue-200 uppercase tracking-[0.2em]">Resumen Global</span>
+                        <h3 class="text-xl font-bold mt-2">Detalles de la Solicitud</h3>
+                        <p class="text-[11px] text-blue-100/70 mt-3 leading-relaxed">
+                            Las fechas listadas corresponden al periodo vacacional vigente. Cada día debe ser validado
+                            por su jefe directo y posteriormente por RH para ser contabilizado.
+                        </p>
+
+                        <div class="mt-8 space-y-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center">
+                                    <i class="pi pi-info-circle text-xs text-blue-200"></i>
+                                </div>
+                                <div class="flex flex-col">
+                                    <span class="text-[10px] text-blue-200 font-bold uppercase">Total Solicitado</span>
+                                    <span class="text-sm font-bold">{{ data.fechaSolicituds.length }}
+                                        Días hábiles</span>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center">
+                                    <i class="pi pi-bolt text-xs text-blue-200"></i>
+                                </div>
+                                <div class="flex flex-col">
+                                    <span class="text-[10px] text-blue-200 font-bold uppercase">Estatus actual</span>
+                                    <span class="text-sm font-bold text-emerald-400">En Proceso</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-auto pt-10 flex justify-center">
+                            <img alt="Calendar Illustration"
+                                 class="w-32 h-32 object-contain opacity-40 grayscale invert"
+                                 src="https://cdn-icons-png.flaticon.com/512/2830/2830305.png">
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <p-table [scrollable]="true" [value]="data.fechaSolicituds" class="p-datatable-sm w-full text-left"
-                     scrollHeight="300px">
-                <ng-template #header>
-                    <tr>
-                        <th class="text-[10px] font-bold uppercase tracking-widest text-slate-500 py-3 bg-slate-50">
-                            Fecha
-                        </th>
-                        <th class="text-[10px] font-bold uppercase tracking-widest text-slate-500 py-3 bg-slate-50">
-                            Revisiones
-                        </th>
-                        <th class="text-[10px] font-bold uppercase tracking-widest text-slate-500 py-3 bg-slate-50">
-                            Estado Final
-                        </th>
-                        <th class="text-[10px] font-bold uppercase tracking-widest text-slate-500 py-3 bg-slate-50">
-                            Comentarios
-                        </th>
-                        <th class="text-[10px] font-bold uppercase tracking-widest text-slate-500 py-3 bg-slate-50 text-center">
-                            Acciones
-                        </th>
-                    </tr>
-                </ng-template>
-                <ng-template let-day pTemplate="body">
-                    <tr class="group hover:bg-slate-50/50 transition-colors border-b border-slate-100 last:border-0">
-                        <td class="py-3 px-2">
-                            <div class="flex flex-col">
-                                <span
-                                    class="text-sm font-bold text-slate-700">{{ day.fecha | date:'dd MMM yyyy' }}</span>
-                                <span
-                                    class="text-[11px] text-slate-400 font-medium">{{ day.fecha | date:'EEEE' }}</span>
-                            </div>
-                        </td>
-                        <td class="py-3 px-2">
-                            <app-pipeline-aprobacion
-                                [estatusJefe]="day.estatusPrimerJefe"
-                                [estatusRrhh]="day.estatusSegundoJefe">
-                            </app-pipeline-aprobacion>
-                        </td>
-                        <td class="py-3 px-2">
-                            <div class="flex items-center gap-2">
-                        <span [class.bg-amber-400]="day.estatus === 'PENDIENTE'"
-                              [class.bg-emerald-500]="day.estatus === 'APROBADA'"
-                              [class.bg-rose-500]="day.estatus === 'CANCELADA'" class="w-2 h-2 rounded-full">
-                        </span>
-                                <span [class.text-amber-600]="day.estatus === 'PENDIENTE'"
-                                      [class.text-emerald-600]="day.estatus === 'APROBADA'"
-                                      [class.text-red-500]="day.estatus === 'CANCELADA'"
-                                      class="text-[11px] font-semibold tracking-tight">
-                            {{ day.estatus }}
-                        </span>
-                            </div>
-                        </td>
-                        <td class="py-3 px-2">
-                            <span class="text-sm text-slate-500 italic">{{ day.comentario || '-' }}</span>
-                        </td>
-                        <td class="py-3 px-2 text-center w-28">
-                            @if (day.estatus === 'PENDIENTE') {
-                                <div class="flex items-center justify-center gap-1.5">
-
-                                    <button
-                                        (click)="marcarDia(day, 'APROBADA')"
-                                        class="w-6 h-6 flex items-center justify-center rounded-md bg-emerald-50 text-emerald-600 hover:bg-emerald-500 hover:text-white transition-colors"
-                                        title="Aprobar">
-                                        <i class="pi pi-check text-[10px]"></i>
-                                    </button>
-                                    <button
-                                        (click)="marcarDia(day, 'CANCELADA')"
-                                        class="w-6 h-6 flex items-center justify-center rounded-md bg-rose-50 text-rose-600 hover:bg-rose-500 hover:text-white transition-colors"
-                                        title="Rechazar">
-                                        <i class="pi pi-times text-[10px]"></i>
-                                    </button>
-                                </div>
-                            } @else if (day.estatus === 'APROBADA') {
-
-                                <button
-                                    (click)="marcarDia(day, 'CANCELADA')"
-                                    class="w-full flex items-center justify-center px-1.5 py-1 rounded-md bg-slate-50 text-slate-500 border border-slate-200 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 transition-colors text-[9px] font-bold"
-                                    title="Cancelar">
-                                    <i class="pi pi-ban mr-1 text-[9px]"></i> CANCELAR
-                                </button>
-                            } @else {
-                                <button
-                                    (click)="marcarDia(day, 'PENDIENTE')"
-                                    class="w-full flex items-center justify-center px-1.5 py-1 rounded-md bg-slate-50 text-slate-500 border border-slate-200 hover:bg-amber-50 hover:text-amber-600 hover:border-amber-200 transition-colors text-[9px] font-bold"
-                                    title="Revertir a Pendiente">
-                                    <i class="pi pi-refresh mr-1 text-[9px]"></i> REVERTIR
-                                </button>
-                            }
-                        </td>
-                    </tr>
-                </ng-template>
-            </p-table>
             <ng-template #footer>
-
+                <div
+                    class="flex justify-between items-center px-4 py-3 bg-white border-t border-slate-100 rounded-b-3xl">
+                    <span class="text-[10px] font-bold text-slate-400">ID DE SOLICITUD: {{ data.id }}</span>
+                    <div class="flex items-center gap-4">
+                        <span class="text-[10px] text-slate-500 font-medium">© 2026 Integra Asiste PRO</span>
+                        <div class="w-1.5 h-1.5 bg-emerald-500 rounded-full"></div>
+                    </div>
+                </div>
             </ng-template>
         </p-panel>
 
+        <p-dialog [(visible)]="mostrarDialogoDias"
+                  [draggable]="false"
+                  [modal]="true"
+                  [resizable]="false"
+                  [style]="{width: '640px'}"
+                  maskStyleClass="backdrop-blur-sm"
+                  styleClass="pure-light-dialog">
+
+            <ng-template pTemplate="header">
+                <app-title description="Gestión de estatus" imageSrc="/assets/icon/calendar.svg"
+                           title="Días solicitados"></app-title>
+            </ng-template>
+
+            <div class="flex flex-col gap-6 py-2">
+
+                <div
+                    class="flex items-center gap-4 p-4 bg-slate-100 border border-slate-200 rounded-[22px] relative overflow-hidden">
+                    <div class="flex-1">
+                        <h4>Actualización de Jornadas</h4>
+                        <p class=" leading-relaxed max-w-[380px]">
+                            Selecciona los días deseados y define el nuevo estatus para procesar el cambio en el flujo
+                            de aprobación.
+                        </p>
+                    </div>
+                    <div
+                        class="w-16 h-16 rounded-2xl bg-white flex items-center justify-center shadow-sm border border-slate-100">
+                        <img alt="Icon"
+                             class="w-10 h-10" src="/assets/icon/check.svg">
+                    </div>
+                </div>
+
+                <div class="flex flex-col gap-3">
+                    <div class="flex justify-between items-center px-1">
+                        <span class="p-panel-title">01. Selección de días</span>
+                        <div
+                            class="flex items-center gap-1.5 bg-white border border-slate-100 px-2 py-0.5 rounded-full shadow-sm">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                            <span class="text-[10px] font-bold ">{{ diasSeleccionados().length }} marcados</span>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 gap-2 max-h-60 overflow-y-auto pr-2 custom-scroll">
+                        @for (day of data.fechaSolicituds; track day.id) {
+                            <div
+                                class="group flex items-center gap-4 p-3 bg-white border border-slate-100 rounded-2xl transition-all duration-200 hover:bg-slate-50/50">
+
+                                <p-checkbox [(ngModel)]="diasSeleccionados"
+                                            [binary]="false"
+                                            [value]="day"
+                                            size="large"
+                                            class="modern-check"
+                                            inputId="dia-{{day.id}}">
+                                </p-checkbox>
+
+                                <label class="flex items-center justify-between cursor-pointer flex-1 m-0"
+                                       for="dia-{{day.id}}">
+                                    <div class="flex flex-col">
+                                        <span
+                                            class="text-sm font-bold text-blue-700 tracking-tight">{{ day.fecha | date:'dd MMMM yyyy' }}</span>
+                                        <span
+                                            class="text-sm text-slate-500 font-medium">{{ day.fecha | date:'EEEE' }}</span>
+                                    </div>
+                                </label>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <div class="flex flex-col gap-3">
+                    <span class="p-panel-title">02. Aplicar nuevo estatus</span>
+                    <div class="flex bg-slate-100 p-1 rounded-2xl gap-1">
+                        <label class="flex-1 cursor-pointer group">
+                            <input type="radio" name="estatus" value="PENDIENTE" class="sr-only peer">
+                            <div class="flex flex-col items-center gap-1 py-2 rounded-xl transition-all
+                peer-checked:bg-white peer-checked:shadow-sm peer-checked:text-slate-800
+                text-slate-500 hover:bg-white/50">
+                                <i class="pi pi-clock text-sm"></i>
+                                <span class="text-[9px] font-bold uppercase tracking-tight">Pendiente</span>
+                            </div>
+                        </label>
+
+                        <label class="flex-1 cursor-pointer group">
+                            <input type="radio" name="estatus" value="APROBADA" class="sr-only peer" checked>
+                            <div class="flex flex-col items-center gap-1 py-2 rounded-xl transition-all
+                peer-checked:bg-white peer-checked:shadow-sm peer-checked:text-emerald-600
+                text-slate-500 hover:bg-white/50">
+                                <i class="pi pi-check text-sm"></i>
+                                <span class="text-[9px] font-bold uppercase tracking-tight">Aprobada</span>
+                            </div>
+                        </label>
+
+                        <label class="flex-1 cursor-pointer group">
+                            <input type="radio" name="estatus" value="CANCELADA" class="sr-only peer">
+                            <div class="flex flex-col items-center gap-1 py-2 rounded-xl transition-all
+                peer-checked:bg-white peer-checked:shadow-sm peer-checked:text-red-500
+                text-slate-500 hover:bg-white/50">
+                                <i class="pi pi-times text-sm"></i>
+                                <span class="text-[9px] font-bold uppercase tracking-tight">Cancelada</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <ng-template pTemplate="footer">
+                <div class="flex items-center justify-between w-full pt-4 border-t border-slate-50">
+                    <span
+                        class="text-[9px] text-slate-500 font-medium italic">Estas acciones quedarán registrada en el historial de auditoría.</span>
+                    <div class="flex gap-2">
+                        <p-button (onClick)="mostrarDialogoDias.set(false)"
+                                  [text]="true"
+                                  label="Descartar"
+                                  severity="secondary"></p-button>
+
+                        <p-button (onClick)="guardarCambiosDias()"
+                                  [disabled]="diasSeleccionados().length === 0 || !estatusSeleccionado()"
+                                  icon="pi pi-check-square"
+                                  label="Guardar Cambios"
+                                  severity="success"></p-button>
+                    </div>
+                </div>
+            </ng-template>
+        </p-dialog>
     </div>
 }
+
+<p-confirmDialog #cd [style]="{width: '450px'}">
+    <ng-template #headless let-message let-onAccept="onAccept" let-onReject="onReject">
+        @if (message) {
+            <div class="flex flex-col items-center p-8 bg-white rounded shadow-sm">
+                <div
+                    [ngClass]="message.acceptButtonStyleClass === 'p-button-danger' ? 'bg-red-500 text-white' : 'bg-green-500 text-white'"
+                    class="rounded-full inline-flex justify-center items-center h-24 w-24 -mt-20">
+                    <i class="pi pi-question !text-5xl"></i>
+                </div>
+                <span class="font-bold text-2xl block mb-2 mt-6 text-slate-800 text-center">{{ message.header }}</span>
+                <p [innerHTML]="message.message" class="mb-0  text-center"></p>
+                <div class="flex items-center gap-2 mt-6">
+                    <p-button (onClick)="onReject()" [label]="message.rejectLabel" [outlined]="true"
+                              severity="secondary" styleClass="w-[150px]"></p-button>
+                    <p-button (onClick)="onAccept()"
+                              [label]="message.acceptLabel"
+                              [severity]="message.acceptButtonStyleClass === 'p-button-danger' ? 'danger' : 'primary'"
+                              styleClass="w-[150px]"></p-button>
+                </div>
+            </div>
+        }
+    </ng-template>
+</p-confirmDialog>

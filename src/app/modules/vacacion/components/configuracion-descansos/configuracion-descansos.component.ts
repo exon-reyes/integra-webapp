@@ -42,7 +42,7 @@ import {RouterLink} from "@angular/router";
 
                 <p-button label="Solicitar vacaciones" icon="pi pi-crown" severity="warn"
                           routerLink="/integra/vacaciones/solicitar"></p-button>
-                <p-button label="Mis solicitudes" icon="pi pi-home"
+                <p-button label="Dashboard" icon="pi pi-home"
                           routerLink="/integra/vacaciones/dashboard"></p-button>
             </div>
         </div>
@@ -198,6 +198,7 @@ export class ConfiguracionDescansosComponent implements OnInit {
         this.vacacionAdminService.getFestivos(this.calendarYear()).subscribe({
             next: res => this.festivos.set((res as any).data ?? []),
         });
+        this.cargarDashboard();
     }
 
     ngOnInit() {
@@ -277,7 +278,7 @@ export class ConfiguracionDescansosComponent implements OnInit {
     }
 
     private cargarDashboard() {
-        this.vacacionService.getDashboard(this.empleadoId()!).subscribe({
+        this.vacacionService.getDashboard(this.empleadoId()!, this.calendarYear()!).subscribe({
             next: (res) => {
                 this.dashboard.set(res.data);
             },

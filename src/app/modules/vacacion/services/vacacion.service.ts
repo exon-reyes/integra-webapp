@@ -29,9 +29,11 @@ export class VacacionService {
     private readonly http=inject(HttpClient);
     private readonly baseUrl=`${environment.integraApi}/vacaciones`;
 
-    getDashboard(empleadoId: number): Observable<ResponseData<DashboardVacacion>> {
+    getDashboard(empleadoId: number, anio: number): Observable<ResponseData<DashboardVacacion>> {
         return this.http.get<ResponseData<DashboardVacacion>>(`${this.baseUrl}/dashboard`, {
-            params: new HttpParams().set('empleadoId', empleadoId),
+            params: new HttpParams()
+                .set('empleadoId', empleadoId)
+                .set('anio', anio),
         });
     }
 
@@ -93,7 +95,7 @@ export class VacacionAdminService {
         return this.http.patch<ResponseData<void>>(`${this.baseUrl}/gestion/solicitudes`, request);
     }
 
-    actualizarEstatusSolicitudGranular(id: number, request: NuevoEstatusSolicitud): Observable<ResponseData<void>> {
-        return this.http.patch<ResponseData<void>>(`${this.baseUrl}/gestion/solicitudes/${id}`, request);
+    actualizarEstatusSolicitudGranular(request: NuevoEstatusSolicitud): Observable<ResponseData<void>> {
+        return this.http.patch<ResponseData<void>>(`${this.baseUrl}/gestion/solicitudes/dias`, request);
     }
 }

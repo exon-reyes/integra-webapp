@@ -17,8 +17,16 @@ import {Autoridades} from "@/core/Autoridades";
 
 @Component({
     selector: 'app-solicitud-vacaciones', standalone: true, imports: [
-        FormsModule, Button, VacacionCalendarComponent, Title, Dialog, DatePicker, InputText, ResumenVacaciones,
-        RouterLink, HasPermissionDirective,
+        FormsModule,
+        Button,
+        VacacionCalendarComponent,
+        Title,
+        Dialog,
+        DatePicker,
+        InputText,
+        ResumenVacaciones,
+        RouterLink,
+        HasPermissionDirective,
     ], template: `
         <app-title imageSrc="/assets/icon/vacation.svg"
                    title="Gestión de vacaciones"
@@ -31,7 +39,7 @@ import {Autoridades} from "@/core/Autoridades";
                 <p-button label="Registrar descansos" icon="pi pi-calendar-clock"
                           routerLink="/integra/vacaciones/descansos" severity="warn"></p-button>
 
-                <p-button label="Mis solicitudes" icon="pi pi-home"
+                <p-button label="Dashboard" icon="pi pi-home"
                           routerLink="/integra/vacaciones/dashboard"></p-button>
             </div>
             <p-button icon="pi pi-refresh"></p-button>
@@ -85,6 +93,7 @@ import {Autoridades} from "@/core/Autoridades";
                     [canceladas]="dashboard()?.vacaciones?.canceladas || []"
                     [descansosCancelados]="dashboard()?.descansos?.canceladas || []"
                     [allowCancelSolicitud]="true"
+                    [allowReactivar]="true"
                     (dayClicked)="onDayClicked($event)"
                     (solicitudCancel)="cancelarSolicitud($event)"
                     (solicitudReactivar)="reactivarSolicitud($event)">
@@ -213,6 +222,7 @@ export class SolicitudVacacionesComponent implements OnInit {
     protected readonly guardando=signal(false);
 
     // Fechas bloqueadas estáticamente para no poder seleccionarlas como inicio
+    protected readonly Autoridades=Autoridades;
     // (Festivos, descansos aprobados/pendientes, y todas las solicitudes)
     private fechasBloqueadas=computed<Set<string>>(() => {
         const set=new Set<string>();
@@ -242,7 +252,6 @@ export class SolicitudVacacionesComponent implements OnInit {
         });
         return set;
     });
-
     private readonly vacacionService=inject(VacacionService);
     private readonly vacacionAdminService=inject(VacacionAdminService);
     private readonly messageService=inject(MessageService);
@@ -253,6 +262,7 @@ export class SolicitudVacacionesComponent implements OnInit {
         this.vacacionAdminService.getFestivos(this.calendarYear()).subscribe({
             next: res => this.festivos.set((res as any).data ?? []),
         });
+        this.cargarDashboard();
     }
 
     ngOnInit() {
@@ -374,9 +384,7 @@ export class SolicitudVacacionesComponent implements OnInit {
                     severity: 'success', summary: 'Éxito', detail: 'Solicitud reenviada para aprobación',
                 });
                 this.recargarDatos();
-            },
-            error: () => this.guardando.set(false),
-            complete: () => this.guardando.set(false),
+            }, error: () => this.guardando.set(false), complete: () => this.guardando.set(false),
         });
     }
 
@@ -396,7 +404,7 @@ export class SolicitudVacacionesComponent implements OnInit {
     }
 
     private cargarDashboard() {
-        this.vacacionService.getDashboard(this.empleadoId()!).subscribe({
+        this.vacacionService.getDashboard(this.empleadoId()!, this.calendarYear()!).subscribe({
             next: (res) => {
                 this.dashboard.set(res.data);
 
@@ -416,6 +424,4 @@ export class SolicitudVacacionesComponent implements OnInit {
         const d=String(date.getDate()).padStart(2, '0');
         return `${y}-${m}-${d}`;
     }
-
-    protected readonly Autoridades=Autoridades;
 }

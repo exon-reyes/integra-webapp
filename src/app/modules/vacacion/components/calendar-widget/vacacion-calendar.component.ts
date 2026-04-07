@@ -405,6 +405,11 @@ export class VacacionCalendarComponent {
      */
     readonly allowCancelSolicitud=input<boolean>(false);
     /**
+     * Habilita el botón "Volver a solicitar" (reactivar) en el popover para solicitudes CANCELADAS.
+     * Por defecto `false` — en el dashboard no se debe de ver el botón de reactivar.
+     */
+    readonly allowReactivar=input<boolean>(false);
+    /**
      * Habilita la selección de días festivos en modo 'multiple' emitiendo dayClicked en lugar de abrir el popover.
      */
     readonly allowFestivoSelection=input<boolean>(false);
@@ -610,7 +615,7 @@ export class VacacionCalendarComponent {
                 id: marker.id,
                 fechaSolicitud: marker.fechaSolicitud,
                 cancelable: marker.cancelable,
-                reactivable: marker.kind === 'cancelada' && date>=TODAY_STR,
+                reactivable: this.allowReactivar() && marker.kind === 'cancelada' && date>=TODAY_STR,
                 eventType: marker.eventType,
             });
             this.eventPopover.show(event);
