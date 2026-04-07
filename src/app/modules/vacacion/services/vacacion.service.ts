@@ -98,4 +98,10 @@ export class VacacionAdminService {
     actualizarEstatusSolicitudGranular(request: NuevoEstatusSolicitud): Observable<ResponseData<void>> {
         return this.http.patch<ResponseData<void>>(`${this.baseUrl}/gestion/solicitudes/dias`, request);
     }
+
+    exportarValoresActuales(): Observable<Blob> {
+        return this.http.get(`${this.baseUrl}/exportar`, {
+            responseType: 'blob'
+        });
+    }
 }

@@ -1,15 +1,25 @@
-<app-title description="Gestor de autorizaciones" iconClass="i-autcalendar"
-           title="Gestión de ausencias"></app-title>
-
-<p-panel class="mt-3">
-    <ng-template #header>
-        <p-selectButton
-            (ngModelChange)="onFilterChange($event)"
-            [ngModel]="statusFilter()"
-            [options]="filterOptions"
-            optionLabel="label"
-            optionValue="value"/>
+<app-title description="Solicitudes de ausencias registradas" iconClass="i-autcalendar"
+           title="Gestor de ausencias"></app-title>
+<p-menubar class="mt-3">
+    <ng-template #start>
+        <div class="flex flex-row gap-2">
+            <p-button icon="pi pi-plus" severity="success"></p-button>
+            <p-button icon="pi pi-refresh"></p-button>
+            <p-button icon="pi pi-file-excel" label="Vacaciones" (onClick)="exportarDatosActuales()"></p-button>
+        </div>
     </ng-template>
+</p-menubar>
+<div class="bg-white rounded-lg p-3 mt-2 border border-slate-200">
+    <p-selectButton
+        (ngModelChange)="onFilterChange($event)"
+        [ngModel]="statusFilter()"
+        [options]="filterOptions"
+        optionLabel="label"
+        optionValue="value">
+        <ng-template #item let-item>
+            <i class="pi {{item.icon}}"></i>{{ item.label }}
+        </ng-template>
+    </p-selectButton>
     <p-table #dt (onLazyLoad)="onPageChange($event)"
              [first]="currentPage() * pageSize()"
              [lazy]="true"
@@ -17,18 +27,20 @@
              [paginator]="true"
              [rowsPerPageOptions]="[10, 20, 30]"
              [rows]="pageSize()"
+             [scrollable]="true"
              [showCurrentPageReport]="true"
+             [tableStyle]="{ 'min-width': '50rem' }"
              [totalRecords]="totalRecords()"
              [value]="solicitudes"
              currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} registros">
         <ng-template #header>
             <tr>
-                <th>Colaborador</th>
-                <th>Flujo de aprobación</th>
-                <th>Estatus</th>
-                <th>Fechas solicitadas</th>
-                <th class="text-center">Autorizados</th>
-                <th>Acciones</th>
+                <th style="min-width: 250px">Colaborador</th>
+                <th style="min-width: 250px">Flujo de aprobación</th>
+                <th style="min-width: 120px">Estatus final</th>
+                <th style="min-width: 280px">Fechas solicitadas</th>
+                <th class="text-center" style="min-width: 120px">Autorizados</th>
+                <th style="min-width: 120px">Acciones</th>
             </tr>
         </ng-template>
         <ng-template #body let-item>
@@ -50,7 +62,7 @@
                 </td>
                 <td class="py-3">
                     <app-pipeline-aprobacion [estatusJefe]="item.estatusJefe"
-                                             [estatusRrhh]="item.estatusRRHH"></app-pipeline-aprobacion>
+                                             [estatusRrhh]="item.estatusRrhh"></app-pipeline-aprobacion>
                 </td>
                 <td class="py-3">
                     @if (item.estatusGeneral === 'APROBADA') {
@@ -65,7 +77,7 @@
 
                 <!-- Fechas solicitadas -->
                 <td class="py-3">
-                    <div class="flex flex-wrap gap-1 max-w-37.5">
+                    <div class="flex flex-wrap gap-1 max-w-[280px]">
                         @for (day of item.solicitudes; track day.id) {
                             <div
                                 class="flex flex-col items-center justify-center w-8 h-10 overflow-hidden shadow-md rounded-b-md">
@@ -106,7 +118,7 @@
 
                 <!-- Acciones -->
                 <td>
-                    <p-button [routerLink]="['detalles',item.folioSolicitud]" icon="pi pi-eye" label="Ver solicitud"/>
+                    <p-button [routerLink]="['detalles',item.folioSolicitud]" label="Ver solicitud"/>
                 </td>
 
             </tr>
@@ -119,6 +131,7 @@
             </tr>
         </ng-template>
     </p-table>
-</p-panel>
+</div>
+
 
 

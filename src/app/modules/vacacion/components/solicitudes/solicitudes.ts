@@ -16,6 +16,9 @@ import {
 import {StatusBadgeComponent} from "@/components/StatusBadgeComponent";
 import {RouterLink} from '@angular/router';
 import {Button} from "primeng/button";
+import {Toolbar} from "primeng/toolbar";
+import {Menubar} from "primeng/menubar";
+import {SpinnerService} from "@/shared/service/spinner.service";
 
 
 export interface FiltroSolicitudes extends Paginator {
@@ -38,16 +41,18 @@ export interface FiltroSolicitudes extends Paginator {
         StatusBadgeComponent,
         NgOptimizedImage,
         RouterLink,
-        Button
+        Button,
+        Toolbar,
+        Menubar
     ], templateUrl: './solicitudes.html', styleUrl: './solicitudes.scss'
 })
 export class Solicitudes {
 
     filterOptions=[
-        {label: 'Todas', value: ''},
-        {label: 'Pendientes', value: 'PENDIENTE'},
-        {label: 'Aprobadas', value: 'APROBADA'},
-        {label: 'Canceladas', value: 'CANCELADA'}
+        {label: 'Todas', value: '', icon:'pi-bars'},
+        {label: 'Pendientes', value: 'PENDIENTE', icon: 'pi-clock'},
+        {label: 'Aprobadas', value: 'APROBADA', icon: 'pi-check-circle'},
+        {label: 'Canceladas', value: 'CANCELADA', icon: 'pi-times'}
     ];
     statusFilter=signal<string>('PENDIENTE');
     loading=signal(false);
@@ -56,7 +61,7 @@ export class Solicitudes {
     totalRecords=signal(0);
     protected solicitudes: SolicitudesGestionDTO[]=[];
     private readonly solicitudService=inject(VacacionAdminService);
-
+    private readonly spinner=inject(SpinnerService);
 
     onFilterChange(value: string): void {
         this.statusFilter.set(value);
@@ -85,6 +90,26 @@ export class Solicitudes {
                 this.loading.set(false);
             }, error: () => {
                 this.loading.set(false);
+            }
+        });
+    }
+
+    exportarDatosActuales(): void {
+        this.spinner.show();
+        this.solicitudService.exportarValoresActuales().subscribe({
+            next: (blob: Blob) => {
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `Reporte_Vacaciones_${new Date().toISOString().split('T')[0]}.xlsx`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+                this.spinner.hide();
+            },
+            error: () => {
+                this.spinner.hide();
             }
         });
     }
