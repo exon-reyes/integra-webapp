@@ -1,6 +1,6 @@
-import {inject, Injectable} from '@angular/core';
-import {HttpClient, HttpParams} from '@angular/common/http';
-import {Observable} from 'rxjs';
+import { inject, Injectable } from '@angular/core';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { Observable } from 'rxjs';
 import {
     DashboardGestionSolicitudResponse,
     DashboardVacacion,
@@ -11,9 +11,9 @@ import {
     DetalleSolicitudDTO,
     NuevoEstatusSolicitud
 } from '../models/vacacion.model';
-import {environment} from "@env/environment";
-import {ResponseData} from "@/core/responseData";
-import {PaginatedResponse} from "@/core/services/usuario/paginated-response.interface";
+import { environment } from "@env/environment";
+import { ResponseData } from "@/core/responseData";
+import { PaginatedResponse } from "@/core/services/usuario/paginated-response.interface";
 
 export interface EmpleadoTiempoHistorialDTO {
     id: number;
@@ -24,10 +24,10 @@ export interface EmpleadoTiempoHistorialDTO {
     comentario: string;
 }
 
-@Injectable({providedIn: 'root'})
+@Injectable({ providedIn: 'root' })
 export class VacacionService {
-    private readonly http=inject(HttpClient);
-    private readonly baseUrl=`${environment.integraApi}/vacaciones`;
+    private readonly http = inject(HttpClient);
+    private readonly baseUrl = `${environment.integraApi}/vacaciones`;
 
     getDashboard(empleadoId: number, anio: number): Observable<ResponseData<DashboardVacacion>> {
         return this.http.get<ResponseData<DashboardVacacion>>(`${this.baseUrl}/dashboard`, {
@@ -37,11 +37,8 @@ export class VacacionService {
         });
     }
 
-    crearSolicitud(empleadoId: number,
-                   request: SolicitudVacacionRequest): Observable<ResponseData<void>> {
-        return this.http.post<ResponseData<void>>(`${this.baseUrl}/solicitud`, request, {
-            params: new HttpParams().set('empleadoId', empleadoId),
-        });
+    crearSolicitud(request: SolicitudVacacionRequest): Observable<ResponseData<void>> {
+        return this.http.post<ResponseData<void>>(`${this.baseUrl}/solicitud`, request);
     }
 
     getLineaTiempo(id: number): Observable<ResponseData<EmpleadoTiempoHistorialDTO[]>> {
@@ -49,31 +46,23 @@ export class VacacionService {
     }
 }
 
-@Injectable({providedIn: 'root'})
+@Injectable({ providedIn: 'root' })
 export class VacacionAdminService {
-    private readonly http=inject(HttpClient);
-    private readonly baseUrl=`${environment.integraApi}/vacaciones`;
+    private readonly http = inject(HttpClient);
+    private readonly baseUrl = `${environment.integraApi}/vacaciones`;
 
     getFestivos(anio): Observable<ResponseData<Festivo[]>> {
-        return this.http.get<ResponseData<Festivo[]>>(`${this.baseUrl}/calendario-festivo`, {params: {anio: anio}});
+        return this.http.get<ResponseData<Festivo[]>>(`${this.baseUrl}/calendario-festivo`, { params: { anio: anio } });
     }
 
 
-    cancelarSolicitudVacaciones(id: number,
-                                usuarioId: number) {
-        return this.http.patch<ResponseData<void>>(`${this.baseUrl}/${id}/cancelar`, null, {params: {usuarioId: usuarioId}})
+    cancelarSolicitud(id: number,
+        usuarioId: number,tipo:string) {
+        return this.http.patch<ResponseData<void>>(`${this.baseUrl}/gestion/${id}/cancelar`, null, { params: { usuarioId: usuarioId, tipo:tipo } })
     }
-
-    cancelarDescanso(id: number,
-                     usuarioCancelaId: number) {
-        return this.http.delete<ResponseData<void>>(`${this.baseUrl}/descansos/${id}`, {params: {usuarioId: usuarioCancelaId}})
+    eliminarSolicitud(id){
+        return this.http.delete<ResponseData<void>>(`${this.baseUrl}/gestion/${id}`);
     }
-
-    reactivarSolicitud(id: number,
-                       usuarioId: number) {
-        return this.http.patch<ResponseData<void>>(`${this.baseUrl}/${id}/reactivar`, null, {params: {usuarioId}});
-    }
-
 
     getSolicitudesGestion(): Observable<ResponseData<GestionSolicitudResponse[]>> {
         return this.http.get<ResponseData<GestionSolicitudResponse[]>>(`${this.baseUrl}/gestion/dashboard`);
@@ -84,7 +73,7 @@ export class VacacionAdminService {
     }
 
     getSolicitudesFiltradas(filtro): Observable<PaginatedResponse<SolicitudesGestionDTO>> {
-        return this.http.get<any>(`${this.baseUrl}/gestion/solicitudes`, {params: filtro});
+        return this.http.get<any>(`${this.baseUrl}/gestion/solicitudes`, { params: filtro });
     }
 
     obtenerDetallesSolicitud(folio: number): Observable<ResponseData<DetalleSolicitudDTO>> {
@@ -101,6 +90,17 @@ export class VacacionAdminService {
 
     exportarValoresActuales(): Observable<Blob> {
         return this.http.get(`${this.baseUrl}/exportar`, {
+            responseType: 'blob'
+        });
+    }
+
+    exportarPapeleta(folio: number, salarioDiario: number, diasAdicionales: number): Observable<Blob> {
+        const params = new HttpParams()
+            .set('salarioDiario', salarioDiario)
+            .set('diasAdicionales', diasAdicionales);
+
+        return this.http.get(`${this.baseUrl}/exportar/solicitudes/${folio}/papeleta`, {
+            params,
             responseType: 'blob'
         });
     }

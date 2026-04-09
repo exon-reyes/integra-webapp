@@ -46,6 +46,7 @@ export interface CatalogoEmpleado {
     fechaAlta?: Date;
     fechaReingreso?: Date;
     antiguedadAnios?: number;
+    fechaIngreso?:Date;
     primerResponsable?: CatalogoEmpleado;
     segundoResponsable?: CatalogoEmpleado;
     fechaBaja?: Date;

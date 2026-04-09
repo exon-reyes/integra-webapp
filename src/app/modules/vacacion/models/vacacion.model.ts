@@ -65,6 +65,7 @@ export interface SolicituDescanso {
     sumaAprobadas?: number;
     sumaCanceladas?: number;
     sumaPendientes?: number;
+    sumaDisfrutadas?:number;
 }
 
 export interface DashboardVacacion {

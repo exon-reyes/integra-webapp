@@ -232,7 +232,7 @@
 <p-dialog [(visible)]="mostrarModalFiltros" [closable]="true" [draggable]="false" [modal]="true" [resizable]="false"
           header="Filtro Avanzado" styleClass="w-96">
     <div class="space-y-4">
-        @if (!supRestringido) {
+        @if (!tieneRestriccion) {
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Supervisor</label>
                 <p-select [(ngModel)]="supervisorSeleccionado" [options]="supervisores()" appendTo="body" class="w-full"

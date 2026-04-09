@@ -3,135 +3,118 @@
 <p-menubar class="mt-3">
     <ng-template #start>
         <div class="flex flex-row gap-2">
-            <p-button icon="pi pi-plus" severity="success"></p-button>
-            <p-button icon="pi pi-refresh"></p-button>
-            <p-button icon="pi pi-file-excel" label="Vacaciones" (onClick)="exportarDatosActuales()"></p-button>
+            <p-button *hasPermission="Autoridades.VACACIONES_GESTOR_NUEVO_REGISTRO" icon="pi pi-plus"
+                      severity="success"></p-button>
+            <p-button (onClick)="cargarSolicitudes()" icon="pi pi-refresh"></p-button>
+            <p-button (onClick)="exportarDatosActuales()"
+                      *hasPermission="Autoridades.VACACIONES_GESTOR_EXPORTAR_CATALOGO_VACACIONES"
+                      icon="pi pi-file-excel"
+                      label="Vacaciones"></p-button>
         </div>
     </ng-template>
 </p-menubar>
-<div class="bg-white rounded-lg p-3 mt-2 border border-slate-200">
-    <p-selectButton
-        (ngModelChange)="onFilterChange($event)"
-        [ngModel]="statusFilter()"
-        [options]="filterOptions"
-        optionLabel="label"
-        optionValue="value">
-        <ng-template #item let-item>
-            <i class="pi {{item.icon}}"></i>{{ item.label }}
-        </ng-template>
-    </p-selectButton>
-    <p-table #dt (onLazyLoad)="onPageChange($event)"
-             [first]="currentPage() * pageSize()"
-             [lazy]="true"
-             [loading]="loading()"
-             [paginator]="true"
-             [rowsPerPageOptions]="[10, 20, 30]"
-             [rows]="pageSize()"
-             [scrollable]="true"
-             [showCurrentPageReport]="true"
-             [tableStyle]="{ 'min-width': '50rem' }"
-             [totalRecords]="totalRecords()"
-             [value]="solicitudes"
-             currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} registros">
-        <ng-template #header>
-            <tr>
-                <th style="min-width: 250px">Colaborador</th>
-                <th style="min-width: 250px">Flujo de aprobación</th>
-                <th style="min-width: 120px">Estatus final</th>
-                <th style="min-width: 280px">Fechas solicitadas</th>
-                <th class="text-center" style="min-width: 120px">Autorizados</th>
-                <th style="min-width: 120px">Acciones</th>
-            </tr>
-        </ng-template>
-        <ng-template #body let-item>
-            <tr>
+<div class="flex flex-col md:flex-row gap-3 mt-2">
+    <!-- Panel de filtros -->
+    <div class="bg-white rounded-lg p-4 border border-slate-200 w-full md:w-72 shrink-0">
+        <div class="flex items-center justify-between mb-4">
+            <span class="font-semibold text-lg">Filtros</span>
+            <p-button (onClick)="limpiarFiltros()" [text]="true" icon="pi pi-filter-slash" severity="secondary"/>
+        </div>
 
-                <!-- Colaborador -->
-                <td class="py-3">
-                    <div class="flex flex-col gap-1.5">
-                        <div class="flex items-center gap-2">
-                            <img alt="icon" height="18" ngSrc="/assets/icon/cheque.png" width="18"><span
-                            class="font-semibold text-blue-900">
-                                {{ item.colaborador.nombreCompleto }}</span>
-                        </div>
-                        <div class="text-sm font-medium">
-                            <span>{{ item.unidad }}</span>
-                            <div class="mt-3">Solicitud:  {{ item.tipoSolicitud }} - #{{ item.folioSolicitud }}</div>
-                        </div>
-                    </div>
-                </td>
-                <td class="py-3">
-                    <app-pipeline-aprobacion [estatusJefe]="item.estatusJefe"
-                                             [estatusRrhh]="item.estatusRrhh"></app-pipeline-aprobacion>
-                </td>
-                <td class="py-3">
-                    @if (item.estatusGeneral === 'APROBADA') {
-                        <app-status-badge [label]="item.estatusGeneral" color="green"></app-status-badge>
+        <div class="flex flex-col gap-4">
+            <div class="flex flex-col gap-1">
+                <label class="text-sm font-medium">Colaborador</label>
+                <p-select
+                    (onChange)="onFiltroChange()"
+                    [(ngModel)]="filtroEmpleadoId"
+                    [filter]="true"
+                    [options]="empleados()"
+                    [showClear]="true"
+                    appendTo="body"
+                    filterBy="nombreCompleto"
+                    optionLabel="nombreCompleto"
+                    optionValue="id"
+                    placeholder="Todos"/>
+            </div>
 
-                    } @else if (item.estatusGeneral === 'PENDIENTE') {
-                        <app-status-badge [label]="item.estatusGeneral" color="yellow"></app-status-badge>
-                    } @else {
-                        <app-status-badge [label]="item.estatusGeneral" color="red"></app-status-badge>
-                    }
-                </td>
-
-                <!-- Fechas solicitadas -->
-                <td class="py-3">
-                    <div class="flex flex-wrap gap-1 max-w-[280px]">
-                        @for (day of item.solicitudes; track day.id) {
-                            <div
-                                class="flex flex-col items-center justify-center w-8 h-10 overflow-hidden shadow-md rounded-b-md">
-                                <div
-                                    [class.bg-amber-200]="day.estatus === 'PENDIENTE'"
-                                    [class.bg-green-700]="day.estatus === 'APROBADA'"
-                                    [class.bg-red-700]="day.estatus === 'CANCELADA'"
-                                    [class.text-amber-900]="day.estatus === 'PENDIENTE'"
-                                    [class.text-white]="day.estatus === 'APROBADA' || day.estatus === 'CANCELADA'"
-                                    class="w-full text-[8px] font-semibold uppercase text-center py-px">
-                                    {{ day.fecha | date:'MMM' }}
-                                </div>
-
-                                <!-- Día -->
-                                <div [ngClass]="{
-       'text-emerald-800': day.estatus==='APROBADA',
-       'text-rose-500': day.estatus==='CANCELADA',
-       'text-amber-600': day.estatus==='PENDIENTE'
-     }" class="flex-1 w-full flex items-center justify-center">
-      <span [class.line-through]="day.estatus==='CANCELADA'"
-            class="text-[11px] font-bold">
-        {{ day.fecha | date:'dd' }}
-      </span>
-                                </div>
-                            </div>
-                        }
-                    </div>
-                </td>
-
-                <!-- Total días -->
-                <td class="text-center">
-                    <div
-                        class="flex flex-col items-center justify-center">
-                        <span class="text-md font-bold">{{ item.diasAprobados }}/{{ item.diasTotalSolicitud }}</span>
-                        <span class="text-sm">Días</span>
-                    </div>
-                </td>
-
-                <!-- Acciones -->
-                <td>
-                    <p-button [routerLink]="['detalles',item.folioSolicitud]" label="Ver solicitud"/>
-                </td>
-
-            </tr>
-        </ng-template>
-        <ng-template #emptymessage>
-            <tr>
-                <td class="text-center py-8 text-gray-500" colspan="6">
-                    <app-state description="No se encontraron solicitudes" title="Sin registros"/>
-                </td>
-            </tr>
-        </ng-template>
-    </p-table>
+            <div class="flex flex-col gap-1">
+                <label class="text-sm font-medium">Unidad</label>
+                <p-select
+                    (onChange)="onFiltroChange()"
+                    [(ngModel)]="filtroUnidadId"
+                    [filter]="true"
+                    [options]="unidades()"
+                    [showClear]="true"
+                    appendTo="body"
+                    filterBy="nombreCompleto"
+                    optionLabel="nombreCompleto"
+                    optionValue="id"
+                    placeholder="Todas"/>
+            </div>
+            @if (!tieneRestriccion) {
+                <div class="flex flex-col gap-1">
+                    <label class="text-sm font-medium">Supervisor</label>
+                    <p-select
+                        (onChange)="onFiltroChange()"
+                        [(ngModel)]="filtroSupervisorId"
+                        [filter]="true"
+                        [options]="supervisores()"
+                        [showClear]="true"
+                        appendTo="body"
+                        filterBy="nombreCompleto"
+                        optionLabel="nombreCompleto"
+                        optionValue="id"
+                        placeholder="Todos"/>
+                </div>
+            }
+        </div>
+    </div>
+    <!-- Tabla principal -->
+    <div class="bg-white rounded-lg p-3 border border-slate-200 flex-1 min-w-0">
+        <p-selectButton
+            (ngModelChange)="onFilterChange($event)"
+            [ngModel]="statusFilter()"
+            [options]="filterOptions"
+            optionLabel="label"
+            optionValue="value">
+            <ng-template #item let-item>
+                <i class="pi {{item.icon}}"></i>{{ item.label }}
+            </ng-template>
+        </p-selectButton>
+        <app-solicitudes-table
+            [solicitudes]="solicitudes"
+            [showDetails]="true"
+            (deleteClick)="eliminarSolicitud($event)"
+            [loading]="loading()"
+            [totalRecords]="totalRecords()"
+            [first]="currentPage() * pageSize()"
+            [rows]="pageSize()"
+            (pageChange)="onPageChange($event)"
+            (papeletaClick)="abrirModalPapeleta($event)"/>
+    </div>
 </div>
 
+<p-dialog [(visible)]="mostrarDialogoPapeleta" [modal]="true" [style]="{width: '25rem'}" header="Exportar Papeleta">
+    <div class="flex flex-col gap-4 py-4">
+        <label class="font-semibold" for="salario">Salario Diario</label>
+        <p-inputNumber [(ngModel)]="salarioDiario" currency="MXN" inputId="salario" locale="es-MX"
+                       mode="currency"
+                       placeholder="Ej. 350.50"></p-inputNumber>
 
+        <label class="font-semibold mt-2" for="diasAdicionales">Días Adicionales (Opcional)</label>
+        <p-inputNumber [(ngModel)]="diasAdicionales"
+                       [min]="0"
+                       [showButtons]="true"
+                       buttonLayout="horizontal"
+                       decrementButtonIcon="pi pi-minus"
+                       incrementButtonIcon="pi pi-plus"
+                       inputId="diasAdicionales"></p-inputNumber>
+    </div>
+    <ng-template pTemplate="footer">
+        <p-button (onClick)="mostrarDialogoPapeleta.set(false)" icon="pi pi-times" label="Cancelar"
+                  severity="secondary"></p-button>
+        <p-button (onClick)="generarPapeleta()" [disabled]="!folioSeleccionado()" icon="pi pi-check"
+                  label="Generar"></p-button>
 
+    </ng-template>
+</p-dialog>

@@ -1,12 +1,8 @@
-import {ChangeDetectionStrategy, Component, computed, inject, input, output, signal, ViewChild} from '@angular/core';
+import {ChangeDetectionStrategy, Component, computed, input, output, signal, ViewChild} from '@angular/core';
 import {Button} from 'primeng/button';
 import {Popover, PopoverModule} from 'primeng/popover';
-import {DialogModule} from 'primeng/dialog';
-import {TimelineModule} from 'primeng/timeline';
 import {Festivo, SolicitudEmpleado} from "@/modules/vacacion/models/vacacion.model";
 import {DatePipe} from '@angular/common';
-import {EmpleadoTiempoHistorialDTO, VacacionService} from '../../services/vacacion.service';
-import {StateComponent} from "@/components/state.component";
 
 // ─── Tipos internos ────────────────────────────────────────────────────────
 
@@ -85,11 +81,11 @@ const KIND_CLS: Readonly<Record<DayKind, string
     disfrutada: 'bg-green-600 text-white cursor-pointer hover:bg-green-700',
     aprobada: 'bg-blue-500 text-white font-semibold shadow-sm cursor-pointer hover:bg-blue-600',
     disabled: 'opacity-30 cursor-not-allowed pointer-events-none',
-    default: 'text-slate-600 hover:bg-slate-100 hover:text-slate-900',
+    default: 'text-slate-600 hover:bg-slate-200 hover:text-slate-900',
 } as const;
 
 /** Clases base fusionadas con KIND_CLS — binding directo [class], sin interpolación */
-const BASE_CLS='flex items-center justify-center text-sm h-7 rounded-lg transition-all duration-150 select-none w-full';
+const BASE_CLS='flex items-center justify-center text-md h-7 rounded-lg transition-all duration-150 select-none w-full';
 const FULL_CLS=Object.fromEntries((Object.keys(KIND_CLS) as DayKind[]).map(k => [
     k, `${BASE_CLS} ${KIND_CLS[k]}`,
 ])) as Readonly<Record<DayKind, string>>;
@@ -164,7 +160,7 @@ function midnightTs(y: number,
     selector: 'app-vacacion-calendar',
     standalone: true,
     changeDetection: ChangeDetectionStrategy.OnPush,
-    imports: [PopoverModule, DialogModule, TimelineModule, Button, DatePipe, StateComponent],
+    imports: [PopoverModule, Button, DatePipe],
     template: `
         <div class="select-none">
 
@@ -182,17 +178,17 @@ function midnightTs(y: number,
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-2">
 
                 @for (month of calendarData(); track month.monthIndex) {
-                    <section class="rounded bg-white border border-slate-100 shadow-xs p-3 min-w-0">
+                    <section class="rounded bg-white border border-slate-200 shadow-sm m-2 min-w-0">
 
-                        <h6>
+                        <div class="text-white w-full text-center rounded p-2 font-medium mb-3 bg-sky-800">
                             {{ month.name }}
-                        </h6>
+                        </div>
 
                         <div class="grid grid-cols-7 gap-0.5">
 
                             <!-- Cabeceras de días -->
                             @for (h of dayHeaders; track h + $index) {
-                                <div class="flex items-center justify-center text-[10px] font-semibold h-6">
+                                <div class="flex items-center justify-center text-[10px] font-bold h-6">
                                     {{ h }}
                                 </div>
                             }
@@ -266,118 +262,23 @@ function midnightTs(y: number,
 
                         <!-- Acciones -->
                         <div class="flex flex-col gap-2 mt-3">
-                            <p-button label="Ver Historial" icon="pi pi-history"
-                                      styleClass="w-full"
-                                      (onClick)="verHistorial()"></p-button>
                             @if (data.cancelable) {
                                 <p-button label="Cancelar día solicitado" severity="danger" styleClass="w-full"
 
                                           (onClick)="confirmarCancelacion()"></p-button>
-                            }
-                            @if (data.reactivable) {
-                                <p-button label="Volver a solicitar" icon="pi pi-replay" severity="warn"
-                                          styleClass="w-full"
-                                          (onClick)="confirmarReactivacion()"></p-button>
                             }
                         </div>
                     </div>
                 }
             </p-popover>
 
-            <!-- ── Dialog de Historial ────────────────────────────────────── -->
-            <p-dialog header="Historial de eventos"
-                      [modal]="true"
-                      [(visible)]="displayHistorial"
-                      [style]="{ width: '32rem' }"
-                      [dismissableMask]="true">
 
-                @if (historialData()) {
-                    @if (historialData()?.length > 0) {
-
-                        <!-- Contenedor principal -->
-                        <div class="relative max-h-[70vh] overflow-y-auto pr-2">
-
-                            <!-- Línea vertical con gradiente -->
-                            <div class="absolute left-4 top-0 bottom-0 w-[2px] bg-gradient-to-b from-blue-500 via-indigo-400 to-transparent"></div>
-
-                            <ol class="space-y-6 ml-6">
-
-                                @for (item of historialData(); track item.id; let last = $last) {
-
-                                    <li class="relative">
-
-                                        <!-- Card -->
-                                        <div class="group relative bg-white/70 backdrop-blur-md border border-white/40 shadow-lg rounded-xl p-4 hover:shadow-xl transition-all duration-300">
-
-                                            <!-- Glow hover -->
-                                            <div class="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-500/0 via-blue-500/10 to-indigo-500/0 opacity-0 group-hover:opacity-100 transition"></div>
-
-                                            <!-- Header -->
-                                            <div class="flex justify-between items-start mb-2">
-                                                <div class="flex flex-col">
-                                        <span class="text-sm font-semibold text-blue-700 tracking-wide uppercase">
-                                            {{ item.tipoEvento }}
-                                        </span>
-                                                    <span class="text-sm text-gray-500">
-                                            {{ item.fechaEvento | date:'dd MMM yyyy · HH:mm' }}
-                                        </span>
-                                                </div>
-
-                                                <!-- Badge decorativo -->
-                                                <span class="text-[10px] px-2 py-1 rounded-full bg-blue-100 text-blue-700 font-semibold shadow-sm">
-                                        Evento
-                                    </span>
-                                            </div>
-
-                                            <!-- Divider -->
-                                            <div class="h-px w-full bg-gradient-to-r from-transparent via-gray-300 to-transparent my-2"></div>
-
-                                            <!-- Contenido -->
-                                            <div class="text-sm text-gray-700 leading-relaxed"
-                                                 [innerHTML]="item.comentario">
-                                            </div>
-
-                                        </div>
-
-                                    </li>
-
-                                }
-
-                            </ol>
-
-                        </div>
-
-                    } @else {
-
-                        <!-- Empty state más moderno -->
-                        <div class="flex flex-col items-center justify-center py-10 text-center">
-
-                            <div class="h-14 w-14 rounded-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center shadow-inner mb-4">
-                                <i class="pi pi-inbox text-gray-500 text-xl"></i>
-                            </div>
-
-                            <span class="text-gray-700 font-semibold text-sm">
-                    Sin registros
-                </span>
-
-                            <span class="text-gray-500 text-xs mt-1">
-                    No se han registrado eventos de la solicitud
-                </span>
-
-                        </div>
-
-                    }
-                }
-
-            </p-dialog>
 
         </div>
     `,
 })
 export class VacacionCalendarComponent {
 
-    readonly displayHistorial=signal(false);
-    readonly historialData=signal<EmpleadoTiempoHistorialDTO[]>([]);
     readonly year=input.required<number>();
 
     // ── Inputs ────────────────────────────────────────────────────────────
@@ -405,11 +306,6 @@ export class VacacionCalendarComponent {
      */
     readonly allowCancelSolicitud=input<boolean>(false);
     /**
-     * Habilita el botón "Volver a solicitar" (reactivar) en el popover para solicitudes CANCELADAS.
-     * Por defecto `false` — en el dashboard no se debe de ver el botón de reactivar.
-     */
-    readonly allowReactivar=input<boolean>(false);
-    /**
      * Habilita la selección de días festivos en modo 'multiple' emitiendo dayClicked en lugar de abrir el popover.
      */
     readonly allowFestivoSelection=input<boolean>(false);
@@ -420,8 +316,6 @@ export class VacacionCalendarComponent {
     readonly descansoPendienteCancel=output<number>();
     /** Emite el ID de la solicitud de vacaciones PENDIENTE a cancelar */
     readonly solicitudCancel=output<number>();
-    /** Emite el ID de la solicitud CANCELADA a reactivar (volver a PENDIENTE) */
-    readonly solicitudReactivar=output<{ id: number; eventType: 'descanso' | 'solicitud' }>();
     @ViewChild('eventPopover') eventPopover!: Popover;
 
     // ── Estado del popover ────────────────────────────────────────────────
@@ -431,7 +325,6 @@ export class VacacionCalendarComponent {
         motivo?: string;
         id?: number;
         cancelable: boolean;
-        reactivable: boolean;
         fechaSolicitud?: string;
         eventType?: 'descanso' | 'solicitud';
     } | null>(null);
@@ -439,7 +332,6 @@ export class VacacionCalendarComponent {
 
     // ── Constantes expuestas al template ──────────────────────────────────
     readonly legend=LEGEND;
-    private readonly vacacionService=inject(VacacionService);
     private readonly selectedSet=computed(() => new Set(this.selectedDates()));
     private readonly minDateTs=computed<number | null>(() => {
         const d=this.minDate();
@@ -615,7 +507,6 @@ export class VacacionCalendarComponent {
                 id: marker.id,
                 fechaSolicitud: marker.fechaSolicitud,
                 cancelable: marker.cancelable,
-                reactivable: this.allowReactivar() && marker.kind === 'cancelada' && date>=TODAY_STR,
                 eventType: marker.eventType,
             });
             this.eventPopover.show(event);
@@ -641,35 +532,6 @@ export class VacacionCalendarComponent {
             this.solicitudCancel.emit(data.id);
         }
 
-        this.popoverData.set(null);
-        this.eventPopover.hide();
-    }
-
-    /**
-     * Abre el diálogo con el historial de la solicitud.
-     */
-    verHistorial(): void {
-        const data=this.popoverData();
-        if(!data?.id) return;
-
-        this.vacacionService.getLineaTiempo(data.id).subscribe({
-            next: (res) => {
-                this.historialData.set(res.data);
-                this.displayHistorial.set(true);
-            }, error: (err) => {
-                console.error('Error fetching timeline', err);
-            },
-        });
-    }
-
-    /**
-     * Reactivar una solicitud cancelada — emite el output para que el padre la procese.
-     */
-    confirmarReactivacion(): void {
-        const data=this.popoverData();
-        if(!data?.id || !data.eventType) return;
-
-        this.solicitudReactivar.emit({id: data.id, eventType: data.eventType});
         this.popoverData.set(null);
         this.eventPopover.hide();
     }

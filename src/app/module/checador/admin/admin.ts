@@ -9,7 +9,6 @@ import {
     EmpleadoReporteRequest,
 } from '@/core/services/asistencia/asistencia.service';
 import {FormsModule} from '@angular/forms';
-import {UnidadService} from '@/core/services/empresa/unidad.service';
 import {Dialog} from 'primeng/dialog';
 import {Tooltip} from 'primeng/tooltip';
 import {Select} from 'primeng/select';
@@ -22,16 +21,16 @@ import {Puesto} from '@/models/empresa/puesto';
 import {fechaISOString, obtenerFinDia} from '@/shared/util/date.util';
 import {Zona} from '@/models/ubicacion/zona';
 import {ZonaService} from '@/core/services/ubicacion/zona.service';
-import {JWTService} from '@/core/security/JWTService';
 import {Autoridades} from '@/core/Autoridades';
 import {InputText} from 'primeng/inputtext';
 import {SpinnerService} from '@/shared/service/spinner.service';
 import {PhotoViewerComponent} from '@/shared/component/photo-viewer/photo-viewer.component';
 import {PhotoViewerService} from '@/shared/component/photo-viewer/photo-viewer.service';
 import {AsistenciaCardComponent} from '@/components/asistencia/asistencia-card/asistencia-card.component';
-import {CatalogoEmpleado, CatalogoEmpleadoService} from "@/service/catalogo-empleado.service";
+import {CatalogoEmpleado} from "@/service/catalogo-empleado.service";
 import {StatWidgetComponent} from "@/components/stat-widget";
-import {EmpleadoSesionService} from "@/core/empleado-sesion-service";
+import {JWTService} from "@/core/security/JWTService";
+import {ContextoConsultaService, RestriccionUsuario} from "@/service/contexto-consulta.service";
 
 @Component({
     standalone: true,
@@ -78,16 +77,17 @@ export class Admin implements OnInit {
     protected mostrarModalInconsistencias: boolean;
     protected readonly Autoridades=Autoridades;
     protected asistencias=inject(AsistenciaService);
-    protected supRestringido!: boolean
     private loadingService=inject(SpinnerService);
-    private catalagoEmpleado=inject(CatalogoEmpleadoService)
-    private unidadService=inject(UnidadService);
-    private readonly empleadoSessionService=inject(EmpleadoSesionService)
     private puestoService=inject(PuestoService);
     private zonaService=inject(ZonaService);
     private securityService=inject(JWTService);
     private photoViewerService=inject(PhotoViewerService);
-    private colaboradoresAsignados!: boolean;
+    private readonly contexto=inject(ContextoConsultaService);
+    private restriccion!: RestriccionUsuario;
+
+    get tieneRestriccion(): boolean {
+        return this.restriccion.tieneRestriccion;
+    }
 
     get jornadasAbiertas(): number {
         return this.empleados.reduce((total,
@@ -102,39 +102,28 @@ export class Admin implements OnInit {
         return empleado.asistencias.some(a => !a.jornadaCerrada);
     }
 
-    /**
-     * Abre el visor de fotos usando el servicio PhotoViewerService.
-     *
-     * @param pathFoto - Ruta relativa de la foto en el servidor
-     * @param tipo - Tipo de foto (ej: 'Inicio', 'Fin', 'Inicio Pausa Comida')
-     * @param fecha - Fecha de la asistencia
-     */
     verFoto(pathFoto: string,
             tipo: string,
             fecha: string): void {
         const urlCompleta=`${this.asistencias.apiUrlImagen}/${pathFoto}`;
-
         const fechaFormateada=new Date(fecha).toLocaleDateString('es-MX', {
             day: '2-digit', month: '2-digit', year: 'numeric',
         });
-
         const titulo=`${tipo} - ${fechaFormateada}`;
         this.photoViewerService.open(urlCompleta, titulo);
     }
 
     ngOnInit() {
-        this.supRestringido=this.securityService.hasAuthority(Autoridades.CONSULTA_ASISTENCIA_RESTRINGIR_FILTRO_SUPERVISOR)
-        this.colaboradoresAsignados=this.securityService.hasAuthority(Autoridades.CONSULTA_ASISTENCIA_EMPLEADOS_RESPONSABLES)
+        this.restriccion=this.contexto.resolverRestriccion({
+            keySupervisor: Autoridades.CONSULTA_ASISTENCIA_RESTRINGIR_FILTRO_SUPERVISOR,
+            keyResponsable: Autoridades.CONSULTA_ASISTENCIA_EMPLEADOS_RESPONSABLES
+        });
         this.cargarOpcionesFiltros();
     }
 
     cargarAsistencias(): void {
-
         this.loadingService.show();
 
-        // ---------------------------------------
-        // 1. Validar fechas obligatorias
-        // ---------------------------------------
         if(!this.rangeDates || this.rangeDates.length !== 2 || !this.rangeDates[1]) {
             this.loadingService.hide();
             return;
@@ -147,41 +136,19 @@ export class Admin implements OnInit {
             hasta: fechaISOString(obtenerFinDia(hasta)),
         };
 
-        const empleadoId=this.securityService.getUser().employeeName.id;
+        // Aplicar restricciones de permisos + filtro manual de supervisor
+        this.contexto.aplicarRestriccion(params, this.restriccion, this.filtroSupervisor);
 
-        // ---------------------------------------
-        // 2. Restricciones por permisos
-        // ---------------------------------------
-
-        // Supervisor
-        if(this.supRestringido && empleadoId) {
-            params.supervisorId=empleadoId;
-        } else if(this.filtroSupervisor) {
-            params.supervisorId=this.filtroSupervisor;
-        }
-
-        // Empleado asociado
-        if(this.colaboradoresAsignados && empleadoId) {
-            params.empleadoResponsableId=empleadoId;
-        } else if(this.filtroEmpleado) {
-            params.empleadoId=this.filtroEmpleado;
-        }
-
-        // ---------------------------------------
-        // 3. Filtros independientes
-        // ---------------------------------------
+        // Filtros independientes
+        if(this.filtroEmpleado) params.empleadoId=this.filtroEmpleado;
         if(this.filtroUnidad) params.unidadId=this.filtroUnidad;
         if(this.filtroZona) params.zonaId=this.filtroZona;
         if(this.filtroPuesto) params.puestoId=this.filtroPuesto;
 
-        // ---------------------------------------
-        // 4. Validar que exista al menos 1 filtro adicional
-        // ---------------------------------------
         const tieneFiltrosAdicionales=Boolean(
             params.supervisorId ||
             params.empleadoId ||
             params.empleadoResponsableId ||
-            params.empleadoId ||
             params.unidadId ||
             params.zonaId ||
             params.puestoId,
@@ -192,9 +159,6 @@ export class Admin implements OnInit {
             return;
         }
 
-        // ---------------------------------------
-        // 5. Ejecutar consulta
-        // ---------------------------------------
         this.asistencias.obtenerAsistencias(params).subscribe({
             next: (value) => {
                 this.empleados=value.data.map(empleado => ({
@@ -209,41 +173,25 @@ export class Admin implements OnInit {
             error: () => this.loadingService.hide(),
             complete: () => this.loadingService.hide(),
         });
-
     }
 
-
     cargarOpcionesFiltros() {
-        if(this.supRestringido) {
-            this.unidadService.filtrar({supervisorId: this.securityService.getUser().employeeName.id}).subscribe({
-                next: (response) => {
-                    this.unidades.set(response.data)
-                },
-            })
-        } else {
-            this.unidadService.filtrar({activos: true}).subscribe({
-                next: (response) => {
-                    this.unidades.set(response.data)
-                },
-            });
-        }
-        if(!this.supRestringido) {
-            this.catalagoEmpleado.obtenerSupervisores().subscribe({
-                next: (response) => {
-                    this.supervisores.set(response.data);
-                },
-            })
-        }
-
         this.loadingService.show();
+
+        this.contexto.cargarCatalogos(this.restriccion).subscribe({
+            next: (res) => {
+                this.listaColaboradores.set(res.empleados.data ?? []);
+                this.unidades.set(res.unidades.data ?? []);
+                this.supervisores.set(res.supervisores.data ?? []);
+            }
+        });
+
         forkJoin([
             this.puestoService.obtenerPuestos(),
-            this.catalagoEmpleado.obtenerEmpleados(this.empleadoSessionService.buildParams(Autoridades.CONSULTA_ASISTENCIA_RESTRINGIR_FILTRO_SUPERVISOR, Autoridades.CONSULTA_ASISTENCIA_EMPLEADOS_RESPONSABLES)),
             this.zonaService.obtenerZonas(),
         ]).subscribe({
-            next: ([puestosResp, empleadosResp, zonaResp]) => {
+            next: ([puestosResp, zonaResp]) => {
                 this.puestos.set(puestosResp.data);
-                this.listaColaboradores.set(empleadosResp.data);
                 this.zonas.set(zonaResp.data);
             }, complete: () => {
                 this.loadingService.hide();
@@ -265,29 +213,15 @@ export class Admin implements OnInit {
         params.desde=fechaISOString(desde);
         params.hasta=fechaISOString(obtenerFinDia(hasta));
 
-        // Si tiene restricción de supervisor, asignar automáticamente su ID
-        const empleadoId=this.securityService.getUser().employeeName.id;
-        if(!this.supRestringido && empleadoId) {
-            params.supervisorId=empleadoId;
-        } else if(this.filtroSupervisor) {
-            params.supervisorId=this.filtroSupervisor;
-        }
+        this.contexto.aplicarRestriccion(params, this.restriccion, this.filtroSupervisor);
 
-        if(this.filtroUnidad) {
-            params.unidadId=this.filtroUnidad;
-        }
-        if(this.filtroZona) {
-            params.zonaId=this.filtroZona;
-        }
-        if(this.filtroPuesto) {
-            params.puestoId=this.filtroPuesto;
-        }
-        if(this.filtroEmpleado) {
-            params.empleadoId=this.filtroEmpleado;
-        }
+        if(this.filtroUnidad) params.unidadId=this.filtroUnidad;
+        if(this.filtroZona) params.zonaId=this.filtroZona;
+        if(this.filtroPuesto) params.puestoId=this.filtroPuesto;
+        if(this.filtroEmpleado) params.empleadoId=this.filtroEmpleado;
 
-        // Verificar que exista al menos un filtro además del rango de fecha
-        const tieneAlMenosUnFiltro=this.filtroUnidad || this.filtroSupervisor || this.filtroZona || this.filtroPuesto || this.filtroEmpleado || (!this.supRestringido && empleadoId);
+        const tieneAlMenosUnFiltro=params.supervisorId || params.empleadoResponsableId ||
+            this.filtroUnidad || this.filtroZona || this.filtroPuesto || this.filtroEmpleado;
 
         if(!tieneAlMenosUnFiltro) {
             this.exportandoExcel.set(false);
@@ -311,7 +245,6 @@ export class Admin implements OnInit {
         });
     }
 
-
     mostrarInconsistencias(id: number) {
         this.mostrarModalInconsistencias=true;
         if(!this.rangeDates || this.rangeDates.length !== 2 || !this.rangeDates[0] || !this.rangeDates[1]) {
@@ -332,9 +265,9 @@ export class Admin implements OnInit {
     }
 
     actulizarTabla() {
-        // Verificar que exista al menos un filtro además del rango de fecha
-        const empleadoId=this.securityService.getUser().employeeName.id;
-        const tieneAlMenosUnFiltro=this.filtroUnidad || this.filtroSupervisor || this.filtroZona || this.filtroPuesto || this.filtroEmpleado || (!this.supRestringido && empleadoId);
+        const tieneAlMenosUnFiltro=this.filtroUnidad || this.filtroSupervisor ||
+            this.filtroZona || this.filtroPuesto || this.filtroEmpleado ||
+            this.restriccion.tieneRestriccion;
 
         if(!tieneAlMenosUnFiltro) {
             this.empleados=[];

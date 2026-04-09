@@ -19,7 +19,7 @@
 // //   createdAt: string;
 // // }
 //
-// // export interface SolicitudVacacionRequest {
+// // export interface SolicitudDescansoRequest {
 // //   fechaInicio: string;
 // //   fechaFin: string;
 // //   observaciones?: string;
