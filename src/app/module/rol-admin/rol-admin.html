@@ -14,7 +14,8 @@
             <!-- Caption: acciones -->
             <ng-template #caption>
                 <div class="flex">
-                    <p-button *hasPermission="Autoridades.ROLES_CREAR" (onClick)="mostrarDialogoNuevoRol=true" icon="pi pi-plus" label="Nuevo rol"
+                    <p-button (onClick)="mostrarDialogoNuevoRol=true" *hasPermission="Autoridades.ROLES_CREAR"
+                              icon="pi pi-plus" label="Nuevo rol"
                               severity="success"/>
                 </div>
             </ng-template>
@@ -153,7 +154,8 @@
                                   severity="secondary"
                                   size="small"></p-button>
                     } @else if (!selectedRol()?.rolDefault) {
-                        <p-button (onClick)="modoEdicion.set(true)" *hasPermission="Autoridades.ROLES_EDITAR" icon="pi pi-lock-open"
+                        <p-button (onClick)="modoEdicion.set(true)" *hasPermission="Autoridades.ROLES_EDITAR"
+                                  icon="pi pi-lock-open"
                                   label="Editar Permisos"
                                   severity="info"
                                   size="small"></p-button>

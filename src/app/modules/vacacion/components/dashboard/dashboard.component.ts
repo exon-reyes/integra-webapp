@@ -44,7 +44,7 @@ import {NgClass} from "@angular/common";
                     <p-button label="Registrar descansos" icon="pi pi-calendar-clock"
                               routerLink="/integra/vacaciones/descansos"></p-button>
                 </div>
-                <p-button  label="Consultar solicitudes" icon="pi pi-inbox"
+                <p-button label="Consultar solicitudes" icon="pi pi-inbox"
                           (onClick)="confirmCancel($event)"></p-button>
             </div>
             <p-panel header="Resumen del período actual" class="my-3">
@@ -81,6 +81,7 @@ import {NgClass} from "@angular/common";
                                 <app-donut-chart
                                     [data]="vacaciones"
                                     [size]="110"
+                                    [showPercentage]="false"
                                     [thickness]="15"
                                     [centerLabel]="dashboard().periodoVacacional.diasHabilitados"
                                     centerSublabel="Habilitados"
@@ -159,28 +160,32 @@ import {NgClass} from "@angular/common";
             <p-confirmDialog #cd [style]="{width: '450px'}">
                 <ng-template #headless let-message let-onAccept="onAccept" let-onReject="onReject">
                     @if (message) {
-                    <div class="flex flex-col items-center p-8 bg-white rounded-xl shadow-sm">
-                        <div [ngClass]="message.acceptButtonStyleClass === 'p-button-danger' ? 'bg-red-500 text-white' : 'bg-green-500 text-white'"
-                            class="rounded-full inline-flex justify-center items-center h-24 w-24 -mt-20">
-                            <i [class]="message.icon + ' !text-5xl'"></i>
+                        <div class="flex flex-col items-center p-8 bg-white rounded-xl shadow-sm">
+                            <div
+                                [ngClass]="message.acceptButtonStyleClass === 'p-button-danger' ? 'bg-red-500 text-white' : 'bg-green-500 text-white'"
+                                class="rounded-full inline-flex justify-center items-center h-24 w-24 -mt-20">
+                                <i [class]="message.icon + ' !text-5xl'"></i>
+                            </div>
+                            <span
+                                class="font-bold text-2xl block mb-2 mt-6 text-slate-800 text-center">{{ message.header }}</span>
+                            <p [innerHTML]="message.message" class="mb-0  text-center"></p>
+                            <div class="flex items-center gap-2 mt-6">
+                                <p-button (onClick)="onReject()" [label]="message.rejectLabel" [outlined]="true"
+                                          severity="secondary"
+                                          styleClass="w-[150px]"></p-button>
+                                <p-button (onClick)="onAccept()" [label]="message.acceptLabel"
+                                          [severity]="message.acceptButtonStyleClass === 'p-button-danger' ? 'danger' : 'primary'"
+                                          styleClass="w-[150px]"></p-button>
+                            </div>
                         </div>
-                        <span class="font-bold text-2xl block mb-2 mt-6 text-slate-800 text-center">{{ message.header }}</span>
-                        <p [innerHTML]="message.message" class="mb-0  text-center"></p>
-                        <div class="flex items-center gap-2 mt-6">
-                            <p-button (onClick)="onReject()" [label]="message.rejectLabel" [outlined]="true" severity="secondary"
-                                styleClass="w-[150px]"></p-button>
-                            <p-button (onClick)="onAccept()" [label]="message.acceptLabel"
-                                [severity]="message.acceptButtonStyleClass === 'p-button-danger' ? 'danger' : 'primary'"
-                                styleClass="w-[150px]"></p-button>
-                        </div>
-                    </div>
                     }
                 </ng-template>
             </p-confirmDialog>
             <p-dialog [(visible)]="mostrarDialogoCancelacion" [modal]="true"
                       [style]="{width: '80vw'}">
                 <ng-template #header>
-                    <app-title imageSrc="/assets/icon/vacation.svg" title="Solicitudes" description="Solicitudes pendientes de aprobación"></app-title>
+                    <app-title imageSrc="/assets/icon/vacation.svg" title="Solicitudes"
+                               description="Solicitudes pendientes de aprobación"></app-title>
                 </ng-template>
                 <app-solicitudes-table
                     [showDetails]="false"
@@ -266,6 +271,16 @@ export class DashboardVacacionesComponent implements OnInit {
         this.cargarSolicitudesParaCancelar();
     }
 
+    protected eliminarSolicitud($event: number) {
+        this.loading.set(true);
+        this.vacacionAdminService.eliminarSolicitud($event).subscribe({
+            next: () => {
+                this.cargarDashboard()
+                this.cargarSolicitudesParaCancelar()
+            }
+        })
+    }
+
     private cargarFestivos(anio: number) {
         this.vacacionAdminService.getFestivos(anio).subscribe({
             next: value => this.festivos.set(value.data),
@@ -309,15 +324,5 @@ export class DashboardVacacionesComponent implements OnInit {
             {label: 'Disponibles', value: this.dashboard().periodoVacacional.diasRestantes, color: '#185FA5'},
             {label: 'Pendientes', value: this.dashboard().vacaciones.sumaPendientesAprobacion, color: '#EF9F27'},
         ]
-    }
-
-    protected eliminarSolicitud($event: number) {
-        this.loading.set(true);
-        this.vacacionAdminService.eliminarSolicitud($event).subscribe({
-            next:() => {
-                this.cargarDashboard()
-                this.cargarSolicitudesParaCancelar()
-            }
-        })
     }
 }

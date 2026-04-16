@@ -1,5 +1,5 @@
-import { Component, input } from '@angular/core';
-import { NgClass } from '@angular/common';
+import {Component, input} from '@angular/core';
+import {NgClass} from '@angular/common';
 
 @Component({
     selector: 'app-pipeline-aprobacion',
@@ -33,24 +33,32 @@ import { NgClass } from '@angular/common';
     `
 })
 export class PipelineAprobacionComponent {
-    estatusJefe = input<string | undefined>('');
-    estatusRrhh = input<string | undefined>('');
+    estatusJefe=input<string | undefined>('');
+    estatusRrhh=input<string | undefined>('');
 
     getStatusClass(status?: string): string {
-        switch (status) {
-            case 'APROBADA':  return 'bg-emerald-600 text-white';
-            case 'CANCELADA': return 'bg-red-600 text-white';
-            case 'PENDIENTE': return 'bg-amber-500 text-white';
-            default:          return 'bg-slate-300 text-slate-700';
+        switch(status) {
+            case 'APROBADA':
+                return 'bg-emerald-600 text-white';
+            case 'CANCELADA':
+                return 'bg-red-600 text-white';
+            case 'PENDIENTE':
+                return 'bg-amber-500 text-white';
+            default:
+                return 'bg-slate-300 text-slate-700';
         }
     }
 
     getStatusIcon(status?: string): string {
-        switch (status) {
-            case 'APROBADA':  return 'pi-check-circle';
-            case 'CANCELADA': return 'pi-times-circle';
-            case 'PENDIENTE': return 'pi-clock';
-            default:          return 'pi-minus-circle';
+        switch(status) {
+            case 'APROBADA':
+                return 'pi-check-circle';
+            case 'CANCELADA':
+                return 'pi-times-circle';
+            case 'PENDIENTE':
+                return 'pi-clock';
+            default:
+                return 'pi-minus-circle';
         }
     }
 }

@@ -54,22 +54,22 @@ export class StatWidgetComponent {
 
     private readonly colorMap: Record<WidgetColor, any>={
         blue: {
-            iconBg: 'bg-gradient-to-tr from-blue-600 to-cyan-500',
+            iconBg: 'bg-gradient-to-tr from-blue-500 to-cyan-500',
             title: 'text-blue-800',
             subtitle: 'text-blue-600',
         },
         indigo: {
-            iconBg: 'bg-gradient-to-tr from-indigo-600 to-violet-500',
+            iconBg: 'bg-gradient-to-tr from-indigo-500 to-violet-500',
             title: 'text-indigo-800',
             subtitle: 'text-indigo-600',
         },
         green: {
-            iconBg: 'bg-gradient-to-tr from-emerald-600 to-green-400',
+            iconBg: 'bg-gradient-to-tr from-emerald-500 to-green-400',
             title: 'text-green-800',
             subtitle: 'text-green-600',
         },
         red: {
-            iconBg: 'bg-gradient-to-tr from-red-600 to-orange-500',
+            iconBg: 'bg-gradient-to-tr from-red-500 to-orange-500',
             title: 'text-red-800',
             subtitle: 'text-red-600',
         },
@@ -79,12 +79,12 @@ export class StatWidgetComponent {
             subtitle: 'text-yellow-600',
         },
         purple: {
-            iconBg: 'bg-gradient-to-tr from-purple-600 to-fuchsia-500',
+            iconBg: 'bg-gradient-to-tr from-purple-500 to-fuchsia-500',
             title: 'text-purple-800',
             subtitle: 'text-purple-600',
         },
         gray: {
-            iconBg: 'bg-gradient-to-tr from-slate-600 to-slate-400',
+            iconBg: 'bg-gradient-to-tr from-slate-500 to-slate-400',
             title: 'text-gray-800',
             subtitle: 'text-gray-600',
         },

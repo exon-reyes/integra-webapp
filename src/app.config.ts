@@ -7,7 +7,12 @@ import {
     provideZoneChangeDetection,
 } from '@angular/core';
 import {provideNoopAnimations} from '@angular/platform-browser/animations';
-import {provideRouter, withComponentInputBinding, withEnabledBlockingInitialNavigation, withInMemoryScrolling} from '@angular/router';
+import {
+    provideRouter,
+    withComponentInputBinding,
+    withEnabledBlockingInitialNavigation,
+    withInMemoryScrolling
+} from '@angular/router';
 import Aura from '@primeuix/themes/aura';
 import {providePrimeNG} from 'primeng/config';
 import {appRoutes} from './app.routes';
@@ -20,7 +25,7 @@ import localeEs from '@angular/common/locales/es';
 import {definePreset} from "@primeuix/themes";
 
 registerLocaleData(localeEs);
-const MyPreset = definePreset(Aura, {
+const MyPreset=definePreset(Aura, {
     semantic: {
         primary: {
             50: '{blue.50}',

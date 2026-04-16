@@ -49,6 +49,7 @@ export class AgregarAreaComponent {
     // Outputs para comunicación con el padre
     onAreaAgregada=output<Area>();
     onCancelar=output<void>();
+    readonly isFormDisabled=computed(() => this.areaForm.disabled);
     // Inyección de dependencias
     private readonly fb=inject(FormBuilder);
     // Formulario reactivo
@@ -57,7 +58,6 @@ export class AgregarAreaComponent {
         externo: [false],
         generarFolio: [true],
     });
-    readonly isFormDisabled=computed(() => this.areaForm.disabled);
     private readonly areaService=inject(AreaService);
     // Signals para manejo del estado
     private readonly _loading=signal<boolean>(false);

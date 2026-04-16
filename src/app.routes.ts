@@ -85,7 +85,8 @@ export const appRoutes: Routes=[
     {path: 'notfound', loadComponent: () => import('@/pages/notfound').then((value) => value.Notfound)},
     {path: 'auth', loadChildren: () => import('@/routes/auth.routes')},
     {
-        path: 'integra/checador', loadComponent: () => import('@/module/checador/app-v2/app-v2.component').then((value) => value.AppV2Component),
+        path: 'integra/checador',
+        loadComponent: () => import('@/module/checador/app-v2/app-v2.component').then((value) => value.AppV2Component),
     },
     {path: '**', redirectTo: '/notfound'},
 ];

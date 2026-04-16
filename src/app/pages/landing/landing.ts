@@ -33,7 +33,8 @@ import {AnimateOnScrollModule} from "primeng/animateonscroll";
 
                     <div class="flex items-center gap-4">
                         <p-button [routerLink]="['auth/login']" label="Ingresar" severity="secondary"></p-button>
-                        <p-button [routerLink]="['auth/register-request']" label="Sin cuenta? Registrate" severity="info"></p-button>
+                        <p-button [routerLink]="['auth/register-request']" label="Sin cuenta? Registrate"
+                                  severity="info"></p-button>
                     </div>
                 </div>
             </nav>
@@ -42,7 +43,8 @@ import {AnimateOnScrollModule} from "primeng/animateonscroll";
 
                 <div class="absolute inset-0 z-0">
                     <div class="absolute top-0 w-full h-[60%] bg-[#004481]"></div>
-                    <div class="absolute top-[40%] left-0 w-full h-[30%] bg-[#004481] -skew-y-3 origin-left shadow-2xl"></div>
+                    <div
+                        class="absolute top-[40%] left-0 w-full h-[30%] bg-[#004481] -skew-y-3 origin-left shadow-2xl"></div>
                     <div class="absolute top-[65%] left-[-10%] w-[120%] h-[5%] bg-[#02a5a5] -skew-y-2 opacity-80"></div>
                 </div>
 
@@ -55,18 +57,23 @@ import {AnimateOnScrollModule} from "primeng/animateonscroll";
                                     INTEGRA SCI<br>
                                     <span class="text-[#02a5a5]">Estrategia en evolución</span>
                                 </div>
-                                <div class="text-white max-w-4xl mx-auto mb-12">Plataforma unificada para la gestión de <b>Recursos Humanos, Infraestructura TI y Operaciones Generales de negocio</b></div>
+                                <div class="text-white max-w-4xl mx-auto mb-12">Plataforma unificada para la gestión de
+                                    <b>Recursos Humanos, Infraestructura TI y Operaciones Generales de negocio</b></div>
                             </div>
                         </div>
 
                         <div class="relative animate-slide-up">
-                            <div class="bg-white rounded-sm p-4 shadow-[0_50px_100px_-20px_rgba(0,0,0,0.3)] border border-slate-100">
+                            <div
+                                class="bg-white rounded-sm p-4 shadow-[0_50px_100px_-20px_rgba(0,0,0,0.3)] border border-slate-100">
                                 <div class="bg-slate-50 border border-slate-100 overflow-hidden relative group">
-                                    <img src="/assets/bg/banner.svg" class="w-full h-auto grayscale-[0.5] group-hover:grayscale-0 transition-all duration-700">
+                                    <img src="/assets/bg/banner.svg"
+                                         class="w-full h-auto grayscale-[0.5] group-hover:grayscale-0 transition-all duration-700">
 
                                     <div class="absolute top-6 left-6 bg-[#004481] text-white p-6 shadow-2xl">
-                                        <p class="text-[10px] font-bold uppercase tracking-[0.2em] opacity-60">e-core</p>
-                                        <p class="text-3xl font-light tracking-tighter">V<span class="font-bold">1.2</span></p>
+                                        <p class="text-[10px] font-bold uppercase tracking-[0.2em] opacity-60">
+                                            e-core</p>
+                                        <p class="text-3xl font-light tracking-tighter">V<span
+                                            class="font-bold">1.2</span></p>
                                     </div>
                                 </div>
                             </div>
@@ -83,7 +90,8 @@ import {AnimateOnScrollModule} from "primeng/animateonscroll";
                     <div class="flex items-center gap-10">
                         <span class="text-[#004481] font-bold text-sm tracking-tighter italic uppercase">v1.2.0</span>
                     </div>
-                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Exon © 2026 | Plataforma de acceso web</p>
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Exon © 2026 | Plataforma
+                        de acceso web</p>
                 </div>
             </footer>
         </div>

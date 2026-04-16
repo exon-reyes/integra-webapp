@@ -1,10 +1,4 @@
-import {
-    Component,
-    Input,
-    OnChanges,
-    SimpleChanges,
-    ChangeDetectionStrategy,
-} from '@angular/core';
+import {ChangeDetectionStrategy, Component, Input, OnChanges, SimpleChanges,} from '@angular/core';
 import {DecimalPipe} from "@angular/common";
 
 export interface DonutSlice {
@@ -92,8 +86,10 @@ interface ComputedSlice extends DonutSlice {
                         <span class="text-gray-600 truncate">{{ slice.label }}</span>
                         <span class="font-medium text-gray-900 ml-auto pl-3 tabular-nums">
                             {{ slice.value }}
-                            <span class="text-gray-500 font-normal text-xs">({{ slice.percentage | number:'1.0-0' }}
-                                %)</span>
+                            @if (showPercentage) {
+                                <span class="text-gray-500 font-normal text-xs">({{ slice.percentage | number:'1.0-0' }}
+                                    %)</span>
+                            }
                         </span>
                     </div>
                 }
@@ -106,39 +102,52 @@ interface ComputedSlice extends DonutSlice {
     ]
 })
 export class DonutChartComponent implements OnChanges {
-    @Input() data: DonutSlice[] = [];
-    @Input() size = 160;
-    @Input() thickness = 24;
-    @Input() gap = 2;
-    @Input() centerLabel: string | number = '';
-    @Input() centerSublabel = '';
+    @Input() data: DonutSlice[]=[];
+    @Input() size=160;
+    @Input() thickness=24;
+    @Input() gap=2;
+    @Input() centerLabel: string | number='';
+    @Input() centerSublabel='';
+    @Input() showPercentage=true;
 
-    computed: ComputedSlice[] = [];
-    total = 0;
+    computed: ComputedSlice[]=[];
+    total=0;
 
-    get center(): number { return this.size / 2; }
-    get radius(): number { return (this.size - this.thickness) / 2; }
-    get circumference(): number { return 2 * Math.PI * this.radius; }
+    get center(): number {
+        return this.size / 2;
+    }
+
+    get radius(): number {
+        return (this.size - this.thickness) / 2;
+    }
+
+    get circumference(): number {
+        return 2 * Math.PI * this.radius;
+    }
 
     ngOnChanges(changes: SimpleChanges): void {
-        if (changes['data'] || changes['size'] || changes['thickness'] || changes['gap']) {
+        if(changes['data'] || changes['size'] || changes['thickness'] || changes['gap']) {
             this.compute();
         }
     }
 
     private compute(): void {
-        this.total = this.data.reduce((s, d) => s + d.value, 0);
-        if (this.total === 0) { this.computed = []; return; }
+        this.total=this.data.reduce((s,
+                                     d) => s + d.value, 0);
+        if(this.total === 0) {
+            this.computed=[];
+            return;
+        }
 
-        const gapAngle = this.gap;
-        let angle = -90;
+        const gapAngle=this.gap;
+        let angle=-90;
 
-        this.computed = this.data.map((slice) => {
-            const pct = slice.value / this.total;
-            const sliceAngle = pct * 360;
-            const arc = (this.circumference * (sliceAngle - gapAngle)) / 360;
-            const startAngle = angle;
-            angle += sliceAngle;
+        this.computed=this.data.map((slice) => {
+            const pct=slice.value / this.total;
+            const sliceAngle=pct * 360;
+            const arc=(this.circumference * (sliceAngle - gapAngle)) / 360;
+            const startAngle=angle;
+            angle+=sliceAngle;
 
             return {
                 ...slice,

@@ -1,382 +1,405 @@
 @if (loading()) {
-<app-spinner [modal]="true"></app-spinner>
+    <app-spinner [modal]="true"></app-spinner>
 } @else if (detalles(); as data) {
-<div class="flex items-center gap-4 w-full justify-between mb-3">
-    <app-title
-        [description]="'#'+ detalles().folioSolicitud+ ' - '+ detalles().empleado.nombreCompleto+' - '+detalles().empleado.unidad.nombreCompleto || 'Unidad no especificada'"
-        [title]="detalles().tipoSolicitud==='VACACION' ? 'SOLICITUD DE VACACIONES' : 'SOLICITUD DE DESCANSO'"
-        imageSrc="/assets/icon/cheque.png"></app-title>
-    <app-status-badge [color]="getBadgeClasses(detalles().estatusGlobal)"
-        [label]="detalles().estatusGlobal"></app-status-badge>
-</div>
-<app-alert
-    description="El estatus global y el saldo de vacaciones del colaborador se actualizarán una vez que Recursos Humanos realice la validación final"
-    title="Actualización de estatus" type="info" />
+    <div class="flex items-center gap-4 w-full justify-between mb-3">
+        <app-title
+            [description]="'#'+ detalles().folioSolicitud+ ' - '+ detalles().empleado.nombreCompleto+' - '+detalles().empleado.unidad.nombreCompleto || 'Unidad no especificada'"
+            [title]="detalles().tipoSolicitud==='VACACION' ? 'SOLICITUD DE VACACIONES' : 'SOLICITUD DE DESCANSO'"
+            imageSrc="/assets/icon/cheque.png"></app-title>
+        <app-status-badge [color]="getBadgeClasses(detalles().estatusGlobal)"
+                          [label]="detalles().estatusGlobal"></app-status-badge>
+    </div>
+    <app-alert
+        description="El estatus global y el saldo de vacaciones del colaborador se actualizarán una vez que Recursos Humanos realice la validación final"
+        title="Actualización de estatus" type="info"/>
 
-<div class="flex flex-col gap-3 py-2">
-    <!-- Saldos -->
-    <p-panel>
-        <ng-template #header>
-            <app-title [title]="'Saldos '+data.anioGestion" description="Indicadores generales"
-                imageSrc="/assets/icon/saldos.svg"></app-title>
-        </ng-template>
-        <div class="flex flex-col gap-2.5 mb-5">
-            <div class="flex justify-between items-center text-sm pb-1 border-b border-slate-100">
-                <span class="text-slate-600 font-medium">Días habilitados</span>
-                <span class="font-mono font-bold text-slate-900">{{ data.diasHabilitados }}</span>
-            </div>
-            <div class="flex justify-between items-center text-sm pb-1 border-b border-slate-100">
-                <div class="flex items-center gap-2">
-                    <span class="w-3 h-3 rounded bg-green-400 border border-green-400 block"></span>
-                    <span class="text-slate-600 font-medium">Usados</span>
+    <div class="flex flex-col gap-3 py-2">
+        <!-- Saldos -->
+        <p-panel>
+            <ng-template #header>
+                <app-title [title]="'Saldos '+data.anioGestion" description="Indicadores generales"
+                           imageSrc="/assets/icon/saldos.svg"></app-title>
+            </ng-template>
+            <div class="flex flex-col gap-2.5 mb-5">
+                <div class="flex justify-between items-center text-sm pb-1 border-b border-slate-100">
+                    <span class="text-slate-600 font-medium">Días habilitados</span>
+                    <span class="font-mono font-bold text-slate-900">{{ data.diasHabilitados }}</span>
                 </div>
-                <span class="font-mono font-bold text-slate-500">{{ data.diasTomados }}</span>
-            </div>
-            <div class="flex justify-between items-center text-sm pb-3 border-b border-slate-200">
-                <div class="flex items-center gap-2">
-                    <span class="w-3 h-3 rounded bg-blue-100 border-2 border-blue-400 block animate-pulse"></span>
-                    <span class="text-blue-600 font-bold">Esta solicitud (pendientes/aprobados)</span>
+                <div class="flex justify-between items-center text-sm pb-1 border-b border-slate-100">
+                    <div class="flex items-center gap-2">
+                        <span class="w-3 h-3 rounded bg-green-400 border border-green-400 block"></span>
+                        <span class="text-slate-600 font-medium">Usados</span>
+                    </div>
+                    <span class="font-mono font-bold text-slate-500">{{ data.diasTomados }}</span>
                 </div>
-                <span class="font-mono font-bold text-blue-600">{{
-                    data.diasHabilitados - data.diasTomados - data.restanteSiAprueba
-                    }}</span>
-            </div>
-            <div class="flex justify-between items-center pt-1">
-                <span class="text-sm font-bold text-slate-900">Días disponible si se aprueba la solicitud</span>
-                <span [ngClass]="data.restanteSiAprueba >= 0 ? 'text-green-600' : 'text-red-600'"
-                    class="font-mono font-bold text-lg">
+                <div class="flex justify-between items-center text-sm pb-3 border-b border-slate-200">
+                    <div class="flex items-center gap-2">
+                        <span class="w-3 h-3 rounded bg-blue-100 border-2 border-blue-400 block animate-pulse"></span>
+                        <span class="text-blue-600 font-bold">Esta solicitud (pendientes/aprobados)</span>
+                    </div>
+                    <span class="font-mono font-bold text-blue-600">{{
+                            data.diasHabilitados - data.diasTomados - data.restanteSiAprueba
+                        }}</span>
+                </div>
+                <div class="flex justify-between items-center pt-1">
+                    <span class="text-sm font-bold text-slate-900">Días disponible si se aprueba la solicitud</span>
+                    <span [ngClass]="data.restanteSiAprueba >= 0 ? 'text-green-600' : 'text-red-600'"
+                          class="font-mono font-bold text-lg">
                     {{ data.restanteSiAprueba }} días
                 </span>
-            </div>
-        </div>
-
-        <div class="h-2.5 rounded-full bg-slate-200 overflow-hidden flex relative w-full mb-1 border border-slate-300">
-            <!-- Porcentaje Disfrutados -->
-            <div [style.width.%]="(data.diasTomados / data.diasHabilitados) * 100" class="h-full bg-green-400"></div>
-            <!-- Porcentaje Esta Solicitud -->
-            <div [style.width.%]="((data.diasHabilitados - data.diasTomados - data.restanteSiAprueba) / data.diasHabilitados) * 100"
-                class="h-full bg-blue-400 border-x border-blue-600 relative z-10"></div>
-        </div>
-        <div class="flex justify-between mt-1 text-[10px] font-mono text-slate-400">
-            <span>0</span>
-            <span>{{ data.diasHabilitados }} días</span>
-        </div>
-
-        @if (data.restanteSiAprueba < 0) { <div
-            class="mt-4 p-3 bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg flex items-center gap-2">
-            <i class="pi pi-exclamation-triangle"></i> Excede el saldo disponible
-</div>
-}
-</p-panel>
-
-<p-panel>
-    <ng-template #header>
-        <app-title description="Flujo de aprobación global" imageSrc="/assets/icon/autorice.svg"
-            title="Niveles de autorización"></app-title>
-    </ng-template>
-    <div class="flex items-start">
-        <div class="flex items-start flex-1 group">
-            <div class="flex flex-col items-center flex-1">
-                <div [ngClass]="getStepCircleClasses(data.estatusPrimerResponsable)"
-                    class="w-8 h-8 mb-3 rounded-full flex items-center justify-center text-xs font-bold border-2 shrink-0 transition-colors">
-                    {{
-                    data.estatusPrimerResponsable === 'APROBADA' ? '✓' :
-                    data.estatusPrimerResponsable === 'CANCELADA' || data.estatusPrimerResponsable === 'CANCELADA' ? '✗'
-                    : '1'
-                    }}
-                </div>
-                <div class="bg-slate-50 border border-slate-200 rounded-xl p-6 w-full
-    flex flex-col items-center text-center justify-start h-55 min-h-55">
-
-                    <div class="flex flex-col items-center w-full">
-                        <img alt="icon" class="mb-3" height="18" ngSrc="/assets/icon/cheque.png" width="18">
-                        <app-status-badge [color]="getBadgeClasses(data.estatusPrimerResponsable)"
-                            [label]="data.estatusPrimerResponsable">
-                        </app-status-badge>
-                        <div [title]="data.primerJefe?.nombreCompleto || 'Responsable 1'"
-                            class="text-sm font-bold text-slate-900 truncate w-full mt-2">
-                            {{ data.primerJefe?.nombreCompleto || 'Responsable 1 Nivel' }}
-                        </div>
-
-                        <div class="text-[11px] text-slate-600 mb-4 font-medium">
-                            1er Nivel (Jefe)
-                        </div>
-                    </div>
-                    @if (currentUserId == detalles().primerJefe.id || puedeActualizarNivel1) {
-                    <div class="my-3 flex items-center justify-center gap-2 w-full border-t border-slate-100">
-                        @if (configuracionBotonNivel1(); as btn1) {
-                        <p-splitbutton (onClick)="btn1.main.command()" [icon]="btn1.main.icon" [label]="btn1.main.label"
-                            [model]="btn1.menu" [severity]="btn1.main.severity" dropdownIcon="pi pi-chevron-down"
-                            size="small"></p-splitbutton>
-                        }
-                    </div>
-                    }
-                </div>
-
-            </div>
-            <div class="w-6 flex items-center mt-4">
-                <div [class.bg-green-500]="data.estatusPrimerResponsable === 'APROBADA'"
-                    [class.bg-slate-200]="data.estatusPrimerResponsable !== 'APROBADA'"
-                    class="h-0.5 w-full transition-colors"></div>
-            </div>
-        </div>
-
-        <div class="flex items-start flex-1 group">
-            <div class="flex flex-col items-center flex-1">
-                <div [ngClass]="getStepCircleClasses(data.estatusSegundoResponsable)"
-                    class="w-8 h-8 mb-3 rounded-full flex items-center justify-center text-xs font-bold border-2 shrink-0 transition-colors">
-                    {{
-                    data.estatusSegundoResponsable === 'APROBADA' ? '✓' :
-                    data.estatusSegundoResponsable === 'CANCELADA' || data.estatusSegundoResponsable === 'CANCELADA' ?
-                    '✗' : '2'
-                    }}
-                </div>
-                <div class="bg-slate-50 border border-slate-200 rounded-xl p-6 w-full
-    flex flex-col items-center text-center justify-start h-55 min-h-55">
-
-                    <div class="flex flex-col items-center w-full">
-                        <img alt="icon" class="mb-3" height="18" ngSrc="/assets/icon/cheque.png" width="18">
-                        <app-status-badge [color]="getBadgeClasses(data.estatusSegundoResponsable)"
-                            [label]="data.estatusSegundoResponsable">
-                        </app-status-badge>
-
-                        <div [title]="data.segundoJefe?.nombreCompleto || 'Responsable 2'"
-                            class="text-sm font-bold text-slate-900 truncate w-full mt-2">
-                            {{ data.segundoJefe?.nombreCompleto || 'Responsable de RRHH' }}
-                        </div>
-
-                        <div class="text-[11px] text-slate-600 mb-4 font-medium">
-                            2do Nivel
-                        </div>
-
-
-                    </div>
-
-                    @if (currentUserId == detalles().segundoJefe.id || puedeActualizarNivel2) {
-                    <div class="my-3 flex items-center justify-center gap-2 w-full border-t border-slate-100">
-
-                        @if (configuracionBotonNivel2(); as btn2) {
-                        <p-splitbutton (onClick)="btn2.main.command()" [icon]="btn2.main.icon" [label]="btn2.main.label"
-                            [model]="btn2.menu" [severity]="btn2.main.severity" dropdownIcon="pi pi-chevron-down"
-                            size="small"></p-splitbutton>
-                        }
-                    </div>
-                    } @else {
-                    <div class="mt-5 pt-3 w-full border-t border-slate-100"></div>
-                    }
                 </div>
             </div>
-        </div>
-    </div>
-</p-panel>
-<!-- Días solicitados -->
-<p-panel class="management-panel-solid border-none shadow-none bg-slate-50/50 rounded-3xl overflow-hidden">
-    <ng-template pTemplate="header">
-        <div class="flex items-center justify-between w-full py-1">
-            <app-title description="Días solicitados" imageSrc="/assets/icon/calendar.svg"
-                title="Gestión de ausencias"></app-title>
-            <p-button (onClick)="abrirDialogoDias()" class="h-9 font-bold" icon="pi pi-cog" label="Modificar estatus"
-                rounded size="small">
-            </p-button>
-        </div>
-    </ng-template>
 
-    <div class="flex flex-col lg:flex-row gap-6 p-4">
-
-        <div class="flex-1 flex flex-col gap-2.5 max-h-[500px] overflow-y-auto pr-2 scrollbar-thin">
-            @for (day of data.fechaSolicituds; track day.id) {
             <div
-                class="flex items-center bg-white border border-slate-200/60 rounded-2xl p-3 hover:border-blue-300 transition-colors duration-200 shadow-sm">
-
-
-
+                class="h-2.5 rounded-full bg-slate-200 overflow-hidden flex relative w-full mb-1 border border-slate-300">
+                <!-- Porcentaje Disfrutados -->
+                <div [style.width.%]="(data.diasTomados / data.diasHabilitados) * 100"
+                     class="h-full bg-green-400"></div>
+                <!-- Porcentaje Esta Solicitud -->
                 <div
-                    class="flex flex-col items-center justify-center min-w-[54px] h-[54px] bg-slate-50 rounded-xl border border-slate-100">
-                    <span class="text-[9px] font-semibold uppercase">{{ day.fecha | date:'MMM' }}</span>
-                    <span class="text-xl font-extrabold text-orange-600">{{ day.fecha | date:'dd' }}</span>
-                    <span class="text-[8px] font-semibold text-slate-500 uppercase">{{ day.fecha | date:'EEEE' }}</span>
-                </div>
-
-                <div class="flex flex-1 flex-col sm:flex-row items-start sm:items-center justify-between ml-4 gap-3">
-                    <div class="flex flex-col">
-                        <span class="text-[11px] font-bold ">{{ day.fecha | date:'fullDate' }}</span>
-                    </div>
-
-                    <div class="flex-none">
-                        <app-pipeline-aprobacion [estatusJefe]="day.estatusPrimerJefe"
-                            [estatusRrhh]="day.estatusSegundoJefe">
-                        </app-pipeline-aprobacion>
-                    </div>
-                </div>
+                    [style.width.%]="((data.diasHabilitados - data.diasTomados - data.restanteSiAprueba) / data.diasHabilitados) * 100"
+                    class="h-full bg-blue-400 border-x border-blue-600 relative z-10"></div>
             </div>
+            <div class="flex justify-between mt-1 text-[10px] font-mono text-slate-400">
+                <span>0</span>
+                <span>{{ data.diasHabilitados }} días</span>
+            </div>
+
+            @if (data.restanteSiAprueba < 0) {
+                <div
+                    class="mt-4 p-3 bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg flex items-center gap-2">
+                    <i class="pi pi-exclamation-triangle"></i> Excede el saldo disponible
+                </div>
             }
-        </div>
-    </div>
-</p-panel>
+        </p-panel>
 
-<p-dialog [(visible)]="mostrarDialogoDias" [draggable]="false" [modal]="true" [resizable]="false"
-    [style]="{width: '640px'}" maskStyleClass="backdrop-blur-sm" styleClass="pure-light-dialog">
+        <p-panel>
+            <ng-template #header>
+                <app-title description="Flujo de aprobación global" imageSrc="/assets/icon/autorice.svg"
+                           title="Niveles de autorización"></app-title>
+            </ng-template>
+            <div class="flex items-start">
+                <div class="flex items-start flex-1 group">
+                    <div class="flex flex-col items-center flex-1">
+                        <div [ngClass]="getStepCircleClasses(data.estatusPrimerResponsable)"
+                             class="w-8 h-8 mb-3 rounded-full flex items-center justify-center text-xs font-bold border-2 shrink-0 transition-colors">
+                            {{
+                                data.estatusPrimerResponsable === 'APROBADA' ? '✓' :
+                                    data.estatusPrimerResponsable === 'CANCELADA' || data.estatusPrimerResponsable === 'CANCELADA' ? '✗'
+                                        : '1'
+                            }}
+                        </div>
+                        <div class="bg-slate-50 border border-slate-200 rounded-xl p-6 w-full
+    flex flex-col items-center text-center justify-start h-55 min-h-55">
 
-    <ng-template pTemplate="header">
-        <app-title description="Gestión de estatus" imageSrc="/assets/icon/calendar.svg"
-            title="Días solicitados"></app-title>
-    </ng-template>
+                            <div class="flex flex-col items-center w-full">
+                                <img alt="icon" class="mb-3" height="18" ngSrc="/assets/icon/cheque.png" width="18">
+                                <app-status-badge [color]="getBadgeClasses(data.estatusPrimerResponsable)"
+                                                  [label]="data.estatusPrimerResponsable">
+                                </app-status-badge>
+                                <div [title]="data.primerJefe?.nombreCompleto || 'Responsable 1'"
+                                     class="text-sm font-bold text-slate-900 truncate w-full mt-2">
+                                    {{ data.primerJefe?.nombreCompleto || 'Responsable 1 Nivel' }}
+                                </div>
 
-    <div class="flex flex-col gap-6 py-2">
+                                <div class="text-[11px] text-slate-600 mb-4 font-medium">
+                                    1er Nivel (Jefe)
+                                </div>
+                            </div>
+                            @if (currentUserId == detalles().primerJefe?.id || puedeActualizarNivel1) {
+                                <div
+                                    class="my-3 flex items-center justify-center gap-2 w-full border-t border-slate-100">
+                                    @if (configuracionBotonNivel1(); as btn1) {
+                                        <p-splitbutton (onClick)="btn1.main.command()" [icon]="btn1.main.icon"
+                                                       [label]="btn1.main.label"
+                                                       [model]="btn1.menu" [severity]="btn1.main.severity"
+                                                       dropdownIcon="pi pi-chevron-down"
+                                                       size="small"></p-splitbutton>
+                                    }
+                                </div>
+                            }
+                        </div>
 
-        <div
-            class="flex items-center gap-4 p-4 bg-slate-100 border border-slate-200 rounded-md relative overflow-hidden">
-            <div class="flex-1">
-                <h4>Actualización de Jornadas</h4>
-                <p class=" leading-relaxed max-w-[380px]">
-                    Selecciona los días deseados y define el nuevo estatus para procesar el cambio en el flujo
-                    de aprobación.
-                </p>
-            </div>
-            <div
-                class="w-16 h-16 rounded-md bg-white flex items-center justify-center shadow-sm border border-slate-100">
-                <img alt="Icon" class="w-10 h-10" src="/assets/icon/check.svg">
-            </div>
-        </div>
-
-        <div class="flex flex-col gap-3">
-            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 px-1">
-                <div class="flex items-center gap-3">
-                    <span class="p-panel-title">01. Selección de días</span>
-                    <div class="flex items-center gap-2 border-l border-slate-200 pl-3">
-                        <p-checkbox [binary]="true" [ngModel]="todosDiasSeleccionados()"
-                            (onChange)="toggleTodosDias($event)" inputId="selectAll">
-                        </p-checkbox>
-                        <label for="selectAll" class="text-sm text-slate-500 font-bold m-0 cursor-pointer">Marcar
-                            todos</label>
+                    </div>
+                    <div class="w-6 flex items-center mt-4">
+                        <div [class.bg-green-500]="data.estatusPrimerResponsable === 'APROBADA'"
+                             [class.bg-slate-200]="data.estatusPrimerResponsable !== 'APROBADA'"
+                             class="h-0.5 w-full transition-colors"></div>
                     </div>
                 </div>
-                <div
-                    class="flex items-center gap-1.5 bg-white border border-slate-100 px-2 py-0.5 rounded-full shadow-sm">
-                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                    <span class="text-[10px] font-bold ">{{ diasSeleccionados().length }} marcados</span>
+
+                <div class="flex items-start flex-1 group">
+                    <div class="flex flex-col items-center flex-1">
+                        <div [ngClass]="getStepCircleClasses(data.estatusSegundoResponsable)"
+                             class="w-8 h-8 mb-3 rounded-full flex items-center justify-center text-xs font-bold border-2 shrink-0 transition-colors">
+                            {{
+                                data.estatusSegundoResponsable === 'APROBADA' ? '✓' :
+                                    data.estatusSegundoResponsable === 'CANCELADA' || data.estatusSegundoResponsable === 'CANCELADA' ?
+                                        '✗' : '2'
+                            }}
+                        </div>
+                        <div class="bg-slate-50 border border-slate-200 rounded-xl p-6 w-full
+    flex flex-col items-center text-center justify-start h-55 min-h-55">
+
+                            <div class="flex flex-col items-center w-full">
+                                <img alt="icon" class="mb-3" height="18" ngSrc="/assets/icon/cheque.png" width="18">
+                                <app-status-badge [color]="getBadgeClasses(data.estatusSegundoResponsable)"
+                                                  [label]="data.estatusSegundoResponsable">
+                                </app-status-badge>
+
+                                <div [title]="data.segundoJefe?.nombreCompleto || 'Responsable 2'"
+                                     class="text-sm font-bold text-slate-900 truncate w-full mt-2">
+                                    {{ data.segundoJefe?.nombreCompleto || 'Responsable de RRHH' }}
+                                </div>
+
+                                <div class="text-[11px] text-slate-600 mb-4 font-medium">
+                                    2do Nivel
+                                </div>
+
+
+                            </div>
+
+                            @if (currentUserId == detalles().segundoJefe?.id || puedeActualizarNivel2) {
+                                <div
+                                    class="my-3 flex items-center justify-center gap-2 w-full border-t border-slate-100">
+
+                                    @if (configuracionBotonNivel2(); as btn2) {
+                                        <p-splitbutton (onClick)="btn2.main.command()" [icon]="btn2.main.icon"
+                                                       [label]="btn2.main.label"
+                                                       [model]="btn2.menu" [severity]="btn2.main.severity"
+                                                       dropdownIcon="pi pi-chevron-down"
+                                                       size="small"></p-splitbutton>
+                                    }
+                                </div>
+                            } @else {
+                                <div class="mt-5 pt-3 w-full border-t border-slate-100"></div>
+                            }
+                        </div>
+                    </div>
                 </div>
             </div>
+        </p-panel>
+        <!-- Días solicitados -->
+        <p-panel class="management-panel-solid border-none shadow-none bg-slate-50/50 rounded-3xl overflow-hidden">
+            <ng-template pTemplate="header">
+                <div class="flex items-center justify-between w-full py-1">
+                    <app-title description="Días solicitados" imageSrc="/assets/icon/calendar.svg"
+                               title="Gestión de ausencias"></app-title>
+                    <p-button (onClick)="abrirDialogoDias()" class="h-9 font-bold" icon="pi pi-cog"
+                              label="Modificar estatus"
+                              rounded size="small">
+                    </p-button>
+                </div>
+            </ng-template>
 
-            <div class="grid grid-cols-1 gap-2 max-h-60 overflow-y-auto pr-2 custom-scroll">
-                @for (day of data.fechaSolicituds; track day.id) {
-                <div
-                    class="group flex items-center gap-4 p-3 bg-white border border-slate-100 rounded-2xl transition-all duration-200 hover:bg-slate-50/50">
+            <div class="flex flex-col lg:flex-row gap-6 p-4">
 
-                    <p-checkbox [(ngModel)]="diasSeleccionados" [binary]="false" [value]="day" class="modern-check"
-                        inputId="dia-{{day.id}}" size="large">
-                    </p-checkbox>
-
-                    <label class="flex items-center gap-4 cursor-pointer flex-1 m-0" for="dia-{{day.id}}">
+                <div class="flex-1 flex flex-col gap-2.5 max-h-[500px] overflow-y-auto pr-2 scrollbar-thin">
+                    @for (day of data.fechaSolicituds; track day.id) {
                         <div
-                            class="flex flex-col items-center justify-center min-w-[54px] h-[54px] bg-slate-50 rounded-xl border border-slate-100">
-                            <span class="text-[9px] font-semibold uppercase">{{ day.fecha | date:'MMM' }}</span>
-                            <span class="text-xl font-extrabold text-orange-600">{{ day.fecha | date:'dd' }}</span>
-                            <span class="text-[8px] font-semibold text-slate-500 uppercase">{{ day.fecha | date:'EEEE'
-                                }}</span>
-                        </div>
-                        <div class="flex flex-col flex-1">
-                            <div class="flex justify-between items-start">
+                            class="flex items-center bg-white border border-slate-200/60 rounded-2xl p-3 hover:border-blue-300 transition-colors duration-200 shadow-sm">
+
+
+                            <div
+                                class="flex flex-col items-center justify-center min-w-[54px] h-[54px] bg-slate-50 rounded-xl border border-slate-100">
+                                <span class="text-[9px] font-semibold uppercase">{{ day.fecha | date:'MMM' }}</span>
+                                <span class="text-xl font-extrabold text-orange-600">{{ day.fecha | date:'dd' }}</span>
+                                <span
+                                    class="text-[8px] font-semibold text-slate-500 uppercase">{{ day.fecha | date:'EEEE' }}</span>
+                            </div>
+
+                            <div
+                                class="flex flex-1 flex-col sm:flex-row items-start sm:items-center justify-between ml-4 gap-3">
                                 <div class="flex flex-col">
-                                    <span class="text-sm font-bold tracking-tight">{{ day.fecha | date:'fullDate'
+                                    <span class="text-[11px] font-bold ">{{ day.fecha | date:'fullDate' }}</span>
+                                </div>
+
+                                <div class="flex-none">
+                                    <app-pipeline-aprobacion [estatusJefe]="day.estatusPrimerJefe"
+                                                             [estatusRrhh]="day.estatusSegundoJefe">
+                                    </app-pipeline-aprobacion>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </p-panel>
+
+        <p-dialog [(visible)]="mostrarDialogoDias" [draggable]="false" [modal]="true" [resizable]="false"
+                  [style]="{width: '640px'}" maskStyleClass="backdrop-blur-sm" styleClass="pure-light-dialog">
+
+            <ng-template pTemplate="header">
+                <app-title description="Gestión de estatus" imageSrc="/assets/icon/calendar.svg"
+                           title="Días solicitados"></app-title>
+            </ng-template>
+
+            <div class="flex flex-col gap-6 py-2">
+
+                <div
+                    class="flex items-center gap-4 p-4 bg-slate-100 border border-slate-200 rounded-md relative overflow-hidden">
+                    <div class="flex-1">
+                        <h4>Actualización de Jornadas</h4>
+                        <p class=" leading-relaxed max-w-[380px]">
+                            Selecciona los días deseados y define el nuevo estatus para procesar el cambio en el flujo
+                            de aprobación.
+                        </p>
+                    </div>
+                    <div
+                        class="w-16 h-16 rounded-md bg-white flex items-center justify-center shadow-sm border border-slate-100">
+                        <img alt="Icon" class="w-10 h-10" src="/assets/icon/check.svg">
+                    </div>
+                </div>
+
+                <div class="flex flex-col gap-3">
+                    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 px-1">
+                        <div class="flex items-center gap-3">
+                            <span class="p-panel-title">01. Selección de días</span>
+                            <div class="flex items-center gap-2 border-l border-slate-200 pl-3">
+                                <p-checkbox (onChange)="toggleTodosDias($event)" [binary]="true"
+                                            [ngModel]="todosDiasSeleccionados()" inputId="selectAll">
+                                </p-checkbox>
+                                <label class="text-sm text-slate-500 font-bold m-0 cursor-pointer" for="selectAll">Marcar
+                                    todos</label>
+                            </div>
+                        </div>
+                        <div
+                            class="flex items-center gap-1.5 bg-white border border-slate-100 px-2 py-0.5 rounded-full shadow-sm">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                            <span class="text-[10px] font-bold ">{{ diasSeleccionados().length }} marcados</span>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 gap-2 max-h-60 overflow-y-auto pr-2 custom-scroll">
+                        @for (day of data.fechaSolicituds; track day.id) {
+                            <div
+                                class="group flex items-center gap-4 p-3 bg-white border border-slate-100 rounded-2xl transition-all duration-200 hover:bg-slate-50/50">
+
+                                <p-checkbox [(ngModel)]="diasSeleccionados" [binary]="false" [value]="day"
+                                            class="modern-check"
+                                            inputId="dia-{{day.id}}" size="large">
+                                </p-checkbox>
+
+                                <label class="flex items-center gap-4 cursor-pointer flex-1 m-0" for="dia-{{day.id}}">
+                                    <div
+                                        class="flex flex-col items-center justify-center min-w-[54px] h-[54px] bg-slate-50 rounded-xl border border-slate-100">
+                                        <span
+                                            class="text-[9px] font-semibold uppercase">{{ day.fecha | date:'MMM' }}</span>
+                                        <span
+                                            class="text-xl font-extrabold text-orange-600">{{ day.fecha | date:'dd' }}</span>
+                                        <span class="text-[8px] font-semibold text-slate-500 uppercase">{{
+                                                day.fecha | date:'EEEE'
+                                            }}</span>
+                                    </div>
+                                    <div class="flex flex-col flex-1">
+                                        <div class="flex justify-between items-start">
+                                            <div class="flex flex-col">
+                                    <span class="text-sm font-bold tracking-tight">{{
+                                            day.fecha | date:'fullDate'
                                         }}</span>
-                                    <div class="flex items-center gap-2 mt-1">
+                                                <div class="flex items-center gap-2 mt-1">
                                         <span
                                             [ngClass]="day.estatus === 'APROBADA' ? 'bg-emerald-50 text-emerald-600' : (day.estatus === 'CANCELADA' ? 'bg-red-50 text-red-600' : 'bg-amber-50 text-amber-600')"
                                             class="text-[10px] font-bold px-2 py-0.5 rounded-md uppercase tracking-tight">
                                             {{ day.estatus }}
                                         </span>
+                                                </div>
+                                            </div>
+                                            <div class="ml-auto pointer-events-none self-center">
+                                                <app-pipeline-aprobacion [estatusJefe]="day.estatusPrimerJefe"
+                                                                         [estatusRrhh]="day.estatusSegundoJefe">
+                                                </app-pipeline-aprobacion>
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="ml-auto pointer-events-none self-center">
-                                    <app-pipeline-aprobacion [estatusJefe]="day.estatusPrimerJefe"
-                                        [estatusRrhh]="day.estatusSegundoJefe">
-                                    </app-pipeline-aprobacion>
-                                </div>
+                                </label>
                             </div>
-                        </div>
-                    </label>
+                        }
+                    </div>
                 </div>
-                }
-            </div>
-        </div>
 
-        <div class="flex flex-col gap-3">
-            <span class="p-panel-title">02. Aplicar nuevo estatus</span>
-            <div class="flex bg-slate-50 rounded-full p-1 shadow-inner border border-slate-200">
-                <label class="flex-1 cursor-pointer">
-                    <input (change)="estatusSeleccionado.set('PENDIENTE')"
-                        [checked]="estatusSeleccionado() === 'PENDIENTE'" type="radio" name="estatus" value="PENDIENTE"
-                        class="sr-only peer">
-                    <div class="flex items-center justify-center gap-2 py-2 rounded-full transition-all duration-300
+                <div class="flex flex-col gap-3">
+                    <span class="p-panel-title">02. Aplicar nuevo estatus</span>
+                    <div class="flex bg-slate-50 rounded-full p-1 shadow-inner border border-slate-200">
+                        <label class="flex-1 cursor-pointer">
+                            <input (change)="estatusSeleccionado.set('PENDIENTE')"
+                                   [checked]="estatusSeleccionado() === 'PENDIENTE'" class="sr-only peer" name="estatus"
+                                   type="radio"
+                                   value="PENDIENTE">
+                            <div class="flex items-center justify-center gap-2 py-2 rounded-full transition-all duration-300
                  peer-checked:bg-amber-500 peer-checked:text-white">
-                        <i class="pi pi-clock text-sm"></i>
-                        <span class="text-sm font-medium">Pendiente</span>
-                    </div>
-                </label>
+                                <i class="pi pi-clock text-sm"></i>
+                                <span class="text-sm font-medium">Pendiente</span>
+                            </div>
+                        </label>
 
-                <label class="flex-1 cursor-pointer">
-                    <input (change)="estatusSeleccionado.set('APROBADA')"
-                        [checked]="estatusSeleccionado() === 'APROBADA'" type="radio" name="estatus" value="APROBADA"
-                        class="sr-only peer">
-                    <div class="flex items-center justify-center gap-2 py-2 rounded-full transition-all duration-300
+                        <label class="flex-1 cursor-pointer">
+                            <input (change)="estatusSeleccionado.set('APROBADA')"
+                                   [checked]="estatusSeleccionado() === 'APROBADA'" class="sr-only peer" name="estatus"
+                                   type="radio"
+                                   value="APROBADA">
+                            <div class="flex items-center justify-center gap-2 py-2 rounded-full transition-all duration-300
                  peer-checked:bg-emerald-500 peer-checked:text-white">
-                        <i class="pi pi-check-circle text-sm"></i>
-                        <span class="text-sm font-medium">Aprobada</span>
-                    </div>
-                </label>
+                                <i class="pi pi-check-circle text-sm"></i>
+                                <span class="text-sm font-medium">Aprobada</span>
+                            </div>
+                        </label>
 
-                <label class="flex-1 cursor-pointer">
-                    <input (change)="estatusSeleccionado.set('CANCELADA')"
-                        [checked]="estatusSeleccionado() === 'CANCELADA'" type="radio" name="estatus" value="CANCELADA"
-                        class="sr-only peer">
-                    <div class="flex items-center justify-center gap-2 py-2 rounded-full transition-all duration-300
+                        <label class="flex-1 cursor-pointer">
+                            <input (change)="estatusSeleccionado.set('CANCELADA')"
+                                   [checked]="estatusSeleccionado() === 'CANCELADA'" class="sr-only peer" name="estatus"
+                                   type="radio"
+                                   value="CANCELADA">
+                            <div class="flex items-center justify-center gap-2 py-2 rounded-full transition-all duration-300
                  peer-checked:bg-red-500 peer-checked:text-white">
-                        <i class="pi pi-times-circle text-sm"></i>
-                        <span class="text-sm font-medium">Cancelada</span>
+                                <i class="pi pi-times-circle text-sm"></i>
+                                <span class="text-sm font-medium">Cancelada</span>
+                            </div>
+                        </label>
                     </div>
-                </label>
+
+                </div>
             </div>
 
-        </div>
-    </div>
-
-    <ng-template pTemplate="footer">
-        <div class="flex items-center justify-between w-full pt-4 border-t border-slate-50">
+            <ng-template pTemplate="footer">
+                <div class="flex items-center justify-between w-full pt-4 border-t border-slate-50">
             <span class="text-[9px] text-slate-500 font-medium italic">Estas acciones quedarán registrada en el
                 historial de auditoría.</span>
-            <div class="flex gap-2">
-                <p-button (onClick)="mostrarDialogoDias.set(false)" [text]="true" label="Descartar"
-                    severity="secondary"></p-button>
+                    <div class="flex gap-2">
+                        <p-button (onClick)="mostrarDialogoDias.set(false)" [text]="true" label="Descartar"
+                                  severity="secondary"></p-button>
 
-                <p-button (onClick)="guardarCambiosDias()"
-                    [disabled]="diasSeleccionados().length === 0 || !estatusSeleccionado()" icon="pi pi-check-square"
-                    label="Guardar Cambios" severity="success"></p-button>
-            </div>
-        </div>
-    </ng-template>
-</p-dialog>
-</div>
+                        <p-button (onClick)="guardarCambiosDias()"
+                                  [disabled]="diasSeleccionados().length === 0 || !estatusSeleccionado()"
+                                  icon="pi pi-check-square"
+                                  label="Guardar Cambios" severity="success"></p-button>
+                    </div>
+                </div>
+            </ng-template>
+        </p-dialog>
+    </div>
 }
 
 <p-confirmDialog #cd [style]="{width: '450px'}">
     <ng-template #headless let-message let-onAccept="onAccept" let-onReject="onReject">
         @if (message) {
-        <div class="flex flex-col items-center p-8 bg-white rounded shadow-sm">
-            <div [ngClass]="message.acceptButtonStyleClass === 'p-button-danger' ? 'bg-red-500 text-white' : 'bg-green-500 text-white'"
-                class="rounded-full inline-flex justify-center items-center h-24 w-24 -mt-20">
-                <i class="pi pi-question !text-5xl"></i>
+            <div class="flex flex-col items-center p-8 bg-white rounded shadow-sm">
+                <div
+                    [ngClass]="message.acceptButtonStyleClass === 'p-button-danger' ? 'bg-red-500 text-white' : 'bg-green-500 text-white'"
+                    class="rounded-full inline-flex justify-center items-center h-24 w-24 -mt-20">
+                    <i class="pi pi-question !text-5xl"></i>
+                </div>
+                <span class="font-bold text-2xl block mb-2 mt-6 text-slate-800 text-center">{{ message.header }}</span>
+                <p [innerHTML]="message.message" class="mb-0  text-center"></p>
+                <div class="flex items-center gap-2 mt-6">
+                    <p-button (onClick)="onReject()" [label]="message.rejectLabel" [outlined]="true"
+                              severity="secondary"
+                              styleClass="w-[150px]"></p-button>
+                    <p-button (onClick)="onAccept()" [label]="message.acceptLabel"
+                              [severity]="message.acceptButtonStyleClass === 'p-button-danger' ? 'danger' : 'primary'"
+                              styleClass="w-[150px]"></p-button>
+                </div>
             </div>
-            <span class="font-bold text-2xl block mb-2 mt-6 text-slate-800 text-center">{{ message.header }}</span>
-            <p [innerHTML]="message.message" class="mb-0  text-center"></p>
-            <div class="flex items-center gap-2 mt-6">
-                <p-button (onClick)="onReject()" [label]="message.rejectLabel" [outlined]="true" severity="secondary"
-                    styleClass="w-[150px]"></p-button>
-                <p-button (onClick)="onAccept()" [label]="message.acceptLabel"
-                    [severity]="message.acceptButtonStyleClass === 'p-button-danger' ? 'danger' : 'primary'"
-                    styleClass="w-[150px]"></p-button>
-            </div>
-        </div>
         }
     </ng-template>
 </p-confirmDialog>

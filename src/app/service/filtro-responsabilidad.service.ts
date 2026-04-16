@@ -37,7 +37,8 @@ export class FiltroResponsabilidadService {
         }
         return filtro;
     }
-    supRestringido(keySup:string){
+
+    supRestringido(keySup: string) {
         return this.sessionService.hasAuthority(keySup);
     }
 }

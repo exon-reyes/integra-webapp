@@ -7,7 +7,7 @@
                       severity="success"></p-button>
             <p-button (onClick)="cargarSolicitudes()" icon="pi pi-refresh"></p-button>
             <p-button (onClick)="exportarDatosActuales()"
-                      *hasPermission="Autoridades.VACACIONES_GESTOR_EXPORTAR_CATALOGO_VACACIONES"
+                      *hasPermission="Autoridades.VACACIONES_SALDO_EXPORTAR_CATALOGO_VACACIONES"
                       icon="pi pi-file-excel"
                       label="Vacaciones"></p-button>
         </div>
@@ -82,15 +82,15 @@
             </ng-template>
         </p-selectButton>
         <app-solicitudes-table
-            [solicitudes]="solicitudes"
-            [showDetails]="true"
             (deleteClick)="eliminarSolicitud($event)"
-            [loading]="loading()"
-            [totalRecords]="totalRecords()"
-            [first]="currentPage() * pageSize()"
-            [rows]="pageSize()"
             (pageChange)="onPageChange($event)"
-            (papeletaClick)="abrirModalPapeleta($event)"/>
+            (papeletaClick)="abrirModalPapeleta($event)"
+            [first]="currentPage() * pageSize()"
+            [loading]="loading()"
+            [rows]="pageSize()"
+            [showDetails]="true"
+            [solicitudes]="solicitudes"
+            [totalRecords]="totalRecords()"/>
     </div>
 </div>
 

@@ -87,7 +87,7 @@ import {StatWidgetComponent} from "@/components/stat-widget";
                 [allowFestivoSelection]="true"
                 (dayClicked)="onDayClicked($event)"
                 (descansoPendienteCancel)="cancelarDescanso($event)"
-                >
+            >
             </app-vacacion-calendar>
         </div>
 

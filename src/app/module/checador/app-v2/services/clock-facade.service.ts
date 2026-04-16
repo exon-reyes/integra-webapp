@@ -722,6 +722,21 @@ export class ClockFacadeService {
 
     // ========== MÉTODOS PRIVADOS - PROCESAMIENTO ==========
 
+    private compressImage(dataUrl: string,
+                          quality=0.4): Promise<string> {
+        return new Promise((resolve) => {
+            const img=new Image();
+            img.onload=() => {
+                const canvas=document.createElement('canvas');
+                canvas.width=img.width;
+                canvas.height=img.height;
+                canvas.getContext('2d')!.drawImage(img, 0, 0);
+                resolve(canvas.toDataURL('image/jpeg', quality));
+            };
+            img.src=dataUrl;
+        });
+    }
+
     private async processImage(image: WebcamImage): Promise<void> {
         const employee=this.state().employee.employee;
         const action=this.state().employee.currentAction;
@@ -733,7 +748,9 @@ export class ClockFacadeService {
 
         this.updateUI({isUploading: true, error: null});
 
-        const {apiCall, successMessage}=this.getActionConfig(image);
+        const compressedPhoto=await this.compressImage(image.imageAsDataUrl);
+        const compressedImage={...image, imageAsDataUrl: compressedPhoto} as WebcamImage;
+        const {apiCall, successMessage}=this.getActionConfig(compressedImage);
         if(!apiCall) return;
 
         apiCall

@@ -54,8 +54,12 @@ export class UsuarioService extends AbstractService {
     private readonly apiUrl=`${environment.integraApi}/usuarios`;
 
     obtenerUsuarios(page: number=0,
-                    size: number=10): Observable<PaginatedResponse<UsuarioConRoles>> {
-        const params={page: page.toString(), size: size.toString()};
+                    size: number=10,
+                    empleadoId?: number | null): Observable<PaginatedResponse<UsuarioConRoles>> {
+        const params: Record<string, string>={page: page.toString(), size: size.toString()};
+        if(empleadoId != null) {
+            params['empleadoId']=empleadoId.toString();
+        }
         return this.http.get<PaginatedResponse<UsuarioConRoles>>(this.apiUrl, {params});
     }
 

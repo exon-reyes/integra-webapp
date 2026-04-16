@@ -1,4 +1,5 @@
 import {CatalogoEmpleado} from "@/service/catalogo-empleado.service";
+
 export interface SolicitudEmpleado {
     id: number | null; // Long en Java → number en TS
     empleadoId: number | null;
@@ -13,6 +14,7 @@ export interface SolicitudEmpleado {
     activo: boolean | null;
     createdAt: string | null; // LocalDateTime → ISO string
 }
+
 export interface SolicitudesGestionDTO {
     id: number;
     colaborador: CatalogoEmpleado;
@@ -26,11 +28,13 @@ export interface SolicitudesGestionDTO {
     estatusGeneral: string;
     tipoSolicitud: string;
 }
+
 export interface FechaSolicitud {
     id: number;
     fecha: Date;
     estatus: string;
 }
+
 export interface SolicitudVacaciones {
     pendientes: SolicitudEmpleado[];
     aprobadas: SolicitudEmpleado[];
@@ -65,7 +69,7 @@ export interface SolicituDescanso {
     sumaAprobadas?: number;
     sumaCanceladas?: number;
     sumaPendientes?: number;
-    sumaDisfrutadas?:number;
+    sumaDisfrutadas?: number;
 }
 
 export interface DashboardVacacion {
@@ -82,6 +86,7 @@ export interface SolicitudVacacionRequest {
     tipoSolicitud: string;
     usuarioId?: number;
 }
+
 export interface Festivo {
     id?: number;
     fecha?: string;
@@ -104,6 +109,7 @@ export interface DiaSolicitado {
     nuevoEstatus?: string;
     comentario?: string;
 }
+
 export interface SolicitudGestionIndicadores {
     totalDias: number;
     aprobados: number;
@@ -152,11 +158,11 @@ export interface FechaSolicitudDetalle {
 
 export interface DetalleSolicitudDTO {
     anioGestion: number;
-    id?:number;
+    id?: number;
     diasHabilitados: number;
     diasSolicitados: number;
     diasTomados: number;
-    estatusGlobal:string;
+    estatusGlobal: string;
     empleado: CatalogoEmpleado;
     estatusPrimerResponsable: string;
     estatusSegundoResponsable: string;
@@ -183,4 +189,49 @@ export interface NuevoEstatusSolicitud {
     tipoSolicitud?: string;
     nivel: number;
     diasIds?: number[];
+}
+
+export interface EmpleadoAniversarioDTO {
+    id: number;
+    codigoEmpleado: string;
+    nombreCompleto: string;
+    fechaIngreso: string;
+    fechaReingreso: string;
+    aniosCumplidos: number;
+    proximoAniversario: string;
+    mesAniversario: number;
+    unidad: string;
+    puesto: string;
+}
+
+export interface PeriodoVacacionalResumen {
+    id: number;
+    codigoEmpleado: string;
+    nombreEmpleado: string;
+    puesto: string;
+    unidad: string;
+    anioLaboral: number;
+    fechaInicio: string;
+    fechaFin: string;
+    diasHabilitados: number;
+    diasTomados: number;
+    estatus: string;
+}
+
+export interface FiltroPeriodo {
+    empleadoId?: number | null;
+    unidadId?: number | null;
+    supervisorId?: number | null;
+    responsableId?: number | null;
+    estatus?: string | null;
+    anioLaboral?: number | null;
+    currentPage?: number;
+    pageSize?: number;
+}
+
+export interface FiltroAniversario {
+    responsableId?: number | null;
+    supervisorId?: number | null;
+    anio: number;
+    mes: number;
 }

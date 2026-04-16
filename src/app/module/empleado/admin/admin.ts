@@ -22,7 +22,7 @@ import {StatWidgetComponent} from "@/components/stat-widget";
 import {StatusBadgeComponent} from "@/components/StatusBadgeComponent";
 
 @Component({
-    selector: 'app-admin',standalone:true, imports: [
+    selector: 'app-admin', standalone: true, imports: [
         CommonModule,
         TableModule,
         IconField,

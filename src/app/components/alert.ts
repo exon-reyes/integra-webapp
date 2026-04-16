@@ -71,12 +71,13 @@ const ALERT_CONFIG: Record<AlertType, AlertConfig>={
 
                         <!-- Warning icon -->
                         @if (type === 'warning') {
-                            <i class="pi pi-exclamation-triangle" [ngClass]="config().iconClass" style="font-size: 1.5rem"></i>
+                            <i class="pi pi-exclamation-triangle" [ngClass]="config().iconClass"
+                               style="font-size: 1.5rem"></i>
                         }
 
                         <!-- Error icon -->
                         @if (type === 'error') {
-                            <i class="pi pi-times-circle" [ngClass]="config().iconClass"  style="font-size: 1.5rem"></i>
+                            <i class="pi pi-times-circle" [ngClass]="config().iconClass" style="font-size: 1.5rem"></i>
                         }
 
                         <!-- Info / Neutral icon -->

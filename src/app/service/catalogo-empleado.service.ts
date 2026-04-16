@@ -5,6 +5,7 @@ import {HttpClient} from '@angular/common/http';
 import {Observable, shareReplay} from 'rxjs';
 import {Gestor} from '@/models/Gestor';
 import {PeriodoVacacional} from "@/modules/vacacion/models/vacacion.model";
+import {PaginatedResponse} from "@/core/services/usuario/paginated-response.interface";
 
 export interface FiltroEmpleado {
     id?: number;
@@ -16,6 +17,8 @@ export interface FiltroEmpleado {
     estatus?: string;
     idResponsable?: number;
     activos?: boolean;
+    page?: number;
+    size?: number;
 }
 
 export interface CatalogoEmpleado {
@@ -46,9 +49,9 @@ export interface CatalogoEmpleado {
     fechaAlta?: Date;
     fechaReingreso?: Date;
     antiguedadAnios?: number;
-    fechaIngreso?:Date;
-    primerResponsable?: CatalogoEmpleado;
-    segundoResponsable?: CatalogoEmpleado;
+    fechaIngreso?: Date;
+    primerJefe?: CatalogoEmpleado;
+    segundoJefe?: CatalogoEmpleado;
     fechaBaja?: Date;
     periodoVacacional?: PeriodoVacacional;
 }
@@ -77,6 +80,18 @@ export class CatalogoEmpleadoService {
 
     obtenerSupervisores() {
         return this.httpClient.get<ResponseData<CatalogoEmpleado[]>>(`${this.apiUrl}/supervisores`, {params: {activos: true}});
+    }
+
+    obtenerAsignaciones(filtros?: FiltroEmpleado) {
+        return this.httpClient.get<PaginatedResponse<CatalogoEmpleado>>(`${this.apiUrl}/asignaciones`, {params: filtros as any});
+    }
+
+    actualizarResponsables(id: number,
+                           data: {
+                               primerResponsableId?: number | null,
+                               segundoResponsableId?: number | null
+                           }): Observable<ResponseData<void>> {
+        return this.httpClient.put<ResponseData<void>>(`${this.apiUrl}/${id}/responsables`, data);
     }
 
     removeCache() {

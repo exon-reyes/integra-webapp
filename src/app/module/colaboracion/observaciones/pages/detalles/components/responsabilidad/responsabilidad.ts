@@ -18,6 +18,14 @@ interface ResponsabilidadState {
 export class Responsabilidad {
     // Input signal
     readonly observacionId=input.required<number>();
+    // Computed properties para la UI
+    readonly departamento=computed(() => this.responsabilidad()?.departamentoResponsable?.nombre || '-');
+    readonly visibleUnidad=computed(() => {
+        const visible=this.responsabilidad()?.visibleParaUnidad;
+        return visible ? 'Sí' : 'No';
+    });
+    // Nuevo signal computado para el estado
+    readonly estado=computed(() => this.responsabilidad()?.estatus?.nombre || '-');
     // Servicio inyectado
     private readonly observacionService=inject(ObservacionService);
     // State signal
@@ -30,14 +38,6 @@ export class Responsabilidad {
     readonly loading=computed(() => this.responsabilidadState().loading);
     readonly error=computed(() => this.responsabilidadState().error);
     readonly responsabilidad=computed(() => this.responsabilidadState().data);
-    // Computed properties para la UI
-    readonly departamento=computed(() => this.responsabilidad()?.departamentoResponsable?.nombre || '-');
-    readonly visibleUnidad=computed(() => {
-        const visible=this.responsabilidad()?.visibleParaUnidad;
-        return visible ? 'Sí' : 'No';
-    });
-    // Nuevo signal computado para el estado
-    readonly estado=computed(() => this.responsabilidad()?.estatus?.nombre || '-');
 
     // Effect para manejar cambios en observacionId
     constructor() {

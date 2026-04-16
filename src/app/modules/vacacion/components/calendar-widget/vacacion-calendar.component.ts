@@ -244,7 +244,7 @@ function midnightTs(y: number,
 
 
                                 <span class="px-2 py-0.5 rounded-md font-semibold"
-                                       [class]="kindBadgeCls(data.kind)">{{ data.label }}</span>
+                                      [class]="kindBadgeCls(data.kind)">{{ data.label }}</span>
 
                             </div>
 
@@ -271,7 +271,6 @@ function midnightTs(y: number,
                     </div>
                 }
             </p-popover>
-
 
 
         </div>
@@ -486,15 +485,15 @@ export class VacacionCalendarComponent {
         const marker=this.markerMap().get(date);
 
         if(marker) {
-            if (marker.kind === 'festivo' && this.selectionMode() === 'multiple' && this.allowFestivoSelection()) {
+            if(marker.kind === 'festivo' && this.selectionMode() === 'multiple' && this.allowFestivoSelection()) {
                 const [y, m, d]=date.split('-').map(Number);
-                const currentTs = new Date(y, m - 1, d).getTime();
-                const minTs = this.minDateTs();
-                const maxTs = this.maxDateTs();
+                const currentTs=new Date(y, m - 1, d).getTime();
+                const minTs=this.minDateTs();
+                const maxTs=this.maxDateTs();
 
-                const isOutOfRange = (minTs !== null && currentTs < minTs) || (maxTs !== null && currentTs > maxTs);
+                const isOutOfRange=(minTs !== null && currentTs<minTs) || (maxTs !== null && currentTs>maxTs);
 
-                if (!isOutOfRange) {
+                if(!isOutOfRange) {
                     this.dayClicked.emit({date, jsDate: new Date(y, m - 1, d)});
                     return;
                 }

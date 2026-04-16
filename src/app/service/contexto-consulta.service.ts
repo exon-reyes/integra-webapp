@@ -38,29 +38,29 @@ export interface RestriccionUsuario {
  */
 @Injectable({providedIn: 'root'})
 export class ContextoConsultaService {
-    private readonly jwt = inject(JWTService);
-    private readonly empleadoService = inject(CatalogoEmpleadoService);
-    private readonly unidadService = inject(UnidadService);
+    private readonly jwt=inject(JWTService);
+    private readonly empleadoService=inject(CatalogoEmpleadoService);
+    private readonly unidadService=inject(UnidadService);
 
     /**
      * Resuelve las restricciones del usuario en sesión según los permisos dados.
      */
     resolverRestriccion(permisos: PermisosConsulta): RestriccionUsuario {
-        const userId = this.jwt.getUser().employeeName.id;
-        const supRestringido = this.jwt.hasAuthority(permisos.keySupervisor);
-        const responsableRestringido = permisos.keyResponsable
+        const userId=this.jwt.getUser().employeeName.id;
+        const supRestringido=this.jwt.hasAuthority(permisos.keySupervisor);
+        const responsableRestringido=permisos.keyResponsable
             ? this.jwt.hasAuthority(permisos.keyResponsable)
             : false;
 
-        const restriccion: RestriccionUsuario = {
+        const restriccion: RestriccionUsuario={
             tieneRestriccion: supRestringido || responsableRestringido,
             supRestringido,
         };
 
-        if (supRestringido) {
-            restriccion.supervisorId = userId;
-        } else if (responsableRestringido) {
-            restriccion.responsableId = userId;
+        if(supRestringido) {
+            restriccion.supervisorId=userId;
+        } else if(responsableRestringido) {
+            restriccion.responsableId=userId;
         }
 
         return restriccion;
@@ -71,15 +71,15 @@ export class ContextoConsultaService {
      * respetando las restricciones del usuario.
      */
     cargarCatalogos(restriccion: RestriccionUsuario): Observable<CatalogosConsulta> {
-        const filtroEmpleado: FiltroEmpleado = {activos: true};
-        if (restriccion.supervisorId) filtroEmpleado.idSupervisor = restriccion.supervisorId;
-        if (restriccion.responsableId) filtroEmpleado.idResponsable = restriccion.responsableId;
+        const filtroEmpleado: FiltroEmpleado={activos: true};
+        if(restriccion.supervisorId) filtroEmpleado.idSupervisor=restriccion.supervisorId;
+        if(restriccion.responsableId) filtroEmpleado.idResponsable=restriccion.responsableId;
 
-        const unidades$ = restriccion.supRestringido
+        const unidades$=restriccion.supRestringido
             ? this.unidadService.filtrar({supervisorId: restriccion.supervisorId})
             : this.unidadService.filtrar({activo: true});
 
-        const supervisores$ = restriccion.tieneRestriccion
+        const supervisores$=restriccion.tieneRestriccion
             ? of({data: [] as CatalogoEmpleado[]} as ResponseData<CatalogoEmpleado[]>)
             : this.empleadoService.obtenerSupervisores();
 
@@ -100,14 +100,14 @@ export class ContextoConsultaService {
         restriccion: RestriccionUsuario,
         filtroSupervisorManual?: number | null,
     ): T {
-        if (restriccion.supRestringido) {
-            (params as any).supervisorId = restriccion.supervisorId;
-        } else if (filtroSupervisorManual) {
-            (params as any).supervisorId = filtroSupervisorManual;
+        if(restriccion.supRestringido) {
+            (params as any).supervisorId=restriccion.supervisorId;
+        } else if(filtroSupervisorManual) {
+            (params as any).supervisorId=filtroSupervisorManual;
         }
 
-        if (restriccion.responsableId) {
-            (params as any).responsableId = restriccion.responsableId;
+        if(restriccion.responsableId) {
+            (params as any).responsableId=restriccion.responsableId;
         }
 
         return params;

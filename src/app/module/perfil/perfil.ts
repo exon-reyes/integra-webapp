@@ -1,12 +1,11 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
-import { DatePipe } from '@angular/common';
-import { CatalogoEmpleado, CatalogoEmpleadoService } from "@/service/catalogo-empleado.service";
-import { JWTService } from "@/core/security/JWTService";
-import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
-import { DialogModule } from 'primeng/dialog';
-import { ButtonModule } from 'primeng/button';
-import { ActualizarAvatarRequest, AvatarService } from '@/core/services/usuario/avatar.service';
-import { environment } from '@env/environment';
+import {ChangeDetectionStrategy, Component, DestroyRef, inject, signal} from '@angular/core';
+import {DatePipe} from '@angular/common';
+import {CatalogoEmpleado, CatalogoEmpleadoService} from "@/service/catalogo-empleado.service";
+import {JWTService} from "@/core/security/JWTService";
+import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
+import {DialogModule} from 'primeng/dialog';
+import {ButtonModule} from 'primeng/button';
+import {ActualizarAvatarRequest, AvatarService} from '@/core/services/usuario/avatar.service';
 import {SpinnerComponent} from "@/components/spinner.component";
 
 // ── Configuración de estatus ───────────────────────────────
@@ -25,8 +24,8 @@ import {SpinnerComponent} from "@/components/spinner.component";
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Perfil {
-    protected readonly perfil = signal<CatalogoEmpleado | null>(null);
-    protected mostrarModalAvatar = false;
+    protected readonly perfil=signal<CatalogoEmpleado | null>(null);
+    protected mostrarModalAvatar=false;
     // protected readonly nombreCompleto=computed(() => {
     //     const p=this.perfil();
     //     return `${p.} ${p.apellidoPaterno} ${p.apellidoMaterno}`;
@@ -43,7 +42,7 @@ export class Perfil {
     //     return parts.length>=2
     //         ? `${parts[parts.length - 2][0]}${parts[parts.length - 1][0]}`
     //         : parts[0][0];
-    protected readonly avatars = [
+    protected readonly avatars=[
         'avatar1.svg',
         'avatar2.svg',
         'avatar3.svg',
@@ -53,17 +52,17 @@ export class Perfil {
         'avatar7.svg',
         'avatar8.svg',
     ];
-    protected selectedAvatar = signal<string | null>(null);
-    protected tempAvatar = signal<string | null>(null);
-    protected guardandoAvatar = signal(false);
-    protected archivoSeleccionado = signal<File | null>(null);
-    protected previewUrl = signal<string | null>(null);
-    protected eliminandoAvatar = signal(false);
-    private readonly destroyRef = inject(DestroyRef);
+    protected selectedAvatar=signal<string | null>(null);
+    protected tempAvatar=signal<string | null>(null);
+    protected guardandoAvatar=signal(false);
+    protected archivoSeleccionado=signal<File | null>(null);
+    protected previewUrl=signal<string | null>(null);
+    protected eliminandoAvatar=signal(false);
+    protected readonly avatarService=inject(AvatarService);
+    private readonly destroyRef=inject(DestroyRef);
     // });
-    private readonly empleadoService = inject(CatalogoEmpleadoService);
-    private readonly jwtService = inject(JWTService);
-    protected readonly avatarService = inject(AvatarService);
+    private readonly empleadoService=inject(CatalogoEmpleadoService);
+    private readonly jwtService=inject(JWTService);
 
     constructor() {
         this.empleadoService
@@ -71,24 +70,24 @@ export class Perfil {
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe(response => {
                 this.perfil.set(response.data);
-                const objData = response.data as any;
-                if (objData.avatar) {
+                const objData=response.data as any;
+                if(objData.avatar) {
                     this.selectedAvatar.set(objData.avatar);
                 }
             });
     }
 
     abrirModalAvatar() {
-        const current = this.selectedAvatar();
-        if (current?.startsWith('data:image/') || current?.startsWith('http')) {
+        const current=this.selectedAvatar();
+        if(current?.startsWith('data:image/') || current?.startsWith('http')) {
             this.previewUrl.set(current);
             this.tempAvatar.set(null);
             this.archivoSeleccionado.set(null);
-        } else if (current?.endsWith('.svg')) {
+        } else if(current?.endsWith('.svg')) {
             this.tempAvatar.set(current);
             this.previewUrl.set(null);
             this.archivoSeleccionado.set(null);
-        } else if (current) {
+        } else if(current) {
             // Has real set image from server
             this.tempAvatar.set(null);
             this.previewUrl.set(this.avatarService.obtenerRutaAvatar(current, this.jwtService.getUser().employeeName.id));
@@ -98,7 +97,7 @@ export class Perfil {
             this.previewUrl.set(null);
             this.archivoSeleccionado.set(null);
         }
-        this.mostrarModalAvatar = true;
+        this.mostrarModalAvatar=true;
     }
 
     seleccionarAvatar(avatar: string) {
@@ -114,31 +113,31 @@ export class Perfil {
     }
 
     onFileSelected(event: Event) {
-        const input = event.target as HTMLInputElement;
-        if (input.files && input.files.length > 0) {
-            const file = input.files[0];
+        const input=event.target as HTMLInputElement;
+        if(input.files && input.files.length>0) {
+            const file=input.files[0];
             this.archivoSeleccionado.set(file);
             this.tempAvatar.set(null); // Deseleccionar avatar predeterminado
 
-            const reader = new FileReader();
-            reader.onload = (e) => {
+            const reader=new FileReader();
+            reader.onload=(e) => {
                 this.previewUrl.set(e.target?.result as string);
             };
             reader.readAsDataURL(file);
         }
         // Limpiamos el input para permitir seleccionar otra vez el mismo archivo si es necesario
-        if (input) input.value = '';
+        if(input) input.value='';
     }
 
     guardarAvatar() {
-        const avatar = this.tempAvatar();
-        const file = this.archivoSeleccionado();
-        const preview = this.previewUrl();
-        const userId = this.jwtService.getUser().employeeName.id;
+        const avatar=this.tempAvatar();
+        const file=this.archivoSeleccionado();
+        const preview=this.previewUrl();
+        const userId=this.jwtService.getUser().employeeName.id;
 
-        if (avatar || file) {
+        if(avatar || file) {
             this.guardandoAvatar.set(true);
-            const request: ActualizarAvatarRequest = {
+            const request: ActualizarAvatarRequest={
                 avatarName: file ? undefined : (avatar as string),
                 base64Image: file ? (preview as string) : undefined,
             };
@@ -147,18 +146,18 @@ export class Perfil {
                 .pipe(takeUntilDestroyed(this.destroyRef))
                 .subscribe({
                     next: () => {
-                        const nuevoAvatar = file && preview ? preview : avatar;
+                        const nuevoAvatar=file && preview ? preview : avatar;
                         this.selectedAvatar.set(nuevoAvatar);
                         this.avatarService.setAvatarSource(nuevoAvatar);
 
                         // Actualizar el employeeName en el JWTService para persistir el avatar
-                        const perfilActual = this.perfil();
-                        if (perfilActual) {
-                            const employeeNameActualizado = { ...perfilActual, avatar: nuevoAvatar };
+                        const perfilActual=this.perfil();
+                        if(perfilActual) {
+                            const employeeNameActualizado={...perfilActual, avatar: nuevoAvatar};
                             this.jwtService.updateEmployeeName(employeeNameActualizado);
                         }
 
-                        this.mostrarModalAvatar = false;
+                        this.mostrarModalAvatar=false;
                         this.guardandoAvatar.set(false);
                     },
                     error: () => {
@@ -169,7 +168,7 @@ export class Perfil {
     }
 
     eliminarFotoGuardada() {
-        const userId = this.jwtService.getUser().employeeName.id;
+        const userId=this.jwtService.getUser().employeeName.id;
         this.eliminandoAvatar.set(true);
         this.avatarService.eliminarAvatar(userId)
             .pipe(takeUntilDestroyed(this.destroyRef))
@@ -180,13 +179,13 @@ export class Perfil {
                     this.tempAvatar.set(null);
                     this.previewUrl.set(null);
                     this.archivoSeleccionado.set(null);
-                    this.mostrarModalAvatar = false;
+                    this.mostrarModalAvatar=false;
                     this.eliminandoAvatar.set(false);
 
                     // Actualizar el employeeName en el JWTService para eliminar el avatar
-                    const perfilActual = this.perfil();
-                    if (perfilActual) {
-                        const employeeNameActualizado = { ...perfilActual, avatar: null };
+                    const perfilActual=this.perfil();
+                    if(perfilActual) {
+                        const employeeNameActualizado={...perfilActual, avatar: null};
                         this.jwtService.updateEmployeeName(employeeNameActualizado);
                     }
                 },

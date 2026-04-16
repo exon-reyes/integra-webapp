@@ -551,11 +551,7 @@ export class RegistroManualComponent implements OnInit,
             tipo: string,
             fecha: string): void {
         const urlCompleta=`${this.asistenciaService.apiUrlImagen}/${pathFoto}`;
-
-        const fechaFormateada=new Date(fecha).toLocaleDateString('es-MX', {
-            day: '2-digit', month: '2-digit', year: 'numeric',
-        });
-        const titulo=`${tipo} - ${fechaFormateada}`;
+        const titulo=`${tipo} - ${fecha}`;
         this.photoViewerService.open(urlCompleta, titulo);
     }
 

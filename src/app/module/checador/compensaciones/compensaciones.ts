@@ -95,7 +95,8 @@ export class Compensaciones implements OnInit {
         this.compensacionService.obtenerCompensaciones(params).subscribe({
             next: (response) => {
                 const data=response.data ?? [];
-                data.sort((a, b) => {
+                data.sort((a,
+                           b) => {
                     const nombreA=(a.colaborador ?? '').localeCompare(b.colaborador ?? '');
                     if(nombreA !== 0) return nombreA;
                     const fechaA=a.fecha ? new Date(a.fecha).getTime() : 0;

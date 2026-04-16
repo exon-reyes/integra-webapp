@@ -1,4 +1,4 @@
-import { Component, input, computed } from '@angular/core';
+import {Component, computed, input} from '@angular/core';
 
 @Component({
     selector: 'app-status-badge',
@@ -9,7 +9,7 @@ import { Component, input, computed } from '@angular/core';
         '[attr.data-pulsing]': 'pulse()',
     },
     template: `
-        <span class="font-semibold tracking-tight leading-none">{{ label() }}</span>
+        <span class="font-medium tracking-tight leading-none">{{ label() }}</span>
     `,
     styles: `
         :host {
@@ -29,28 +29,25 @@ import { Component, input, computed } from '@angular/core';
 })
 export class StatusBadgeComponent {
     // Signal Inputs
-    label = input.required<string>();
-    color = input<string>('blue'); // Puede ser un preset (blue, cyan...) o un HEX/CSS Var
-    pulse = input<boolean>(false);
-
+    label=input.required<string>();
+    color=input<string>('blue'); // Puede ser un preset (blue, cyan...) o un HEX/CSS Var
+    pulse=input<boolean>(false);
+    protected hostClasses=computed(() =>
+        `inline-flex items-center justify-center px-3 py-1 rounded-md
+     text-sm text-white antialiased select-none
+     cursor-default transition-all duration-200
+     hover:brightness-110 active:scale-95 shadow-sm`
+    );
     // Paleta de colores extraída de tu imagen
-    private readonly colorPresets: Record<string, string> = {
+    private readonly colorPresets: Record<string, string>={
         'blue': '#005edb',
         'cyan': '#00b8ff',
         'green': '#00bc7d',
         'red': '#FB2C36',
-        'yellow': '#fe9a00'
+        'yellow': '#f39501'
     };
-
     // Resolución lógica: Preset > Valor directo (HEX, RGB, Tailwind Var)
-    protected resolvedColor = computed(() =>
+    protected resolvedColor=computed(() =>
         this.colorPresets[this.color()] ?? this.color()
-    );
-
-    protected hostClasses = computed(() =>
-        `inline-flex items-center justify-center px-3 py-1 rounded-md
-     text-[11px] text-white antialiased select-none
-     cursor-default transition-all duration-200
-     hover:brightness-110 active:scale-95 shadow-sm`
     );
 }

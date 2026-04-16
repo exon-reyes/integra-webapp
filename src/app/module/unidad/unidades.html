@@ -50,9 +50,9 @@
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div class="flex gap-2">
                     <p-button *hasPermission="Autoridades.UNIDADES_CREAR"
-                              routerLink="nueva"
                               icon="pi pi-plus"
-                              label="Agregar"/>
+                              label="Agregar"
+                              routerLink="nueva"/>
                     <p-button (onClick)="sincronizar()" icon="pi pi-sync" label="Sincronizar"/>
 
                     <p-button
@@ -79,16 +79,15 @@
             </tr>
         </ng-template>
         <ng-template #body let-unidad>
-            <tr >
+            <tr>
                 <td class="py-3 px-4">{{ unidad.nombreCompleto }}</td>
                 <td>{{ unidad.supervisor?.nombreCompleto }}</td>
                 <td class="py-3 px-4">{{ unidad.contacto?.zona?.nombre }}</td>
                 <td class="py-3 px-4">
                     @if (unidad.activo) {
-                        <app-status-badge label="Activo" color="green"></app-status-badge>
-                    }
-                    @else {
-                        <app-status-badge label="Inactivo" color="yellow"></app-status-badge>
+                        <app-status-badge color="green" label="Activo"></app-status-badge>
+                    } @else {
+                        <app-status-badge color="yellow" label="Inactivo"></app-status-badge>
                     }
                 </td>
                 <td class="py-3 px-4">

@@ -1,13 +1,5 @@
-import {
-    Component,
-    Input,
-    OnChanges,
-    SimpleChanges,
-    ChangeDetectionStrategy,
-    computed,
-    signal,
-} from '@angular/core';
-import { DecimalPipe } from '@angular/common';
+import {ChangeDetectionStrategy, Component, Input, OnChanges, SimpleChanges,} from '@angular/core';
+import {DecimalPipe} from '@angular/common';
 
 export interface BarSlice {
     label: string;
@@ -60,23 +52,27 @@ interface ComputedSlice extends BarSlice {
     `,
 })
 export class SegmentedBarComponent implements OnChanges {
-    @Input() data: BarSlice[] = [];
+    @Input() data: BarSlice[]=[];
 
-    computed: ComputedSlice[] = [];
-    total = 0;
+    computed: ComputedSlice[]=[];
+    total=0;
 
     ngOnChanges(changes: SimpleChanges): void {
-        if (changes['data']) {
+        if(changes['data']) {
             this.compute();
         }
     }
 
     private compute(): void {
-        this.total = this.data.reduce((s, d) => s + d.value, 0);
-        if (this.total === 0) { this.computed = []; return; }
+        this.total=this.data.reduce((s,
+                                     d) => s + d.value, 0);
+        if(this.total === 0) {
+            this.computed=[];
+            return;
+        }
 
-        this.computed = this.data.map((slice) => {
-            const pct = slice.value / this.total;
+        this.computed=this.data.map((slice) => {
+            const pct=slice.value / this.total;
             return {
                 ...slice,
                 percentage: pct * 100,

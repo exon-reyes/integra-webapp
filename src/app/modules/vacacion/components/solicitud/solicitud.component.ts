@@ -363,6 +363,7 @@ export class SolicitudVacacionesComponent implements OnInit {
             }, complete: () => this.guardando.set(false),
         })
     }
+
     private generarRangoFechas(inicio: Date,
                                fin: Date): string[] {
         const fechas: string[]=[];

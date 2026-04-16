@@ -88,6 +88,19 @@ export class AppMenu implements OnInit {
                         icon: 'isc i-autcalendar',
                         permission: Autoridades.VACACIONES_GESTOR_CONSULTAR,
                         routerLink: ['vacaciones/autorizacion'],
+                    }, {
+                        id: 'sd',
+                        label: 'Saldos vacacionales',
+                        permission: Autoridades.VACACIONES_SALDO_CONSULTAR,
+                        routerLink: ['vacaciones/saldos'],
+                        icon: 'isc i-t_week'
+                    },
+                    {
+                        id: 'cfv',
+                        label: 'configuracion',
+                        permission: Autoridades.VACACIONES_CONFIGURACION_CONSULTAR,
+                        icon: 'isc i-setting',
+                        routerLink: ['vacaciones/configuracion'],
                     }
                 ],
             }, {

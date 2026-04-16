@@ -73,12 +73,12 @@ export class DetallesSolicitud {
             menu: this.getSplitButtonMenuItems(1, d.estatusPrimerResponsable)
         };
     });
-    porcentajeDisponible = computed(() => {
-        const d = this.detalles();
-        if (!d || d.diasHabilitados === 0) return 0;
-        const calculado = (d.restanteSiAprueba / d.diasHabilitados) * 100;
+    porcentajeDisponible=computed(() => {
+        const d=this.detalles();
+        if(!d || d.diasHabilitados === 0) return 0;
+        const calculado=(d.restanteSiAprueba / d.diasHabilitados) * 100;
         // Evitamos valores negativos en el gráfico visual
-        return calculado > 0 ? Math.round(calculado) : 0;
+        return calculado>0 ? Math.round(calculado) : 0;
     });
     configuracionBotonNivel2=computed(() => {
         const d=this.detalles();
@@ -104,7 +104,6 @@ export class DetallesSolicitud {
                 this.loading.set(true);
                 this.vacacionService.obtenerDetallesSolicitud(f).subscribe({
                     next: (res) => {
-                        console.log(res.data.primerJefe.id)
                         this.detalles.set(res.data);
                         this.loading.set(false);
                     }, error: () => this.loading.set(false)
@@ -190,23 +189,26 @@ export class DetallesSolicitud {
         if(!estatus) return [];
 
         const items: MenuItem[]=[];
-        if(estatus === 'PENDIENTE') {
-            items.push({
-                label: 'Cancelar',
-                icon: 'pi pi-times',
-                command: () => this.confirmarActualizacionGlobal(nivel, 'CANCELADA')
-            });
-        } else if(estatus === 'APROBADA') {
-            items.push({
-                label: 'Cancelar',
-                icon: 'pi pi-times',
-                command: () => this.confirmarActualizacionGlobal(nivel, 'CANCELADA')
-            });
-        } else if(estatus === 'CANCELADA') {
+
+        if(estatus !== 'APROBADA') {
             items.push({
                 label: 'Aprobar',
                 icon: 'pi pi-check',
                 command: () => this.confirmarActualizacionGlobal(nivel, 'APROBADA')
+            });
+        }
+        if(estatus !== 'PENDIENTE') {
+            items.push({
+                label: 'Pendiente',
+                icon: 'pi pi-clock',
+                command: () => this.confirmarActualizacionGlobal(nivel, 'PENDIENTE')
+            });
+        }
+        if(estatus !== 'CANCELADA') {
+            items.push({
+                label: 'Cancelar',
+                icon: 'pi pi-times',
+                command: () => this.confirmarActualizacionGlobal(nivel, 'CANCELADA')
             });
         }
         return items;

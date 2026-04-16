@@ -1,0 +1,270 @@
+<app-title description="Define los responsables de las solicitudes de vacaciones." imageSrc="/assets/icon/keypass.svg"
+           title="Gestores de vacaciones"></app-title>
+<div class="w-full">
+
+</div>
+<div class="flex justify-between items-center mb-4 gap-2 flex-wrap mt-5">
+    <p-iconfield>
+        <p-inputicon class="pi pi-search"/>
+        <input (input)="onSearchChange($event)" pInputText placeholder="Num. empleado" type="text"/>
+    </p-iconfield>
+    <div class="flex items-center gap-2">
+        <p-button
+            (click)="openFilterDialog()"
+            [badge]="activeFiltersCount() > 0 ? activeFiltersCount().toString() : ''"
+            [severity]="activeFiltersCount() > 0 ? 'warn' : 'info'"
+            icon="pi pi-filter"
+            label="Filtro de consulta">
+        </p-button>
+        <p-button
+            (click)="refreshTable()"
+            icon="pi pi-refresh">
+        </p-button>
+    </div>
+</div>
+<div class="bg-white p-1 border border-slate-200 rounded-2xl border-1">
+    <p-table
+        (onLazyLoad)="loadEmpleados($event)"
+        [lazy]="true"
+        [loading]="loading()"
+        [paginator]="true"
+        [rowsPerPageOptions]="[100, 200, 500, 500]"
+        [rows]="100"
+        [showCurrentPageReport]="true"
+        [tableStyle]="{'min-width': '60rem'}"
+        [totalRecords]="totalRecords()"
+        [value]="empleados()"
+        currentPageReportTemplate="{first} - {last} de {totalRecords}"
+        scrollHeight="calc(100vh - 250px)">
+        <ng-template #emptymessage>
+            <tr>
+                <td class="px-6 text-center text-slate-500" colspan="3">
+                    <app-state
+                        description="Actualice o aplique filtros de busqueda"
+                        title="No se encontraron resultados"></app-state>
+                </td>
+            </tr>
+        </ng-template>
+        <ng-template #header>
+            <tr>
+                <th>Colaborador
+                </th>
+                <th>Gestores de vacaciones/permisos</th>
+                <th>
+                    Acciones
+                </th>
+            </tr>
+        </ng-template>
+
+        <ng-template #body let-data>
+            <tr>
+                <td class="px-5 py-4">
+                    <div class="flex gap-3">
+                        <!-- Avatar con icono -->
+                        <div class="relative">
+                            <div
+                                class="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-700 to-cyan-500 flex items-center justify-center shadow group-hover:scale-110 transition-transform">
+                                <i class="pi pi-user" style="color: white"></i>
+                            </div>
+                        </div>
+
+                        <!-- Info apilada -->
+                        <div class="flex flex-col justify-center min-w-0">
+                            <div class="flex items-center gap-1.5">
+                                <span
+                                    class="text-sm font-semibold text-slate-900 truncate">{{ data.codigo }} {{ data.nombreCompleto }}</span>
+
+                            </div>
+                            <div class="text-xs text-slate-500 mt-0.5 truncate">{{ data.puesto.nombre }}</div>
+                            <div class="text-[11px] text-slate-400 mt-0.5 truncate">{{ data.unidad?.nombreCompleto }}
+                            </div>
+                        </div>
+                    </div>
+                </td>
+
+                <td class="px-6 py-4">
+                    <div class="flex items-center w-full w-125">
+
+                        <div
+                            [class]="data.primerJefe ? 'bg-white shadow-sm' : 'bg-rose-50 text-rose-600 ring-1 ring-rose-200'"
+                            class="flex-1 flex items-center gap-3 px-3 py-2 rounded-lg transition-all">
+                            <i [class]="data.primerJefe ? 'text-indigo-500' : 'text-rose-400'"
+                               class="pi pi-users text-xs"></i>
+                            <div class="flex flex-col min-w-0">
+                                <span class="text-[9px] font-medium tracking-wider text-amber-600">1er Gestor</span>
+                                <span class="text-sm font-semibold truncate">
+                        {{ data.primerJefe?.nombreCompleto || 'Requerido' }}
+                    </span>
+                            </div>
+                        </div>
+
+                        <div class="px-2 text-slate-300">
+                            <i class="pi pi-angle-right"></i>
+                        </div>
+
+                        <div
+                            [class]="data.segundoJefe ? 'bg-white shadow-sm' : 'bg-rose-50 text-rose-600 ring-1 ring-rose-200'"
+                            class="flex-1 flex items-center gap-3 px-3 py-2 rounded-lg transition-all">
+                            <i [class]="data.segundoJefe ? 'text-blue-500' : 'text-rose-400'"
+                               class="pi pi-users text-xs"></i>
+                            <div class="flex flex-col min-w-0">
+                                <span class="text-[9px] font-medium tracking-wider text-amber-600">2do. Gestor</span>
+                                <span class="text-sm font-semibold truncate text-slate-700">
+                        {{ data.segundoJefe?.nombreCompleto || 'Requerido' }}
+                    </span>
+                            </div>
+                        </div>
+
+                    </div>
+                </td>
+
+                <td class="text-center px-4">
+                    <p-button (click)="openEditDialog(data)" [rounded]="true" [text]="true"
+                              class="hover:bg-white shadow-none"
+                              icon="pi pi-pencil" severity="secondary"
+                              size="small"/>
+                </td>
+            </tr>
+        </ng-template>
+    </p-table>
+</div>
+<p-dialog
+    [(visible)]="displayFilterDialog"
+    [draggable]="false"
+    [modal]="true"
+    [resizable]="false"
+    [style]="{ width: '450px' }"
+    class="p-fluid"
+    header="Refinar Búsqueda">
+
+    <div class="grid gap-6 pt-2">
+        <div class="space-y-2">
+            <label class="text-sm font-semibold text-slate-700">Supervisor Directo</label>
+            <p-select
+                [(ngModel)]="selectedSupervisor"
+                [filter]="true"
+                [options]="supervisores()"
+                [showClear]="true"
+                appendTo="body"
+                class="w-full"
+                optionLabel="nombreCompleto"
+                optionValue="id"
+                placeholder="Seleccione un supervisor"/>
+        </div>
+
+        <div class="space-y-2">
+            <label class="text-sm font-semibold text-slate-700">Unidad Organizativa</label>
+            <p-select
+                [(ngModel)]="selectedUnidad"
+                [filter]="true"
+                [options]="unidades()"
+                [showClear]="true"
+                appendTo="body"
+                class="w-full"
+                optionLabel="nombreCompleto"
+                optionValue="id"
+                placeholder="Todas las unidades"/>
+        </div>
+
+        <div class="space-y-2">
+            <label class="text-sm font-semibold text-slate-700">Colaborador específico</label>
+            <p-select
+                [(ngModel)]="selectedEmpleado"
+                [filter]="true"
+                [options]="empleadosFiltro()"
+                [showClear]="true"
+                appendTo="body"
+                class="w-full"
+                optionLabel="nombreCompleto"
+                optionValue="id"
+                placeholder="Buscar por nombre o código"/>
+        </div>
+    </div>
+
+    <ng-template #footer>
+        <div class="flex gap-2 justify-end mt-4">
+            <p-button (click)="clearFilters()" [text]="true" icon="pi pi-filter-slash" label="Limpiar"
+                      severity="secondary"/>
+            <p-button (click)="applyFilters()" icon="pi pi-check" label="Aplicar Filtros"/>
+        </div>
+    </ng-template>
+</p-dialog>
+
+@if (loadingEdit()) {
+    <app-spinner [modal]="true" message="Por favor espere" title="Actualizando responsables..."></app-spinner>
+}
+
+<p-dialog
+    [(visible)]="displayEditDialog"
+    [draggable]="false"
+    [modal]="true"
+    [resizable]="false"
+    [style]="{ width: '450px' }"
+    class="p-fluid"
+    header="Asignar Responsables">
+
+    @if (selectedEditEmpleado()) {
+        <div
+            class="mb-4 bg-slate-50 p-3 rounded-lg border border-slate-200 text-sm text-slate-700 shadow-sm flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center shrink-0">
+                <i class="pi pi-user text-lg"></i>
+            </div>
+            <div>
+                <div class="text-xs text-slate-500 font-medium pb-0.5">Editando responsable de</div>
+                <div class="font-semibold">{{ selectedEditEmpleado()?.nombreCompleto }}</div>
+            </div>
+        </div>
+    }
+
+    <div class="grid gap-6 pt-2">
+        <div class="space-y-2">
+            <label class="text-sm font-semibold text-slate-700">Primer Gestor</label>
+            <p-select
+                [(ngModel)]="editPrimerJefe"
+                [filter]="true"
+                [options]="empleadosFiltro()"
+                [showClear]="true"
+                appendTo="body"
+                class="w-full"
+                optionLabel="nombreCompleto"
+                optionValue="id"
+                placeholder="Seleccione el primer responsable">
+                <ng-template let-empleado pTemplate="item">
+                    <div class="flex flex-col">
+                        <span class="font-medium">{{ empleado.nombreCompleto }}</span>
+                        <span class="text-xs text-slate-500">{{ empleado.codigo }} - {{ empleado.estatus }}</span>
+                    </div>
+                </ng-template>
+            </p-select>
+        </div>
+
+        <div class="space-y-2">
+            <label class="text-sm font-semibold text-slate-700">Segundo Gestor</label>
+            <p-select
+                [(ngModel)]="editSegundoJefe"
+                [filter]="true"
+                [options]="empleadosFiltro()"
+                [showClear]="true"
+                appendTo="body"
+                class="w-full"
+                optionLabel="nombreCompleto"
+                optionValue="id"
+                placeholder="Seleccione el segundo responsable">
+                <ng-template let-empleado pTemplate="item">
+                    <div class="flex flex-col">
+                        <span class="font-medium">{{ empleado.nombreCompleto }}</span>
+                        <span class="text-xs text-slate-500">{{ empleado.codigo }} - {{ empleado.estatus }}</span>
+                    </div>
+                </ng-template>
+            </p-select>
+        </div>
+    </div>
+
+    <ng-template #footer>
+        <div class="flex gap-2 justify-end mt-4">
+            <p-button (click)="displayEditDialog.set(false)" [disabled]="loadingEdit()" [text]="true" label="Cancelar"
+                      severity="secondary"/>
+            <p-button (click)="saveEdit()" [loading]="loadingEdit()" icon="pi pi-check" label="Guardar Responsables"/>
+        </div>
+    </ng-template>
+</p-dialog>

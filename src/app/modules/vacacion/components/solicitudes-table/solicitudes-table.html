@@ -102,7 +102,8 @@
                                       label="Papeleta"/>
                         }
                         @if (item.estatusGeneral === 'PENDIENTE') {
-                            <p-button icon="pi pi-trash" severity="danger" (onClick)="deleteClick.emit(item.id)"></p-button>
+                            <p-button (onClick)="deleteClick.emit(item.id)" icon="pi pi-trash"
+                                      severity="danger"></p-button>
                         }
 
                     </div>

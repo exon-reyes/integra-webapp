@@ -91,7 +91,17 @@
                     </div>
                     <div>
                         <dt class="text-slate-400 text-sm font-medium mb-1">Sexo</dt>
-                        <dd class="font-medium">{{ perfil().sexo }}</dd>
+                        @switch (perfil().sexo) {
+                            @case ('M') {
+                                <dd class="font-medium">Masculino</dd>
+                            }
+                            @case ('F') {
+                                <dd class="font-medium">Femenino</dd>
+                            }
+                            @default {
+                                <dd class="font-medium">No especificado</dd>
+                            }
+                        }
                     </div>
                 </dl>
             </section>
@@ -126,14 +136,14 @@
             <section class="md:col-span-4">
                 <h6>Responsables</h6>
                 <div class="space-y-6">
-                    @for (item of perfil().gestores; track item.id) {
-                        <div class="p-3 bg-blue-50/50 rounded border border-blue-100/50">
-                            <dt class="text-sm text-blue-400 font-semibold mb-1">Nivel {{ item.nivel }}
-                                - {{ item.proceso }}
-                            </dt>
-                            <dd class="text-[13px] font-medium text-slate-800">{{ item.nombreCompleto }}</dd>
-                        </div>
-                    }
+                    <div class="p-3 bg-blue-50/50 rounded border border-blue-100/50">
+
+                        <h6>Primer gestor de vacaciones/permisos</h6>
+                        {{ perfil().primerJefe?.nombreCompleto }}
+                        <h6>Segundo gestor de vacaciones/permisos</h6>
+                        {{ perfil().segundoJefe?.nombreCompleto }}
+                    </div>
+
                 </div>
             </section>
 
