@@ -723,7 +723,7 @@ export class ClockFacadeService {
     // ========== MÉTODOS PRIVADOS - PROCESAMIENTO ==========
 
     private compressImage(dataUrl: string,
-                          quality=0.4): Promise<string> {
+                          quality=0.3): Promise<string> {
         return new Promise((resolve) => {
             const img=new Image();
             img.onload=() => {

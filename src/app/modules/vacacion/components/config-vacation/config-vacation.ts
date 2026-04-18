@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, computed, inject, signal} from '@angular/core';
+import {ChangeDetectionStrategy, Component, inject, signal} from '@angular/core';
 import {Button} from 'primeng/button';
 import {TableLazyLoadEvent, TableModule} from 'primeng/table';
 import {Title} from '@/components/title';
@@ -19,6 +19,7 @@ import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
 import {IconField} from "primeng/iconfield";
 import {InputIcon} from "primeng/inputicon";
 import {SpinnerComponent} from "@/components/spinner.component";
+import {TooltipModule} from "primeng/tooltip";
 
 @Component({
     selector: 'app-config-vacation',
@@ -35,7 +36,8 @@ import {SpinnerComponent} from "@/components/spinner.component";
         TabsModule,
         IconField,
         InputIcon,
-        SpinnerComponent
+        SpinnerComponent,
+        TooltipModule
     ],
     templateUrl: './config-vacation.html',
     styleUrl: './config-vacation.scss',
@@ -45,10 +47,7 @@ export class ConfigVacation {
     readonly empleados=signal<CatalogoEmpleado[]>([]);
     readonly totalRecords=signal<number>(0);
     readonly loading=signal<boolean>(false);
-
-    readonly empleadosCompletos=computed(() => this.empleados().filter(e => e.primerJefe && e.segundoJefe));
-    readonly empleadosIncompletos=computed(() => this.empleados().filter(e => !e.primerJefe || !e.segundoJefe));
-
+    private readonly catalogoEmpleadoService=inject(CatalogoEmpleadoService);
     // Filtros
     readonly displayFilterDialog=signal<boolean>(false);
     readonly supervisores=signal<CatalogoEmpleado[]>([]);
@@ -74,8 +73,9 @@ export class ConfigVacation {
     lastTableEvent: TableLazyLoadEvent | undefined=undefined;
 
     private messageService=inject(MessageService);
-    private readonly catalogoEmpleadoService=inject(CatalogoEmpleadoService);
+
     private readonly unidadService=inject(UnidadService);
+
 
     constructor() {
         this.searchSubject.pipe(

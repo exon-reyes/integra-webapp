@@ -10,10 +10,15 @@
          [tableStyle]="{ 'min-width': '50rem' }"
          [totalRecords]="totalRecords()"
          [value]="solicitudes()"
+         rowGroupMode="subheader"
+         groupRowsBy="colaborador.nombreCompleto"
+         dataKey="colaborador.nombreCompleto"
+         sortField="colaborador.nombreCompleto"
+         sortMode="single"
          currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} registros">
     <ng-template #header>
         <tr>
-            <th style="min-width: 250px">Colaborador</th>
+            <th style="min-width: 150px">Solicitud</th>
             <th style="min-width: 250px">Flujo de aprobación</th>
             <th style="min-width: 120px">Estatus final</th>
             <th style="min-width: 280px">Fechas solicitadas</th>
@@ -23,17 +28,28 @@
             }
         </tr>
     </ng-template>
-    <ng-template #body let-item>
+    <ng-template #groupheader let-item let-rowIndex="rowIndex" let-expanded="expanded">
         <tr>
-            <td class="py-3">
-                <div class="flex flex-col gap-1.5">
+            <td [attr.colspan]="showActions() ? 6 : 5" class="bg-slate-50/70 border-none px-4 py-3">
+                <div class="flex flex-row items-center gap-3">
+                    <p-button severity="secondary" size="small" [icon]="expanded ? 'pi pi-chevron-down' : 'pi pi-chevron-right'" [pRowToggler]="item"></p-button>
                     <div class="flex items-center gap-2">
                         <img alt="icon" height="18" ngSrc="/assets/icon/cheque.png" width="18">
-                        <span class="font-semibold text-blue-900">{{ item.colaborador.nombreCompleto }}</span>
+                        <span class="font-bold text-blue-900">{{ item.colaborador.nombreCompleto }}</span>
                     </div>
+                    <span class="ml-2 px-2 py-0.5 rounded-md bg-white border border-slate-200 text-xs font-semibold text-slate-500">ID: {{ item.colaborador.codigo }}</span>
+                    <span class="ml-2 text-xs font-medium text-slate-500 bg-white border border-slate-200 rounded-md px-2 py-0.5">{{ item.unidad }}</span>
+                </div>
+            </td>
+        </tr>
+    </ng-template>
+    <ng-template #expandedrow let-item>
+        <tr>
+            <td class="py-3">
+                <div class="flex flex-col gap-1.5 ml-11">
                     <div class="text-sm font-medium">
-                        <span>{{ item.unidad }}</span>
-                        <div class="mt-3">Solicitud: {{ item.tipoSolicitud }} - #{{ item.folioSolicitud }}</div>
+                        <div class="font-bold text-slate-700 tracking-tight uppercase">{{ item.tipoSolicitud }}</div>
+                        <div class="text-xs text-slate-500 font-medium">#{{ item.folioSolicitud }}</div>
                     </div>
                 </div>
             </td>

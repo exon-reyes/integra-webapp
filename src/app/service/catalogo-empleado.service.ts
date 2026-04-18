@@ -94,6 +94,10 @@ export class CatalogoEmpleadoService {
         return this.httpClient.put<ResponseData<void>>(`${this.apiUrl}/${id}/responsables`, data);
     }
 
+    habilitarPeriodoVencido(idPeriodo: number): Observable<ResponseData<void>> {
+        return this.httpClient.patch<ResponseData<void>>(`${environment.integraApi}/periodo-estatus-changed/update/${idPeriodo}`, {});
+    }
+
     removeCache() {
         this.cache.clear();
     }

@@ -22,7 +22,7 @@ import {
     PeriodoVacacionalResumen
 } from '../../models/vacacion.model';
 import {Autoridades} from '@/core/Autoridades';
-import {CatalogoEmpleado} from '@/service/catalogo-empleado.service';
+import {CatalogoEmpleado, CatalogoEmpleadoService} from '@/service/catalogo-empleado.service';
 import {Unidad} from '@/models/empresa/unidad';
 import {ContextoConsultaService, RestriccionUsuario} from '@/service/contexto-consulta.service';
 import {normalizeProperties} from '@/shared/util/object.util';
@@ -110,6 +110,7 @@ function tagSeverity(e: string): TagSev {
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Saldos implements OnInit {
+    private readonly catalogoEmpleadoService=inject(CatalogoEmpleadoService);
     readonly mesFmt='MMMM y';
     // ── Datos del backend ──────────────────────────────────────────────
     saldosData=signal<PeriodoVacacionalResumen[]>([]);
@@ -127,7 +128,7 @@ export class Saldos implements OnInit {
     filtroAnioLaboral=signal<number | null>(null);
     // ── Paginación ─────────────────────────────────────────────────────
     currentPage=signal(0);
-    pageSize=signal(20);
+    pageSize=signal(500);
     // ── UI ─────────────────────────────────────────────────────────────
     visibleFiltros=signal(false);
     readonly tieneFiltrosActivos=computed(() =>
@@ -163,12 +164,15 @@ export class Saldos implements OnInit {
     private readonly contexto=inject(ContextoConsultaService);
     private restriccion!: RestriccionUsuario;
 
+
     constructor() {
     }
 
     get tieneRestriccion(): boolean {
         return this.restriccion?.tieneRestriccion ?? false;
     }
+
+    // ── Acciones ───────────────────────────────────────────────────────
 
     ngOnInit(): void {
         this.restriccion=this.contexto.resolverRestriccion({
@@ -185,8 +189,6 @@ export class Saldos implements OnInit {
         this.cargarPeriodos();
         this.cargarAniversarios();
     }
-
-    // ── Acciones ───────────────────────────────────────────────────────
 
     onFiltroChange(): void {
         this.currentPage.set(0);
@@ -266,6 +268,8 @@ export class Saldos implements OnInit {
         });
     }
 
+    // ── Helpers ────────────────────────────────────────────────────────
+
     cargarAniversarios(): void {
         this.loadingAniversarios.set(true);
 
@@ -291,8 +295,6 @@ export class Saldos implements OnInit {
             }
         });
     }
-
-    // ── Helpers ────────────────────────────────────────────────────────
 
     diasRestantes(row: PeriodoVacacionalResumen): number {
         return (row.diasHabilitados ?? 0) - (row.diasTomados ?? 0);
@@ -321,5 +323,17 @@ export class Saldos implements OnInit {
             this.currentDate.update(d => addMonths(d, -1));
             this.cargarAniversarios();
         }
+    }
+
+    habilitarPeriodo(idPeriodo: number) {
+        this.loadingSaldos.set(true);
+        this.catalogoEmpleadoService.habilitarPeriodoVencido(idPeriodo).subscribe({
+            next: (response) => {
+                this.cargarPeriodos();
+            },
+            error: (err) => {
+                this.loadingSaldos.set(false);
+            }
+        });
     }
 }
