@@ -20,13 +20,17 @@ import {FiltroResponsabilidad} from "@/service/filtro-responsabilidad.service";
 import {SolicitudesTableComponent} from "@/modules/vacacion/components/solicitudes-table/solicitudes-table";
 import {normalizeProperties} from "@/shared/util/object.util";
 import {MessageService} from "primeng/api";
-
+import {DatePicker} from "primeng/datepicker";
+import {DatePipe} from "@angular/common";
+import {TooltipModule} from "primeng/tooltip";
 
 export interface FiltroSolicitudes extends Paginator,
                                            FiltroResponsabilidad {
     estatus?: string;
     unidadId?: number;
     empleadoId?: number;
+    fechaDesde?: string;
+    fechaHasta?: string;
 }
 
 @Component({
@@ -42,6 +46,8 @@ export interface FiltroSolicitudes extends Paginator,
         HasPermissionDirective,
         Select,
         SolicitudesTableComponent,
+        DatePicker,
+        TooltipModule,
     ], templateUrl: './solicitudes.html'
 })
 export class Solicitudes implements OnInit {
@@ -54,7 +60,7 @@ export class Solicitudes implements OnInit {
     statusFilter=signal<string>('PENDIENTE');
     loading=signal(false);
     currentPage=signal(0);
-    pageSize=signal(10);
+    pageSize=signal(50);
     totalRecords=signal(0);
     // Catálogos
     empleados=signal<CatalogoEmpleado[]>([]);
@@ -69,6 +75,9 @@ export class Solicitudes implements OnInit {
     folioSeleccionado=signal<number | null>(null);
     salarioDiario=signal<number | null>(null);
     diasAdicionales=signal<number>(0);
+    fechaDesde=signal<Date | null>(null);
+    fechaHasta=signal<Date | null>(null);
+    readonly maxDate = new Date();
 
     protected solicitudes: SolicitudesGestionDTO[]=[];
     protected readonly Autoridades=Autoridades;
@@ -76,6 +85,7 @@ export class Solicitudes implements OnInit {
     private readonly spinner=inject(SpinnerService);
     private readonly contexto=inject(ContextoConsultaService);
     private readonly messageService=inject(MessageService)
+    private readonly datePipe = new DatePipe('es-MX');
     private restriccion!: RestriccionUsuario;
 
     get tieneRestriccion(): boolean {
@@ -111,20 +121,67 @@ export class Solicitudes implements OnInit {
         this.spinner.show();
         this.solicitudService.exportarValoresActuales().subscribe({
             next: (blob: Blob) => {
-                const url=window.URL.createObjectURL(blob);
-                const a=document.createElement('a');
-                a.href=url;
-                a.download=`Reporte_Vacaciones_${new Date().toISOString().split('T')[0]}.xlsx`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                window.URL.revokeObjectURL(url);
+                this.descargarBlob(blob, `Reporte_Vacaciones_${new Date().toISOString().split('T')[0]}.xlsx`);
                 this.spinner.hide();
             }, error: () => {
                 this.spinner.hide();
             }
         });
     }
+
+    exportarSolicitudes(): void {
+        const d = this.fechaDesde();
+        const h = this.fechaHasta();
+
+        if (!d || !h) {
+            this.messageService.add({
+                severity: 'warn',
+                summary: 'Fechas requeridas',
+                detail: 'Selecciona el período (Desde y Hasta) para exportar.'
+            });
+            return;
+        }
+
+        const params: Record<string, string> = {
+            fechaDesde: this.datePipe.transform(d, 'yyyy-MM-dd')!,
+            fechaHasta: this.datePipe.transform(h, 'yyyy-MM-dd')!,
+        };
+
+        if (this.statusFilter()) params['estatus'] = this.statusFilter();
+        if (this.filtroEmpleadoId()) params['empleadoId'] = String(this.filtroEmpleadoId());
+        if (this.filtroUnidadId()) params['unidadId'] = String(this.filtroUnidadId());
+
+        const filtroConRestriccion: any = {...params};
+        this.contexto.aplicarRestriccion(filtroConRestriccion, this.restriccion, this.filtroSupervisorId());
+        if (filtroConRestriccion['responsableId']) params['responsableId'] = String(filtroConRestriccion['responsableId']);
+        if (filtroConRestriccion['rrhhId']) params['rrhhId'] = String(filtroConRestriccion['rrhhId']);
+        if (filtroConRestriccion['supervisorId']) params['supervisorId'] = String(filtroConRestriccion['supervisorId']);
+
+        this.spinner.show();
+        this.solicitudService.exportarSolicitudes(params).subscribe({
+            next: (blob: Blob) => {
+                const fecha = this.datePipe.transform(new Date(), 'yyyy-MM-dd')!;
+                this.descargarBlob(blob, `Solicitudes_${fecha}.xlsx`);
+                this.spinner.hide();
+            },
+            error: () => {
+                this.spinner.hide();
+            }
+        });
+    }
+
+    private descargarBlob(blob: Blob, nombre: string): void {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = nombre;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+    }
+
+
 
     abrirModalPapeleta(folio: number): void {
         this.folioSeleccionado.set(folio);
@@ -168,6 +225,8 @@ export class Solicitudes implements OnInit {
         this.filtroEmpleadoId.set(null);
         this.filtroUnidadId.set(null);
         this.filtroSupervisorId.set(null);
+        this.fechaDesde.set(null);
+        this.fechaHasta.set(null);
         this.currentPage.set(0);
         this.cargarSolicitudes();
     }
@@ -186,6 +245,23 @@ export class Solicitudes implements OnInit {
     }
 
     protected cargarSolicitudes(): void {
+        const d = this.fechaDesde();
+        const h = this.fechaHasta();
+
+        if ((d && !h) || (!d && h)) {
+            // Si solo uno de los dos está seleccionado, lo consideramos en edición y no consultamos
+            return;
+        }
+
+        if (d && h && d > h) {
+            this.messageService.add({
+                severity: 'error',
+                summary: 'Fechas inválidas',
+                detail: 'La fecha "Desde" no puede ser mayor que "Hasta".'
+            });
+            return;
+        }
+
         this.loading.set(true);
 
         const filtro: FiltroSolicitudes={
@@ -194,6 +270,8 @@ export class Solicitudes implements OnInit {
             pageSize: this.pageSize(),
             empleadoId: this.filtroEmpleadoId() ?? undefined,
             unidadId: this.filtroUnidadId() ?? undefined,
+            fechaDesde: this.fechaDesde() ? this.datePipe.transform(this.fechaDesde(), 'yyyy-MM-dd')! : undefined,
+            fechaHasta: this.fechaHasta() ? this.datePipe.transform(this.fechaHasta(), 'yyyy-MM-dd')! : undefined,
         };
 
         this.contexto.aplicarRestriccion(filtro, this.restriccion, this.filtroSupervisorId());

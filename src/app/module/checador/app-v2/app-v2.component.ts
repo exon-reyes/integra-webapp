@@ -177,10 +177,6 @@ export class AppV2Component implements OnInit,
         this.focusCodeInputIfNeeded();
     }
 
-    selectUnit(unit: any): void {
-        this.facade.selectUnit(unit);
-    }
-
     updateSearchTerm(event: Event): void {
         const input=event.target as HTMLInputElement;
         this.facade.updateSearchTerm(input.value);

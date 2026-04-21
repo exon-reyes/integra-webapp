@@ -37,7 +37,7 @@ export class SolicitudesTableComponent {
     loading=input(false);
     totalRecords=input(0);
     first=input(0);
-    rows=input(10);
+    rows=input(50);
     paginator=input(true);
     lazy=input(true);
     showActions=input(true);

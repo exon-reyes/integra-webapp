@@ -6,6 +6,7 @@ import {WebcamImage} from 'ngx-webcam';
 import {WorktimeService} from '@/module/checador/service/worktime.service';
 import {KioscoConfigService} from '@/module/checador/service/kiosco-config-service';
 import {TipoPausa} from '@/core/services/checador/TipoPausa';
+import {ImagenCompressionService} from '@/shared/service/imagen-compression.service';
 
 import {
     Action,
@@ -39,7 +40,7 @@ import {
 export class ClockFacadeService {
     // ========== CONSTANTES ==========
     private static readonly MAX_CODE_LENGTH=8;
-    private static readonly TIMEOUT_MS=10000;
+    private static readonly TIMEOUT_MS=30000;
     private static readonly RETRY_COUNT=2;
     private static readonly ADMIN_CODE='1234';
 
@@ -57,8 +58,9 @@ export class ClockFacadeService {
         hour12: false,
     });
     // ========== SERVICIOS INYECTADOS ==========
-    private readonly worktimeService=inject(WorktimeService);
-    private readonly kioscoConfig=inject(KioscoConfigService);
+    private readonly worktimeService = inject(WorktimeService);
+    private readonly kioscoConfig = inject(KioscoConfigService);
+    private readonly compressionService = inject(ImagenCompressionService);
 
     // ========== ESTADO CONSOLIDADO ==========
     private readonly state=signal<AppState>(this.loadInitialState());
@@ -722,67 +724,29 @@ export class ClockFacadeService {
 
     // ========== MÉTODOS PRIVADOS - PROCESAMIENTO ==========
 
-    private compressImage(dataUrl: string,
-                          quality=0.3): Promise<string> {
-        return new Promise((resolve) => {
-            const img=new Image();
-            img.onload=() => {
-                const canvas=document.createElement('canvas');
-                canvas.width=img.width;
-                canvas.height=img.height;
-                canvas.getContext('2d')!.drawImage(img, 0, 0);
-                resolve(canvas.toDataURL('image/jpeg', quality));
-            };
-            img.src=dataUrl;
-        });
-    }
+    // La compresión de imagen se delega a ImagenCompressionService (compress + resize + Blob)
 
     private async processImage(image: WebcamImage): Promise<void> {
-        const employee=this.state().employee.employee;
-        const action=this.state().employee.currentAction;
+        const employee = this.state().employee.employee;
+        const action = this.state().employee.currentAction;
 
-        if(!employee || !action) {
+        if (!employee || !action) {
             this.updateUI({error: 'Error: Faltan datos para procesar la solicitud.'});
             return;
         }
 
         this.updateUI({isUploading: true, error: null});
 
-        const compressedPhoto=await this.compressImage(image.imageAsDataUrl);
-        const compressedImage={...image, imageAsDataUrl: compressedPhoto} as WebcamImage;
-        const {apiCall, successMessage}=this.getActionConfig(compressedImage);
-        if(!apiCall) return;
-
-        apiCall
-            .pipe(
-                timeout(ClockFacadeService.TIMEOUT_MS * 2),
-                takeUntil(this.destroy$),
-                finalize(() => this.updateUI({isUploading: false})),
-                catchError((error: HttpErrorResponse) => {
-                    this.updateUI({error: this.getProcessErrorMessage(error)});
-                    return of(null);
-                }),
-            )
-            .subscribe((response) => {
-                if(response?.success) {
-                    this.showSuccess(successMessage);
-                }
-            });
-    }
-
-    private async processWithoutCamera(): Promise<void> {
-        const employee=this.state().employee.employee;
-        const action=this.state().employee.currentAction;
-
-        if(!employee || !action) {
-            this.updateUI({error: 'Error: Faltan datos para procesar la solicitud.'});
-            return;
+        let fotoBlob: Blob | null = null;
+        try {
+            fotoBlob = await this.compressionService.compressToBlob(image.imageAsDataUrl);
+        } catch (e) {
+            // Si falla la compresión, continuamos sin foto (modo degradado)
+            fotoBlob = null;
         }
 
-        this.updateUI({isUploading: true, error: null});
-
-        const {apiCall, successMessage}=this.getActionConfigNoCamera();
-        if(!apiCall) return;
+        const {apiCall, successMessage} = this.getActionConfig(fotoBlob);
+        if (!apiCall) return;
 
         apiCall
             .pipe(
@@ -795,45 +759,75 @@ export class ClockFacadeService {
                 }),
             )
             .subscribe((response) => {
-                if(response?.success) {
+                if (response?.success) {
                     this.showSuccess(successMessage);
                 }
             });
     }
 
-    private getActionConfig(image: WebcamImage): { apiCall: Observable<any> | null; successMessage: string } {
-        const employee=this.state().employee.employee!;
-        const action=this.state().employee.currentAction!;
-        const pause=this.state().employee.currentPause;
-        const photo=image.imageAsDataUrl;
-        const unitId=this.state().config.unitId;
+    private async processWithoutCamera(): Promise<void> {
+        const employee = this.state().employee.employee;
+        const action = this.state().employee.currentAction;
 
-        switch(action) {
+        if (!employee || !action) {
+            this.updateUI({error: 'Error: Faltan datos para procesar la solicitud.'});
+            return;
+        }
+
+        this.updateUI({isUploading: true, error: null});
+
+        const {apiCall, successMessage} = this.getActionConfig(null);
+        if (!apiCall) return;
+
+        apiCall
+            .pipe(
+                timeout(ClockFacadeService.TIMEOUT_MS),
+                takeUntil(this.destroy$),
+                finalize(() => this.updateUI({isUploading: false})),
+                catchError((error: HttpErrorResponse) => {
+                    this.updateUI({error: this.getProcessErrorMessage(error)});
+                    return of(null);
+                }),
+            )
+            .subscribe((response) => {
+                if (response?.success) {
+                    this.showSuccess(successMessage);
+                }
+            });
+    }
+
+    private getActionConfig(foto: Blob | null): {apiCall: Observable<any> | null; successMessage: string} {
+        const employee = this.state().employee.employee!;
+        const action = this.state().employee.currentAction!;
+        const pause = this.state().employee.currentPause;
+        const unitId = this.state().config.unitId;
+
+        switch (action) {
             case 'iniciarJornada':
                 return {
-                    apiCall: this.worktimeService.iniciarJornada(employee.id, photo, unitId, employee.unidadAsignadaId),
+                    apiCall: this.worktimeService.iniciarJornada(employee.id, foto, unitId, employee.unidadAsignadaId),
                     successMessage: '¡Jornada iniciada con éxito!',
                 };
             case 'finalizarJornada':
                 return {
-                    apiCall: this.worktimeService.finalizarJornada(employee.id, photo, unitId, employee.unidadAsignadaId),
+                    apiCall: this.worktimeService.finalizarJornada(employee.id, foto, unitId, employee.unidadAsignadaId),
                     successMessage: '¡Jornada finalizada con éxito!',
                 };
             case 'finalizarJornadaDeposito':
                 return {
-                    apiCall: this.worktimeService.finalizarJornadaDeposito(employee.id, photo, unitId, employee.unidadAsignadaId),
+                    apiCall: this.worktimeService.finalizarJornadaDeposito(employee.id, foto, unitId, employee.unidadAsignadaId),
                     successMessage: '¡Jornada finalizada por depósito!',
                 };
             case 'iniciarPausa':
-                if(!pause) return {apiCall: null, successMessage: ''};
+                if (!pause) return {apiCall: null, successMessage: ''};
                 return {
-                    apiCall: this.worktimeService.iniciarPausa(employee.id, pause, photo, unitId, employee.unidadAsignadaId),
+                    apiCall: this.worktimeService.iniciarPausa(employee.id, pause, foto, unitId, employee.unidadAsignadaId),
                     successMessage: `¡Pausa de ${pause} iniciada!`,
                 };
             case 'finalizarPausa':
-                if(!pause) return {apiCall: null, successMessage: ''};
+                if (!pause) return {apiCall: null, successMessage: ''};
                 return {
-                    apiCall: this.worktimeService.finalizarPausa(employee.id, pause, photo, unitId, employee.unidadAsignadaId),
+                    apiCall: this.worktimeService.finalizarPausa(employee.id, pause, foto, unitId, employee.unidadAsignadaId),
                     successMessage: `¡Pausa de ${pause} finalizada!`,
                 };
             default:
@@ -842,45 +836,7 @@ export class ClockFacadeService {
         }
     }
 
-    private getActionConfigNoCamera(): { apiCall: Observable<any> | null; successMessage: string } {
-        const employee=this.state().employee.employee!;
-        const action=this.state().employee.currentAction!;
-        const pause=this.state().employee.currentPause;
-        const unitId=this.state().config.unitId;
-
-        switch(action) {
-            case 'iniciarJornada':
-                return {
-                    apiCall: this.worktimeService.iniciarJornada(employee.id, null, unitId, employee.unidadAsignadaId),
-                    successMessage: '¡Jornada iniciada con éxito!',
-                };
-            case 'finalizarJornada':
-                return {
-                    apiCall: this.worktimeService.finalizarJornada(employee.id, null, unitId, employee.unidadAsignadaId),
-                    successMessage: '¡Jornada finalizada con éxito!',
-                };
-            case 'finalizarJornadaDeposito':
-                return {
-                    apiCall: this.worktimeService.finalizarJornadaDeposito(employee.id, null, unitId, employee.unidadAsignadaId),
-                    successMessage: '¡Jornada finalizada por depósito!',
-                };
-            case 'iniciarPausa':
-                if(!pause) return {apiCall: null, successMessage: ''};
-                return {
-                    apiCall: this.worktimeService.iniciarPausa(employee.id, pause, null, unitId, employee.unidadAsignadaId),
-                    successMessage: `¡Pausa de ${pause} iniciada!`,
-                };
-            case 'finalizarPausa':
-                if(!pause) return {apiCall: null, successMessage: ''};
-                return {
-                    apiCall: this.worktimeService.finalizarPausa(employee.id, pause, null, unitId, employee.unidadAsignadaId),
-                    successMessage: `¡Pausa de ${pause} finalizada!`,
-                };
-            default:
-                this.updateUI({error: 'Acción no reconocida.'});
-                return {apiCall: null, successMessage: ''};
-        }
-    }
+    // getActionConfigNoCamera eliminado: unificado en getActionConfig(null)
 
     // ========== MÉTODOS PRIVADOS - MANEJO DE ERRORES ==========
 

@@ -106,6 +106,13 @@ export class VacacionAdminService {
         });
     }
 
+    exportarSolicitudes(params: Record<string, string>): Observable<Blob> {
+        return this.http.get(`${this.baseUrl}/exportar/solicitudes`, {
+            params,
+            responseType: 'blob'
+        });
+    }
+
     exportarPapeleta(folio: number,
                      salarioDiario: number,
                      diasAdicionales: number): Observable<Blob> {

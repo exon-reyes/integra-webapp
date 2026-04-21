@@ -3,7 +3,6 @@
          [lazy]="lazy()"
          [loading]="loading()"
          [paginator]="paginator()"
-         [rowsPerPageOptions]="[10, 20, 30]"
          [rows]="rows()"
          [scrollable]="true"
          [showCurrentPageReport]="true"
@@ -14,8 +13,8 @@
          groupRowsBy="colaborador.nombreCompleto"
          dataKey="colaborador.nombreCompleto"
          sortField="colaborador.nombreCompleto"
-         sortMode="single"
-         currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} registros">
+         currentPageReportTemplate="{currentPage} de {totalPages}"
+         sortMode="single">
     <ng-template #header>
         <tr>
             <th style="min-width: 150px">Solicitud</th>

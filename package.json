@@ -4,7 +4,7 @@
   "scripts": {
     "ng": "ng",
     "update": "ng update @angular/core @angular/cli",
-    "start": "ng serve",
+    "start": "ng serve --host 0.0.0.0",
     "build": "ng build -c production",
     "watch": "ng build --watch --configuration development",
     "format": "prettier --write \"**/*.{js,mjs,ts,mts,d.ts,html}\" --cache",

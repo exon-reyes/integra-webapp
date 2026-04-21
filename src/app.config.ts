@@ -77,6 +77,7 @@ export const appConfig: ApplicationConfig={
                     'Noviembre',
                     'Diciembre',
                 ],
+
                 monthNamesShort: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'],
                 dayNamesMin: ['D', 'L', 'M', 'X', 'J', 'V', 'S'],
                 today: 'Hoy',
