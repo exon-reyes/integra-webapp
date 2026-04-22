@@ -282,7 +282,7 @@ export class Solicitudes implements OnInit {
             removeNull: true
         })).subscribe({
             next: (response) => {
-                this.solicitudes=response.data || [];
+                this.solicitudes = response.data || [];
                 this.totalRecords.set(response.totalElements ?? 0);
                 this.loading.set(false);
             }, error: () => {
