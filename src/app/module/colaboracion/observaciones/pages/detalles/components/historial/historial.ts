@@ -26,14 +26,17 @@ interface HistorialState {
                 } @else if (error()) {
                     <div class="text-red-500">{{ error() }}</div>
                 } @else if (historial().length > 0) {
-                    <div class="absolute left-2 top-0 bottom-0 w-0.5 bg-gradient-to-b from-slate-600 to-slate-700"></div>
+                    <div
+                        class="absolute left-2 top-0 bottom-0 w-0.5 bg-gradient-to-b from-slate-600 to-slate-700"></div>
 
                     @for (item of historial(); track item.id) {
                         <div class="relative pl-7 mb-4">
-                            <div class="absolute left-0 top-1.5 w-3.5 h-3.5 rounded-full bg-blue-500 shadow-lg shadow-blue-500/20"></div>
+                            <div
+                                class="absolute left-0 top-1.5 w-3.5 h-3.5 rounded-full bg-blue-500 shadow-lg shadow-blue-500/20"></div>
                             <div class="font-semibold text-sm">{{ item.accion }}</div>
                             <div class="text-xs mb-1 text-slate-500">
-                                Por <span class="font-bold text-primary">{{ item.usuario }}</span> • {{ item.fechaAccion | date: 'dd/MM/yyyy HH:mm' }}
+                                Por <span class="font-bold text-primary">{{ item.usuario }}</span>
+                                • {{ item.fechaAccion | date: 'dd/MM/yyyy HH:mm' }}
                             </div>
                             @if (item.detalle) {
                                 <div class="text-xs text-slate-500">{{ item.detalle }}</div>

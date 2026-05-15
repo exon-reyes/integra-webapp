@@ -5,7 +5,7 @@ import {Rol, RolService} from '@/module/rol-admin/service/rol.service';
 import {NgClass} from '@angular/common';
 import {InputText} from 'primeng/inputtext';
 import {Button} from 'primeng/button';
-import {InfoList, InfoItem} from '@/components/info-list';
+import {InfoItem, InfoList} from '@/components/info-list';
 
 @Component({
     selector: 'app-nuevo-rol',

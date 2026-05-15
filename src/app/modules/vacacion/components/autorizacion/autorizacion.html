@@ -1,0 +1,641 @@
+<app-title description="Gestión de solicitudes de ausencia" iconClass="i-autcalendar"
+           title="Autorizaciones de ausencias"></app-title>
+
+
+<!-- ════════════════════════════════════════════════════════ MAIN -->
+<p-tabs class="mt-3 p-3" value="0">
+    <p-tablist>
+        <p-tab value="0">Solicitudes @if (pendingCount() > 0) {
+            <span
+                class="bg-amber-100 text-amber-700 text-[10px] font-bold px-1.5 py-0.5 rounded animate-pulse">{{ pendingCount() }}</span>
+        }</p-tab>
+        <p-tab value="1">Colaboradores</p-tab>
+    </p-tablist>
+    <p-tabpanels>
+        <p-tabpanel value="0">
+
+            <div class="flex items-center gap-2 mb-5">
+
+                <p-selectButton (ngModelChange)="statusFilter.set($event)" [ngModel]="statusFilter()"
+                                [options]="filterOptions" optionLabel="label"
+                                optionValue="value"/>
+
+                <div class="ml-auto">
+                    <input (ngModelChange)="searchQuery.set($event)" [ngModel]="searchQuery()"
+                           class="bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-900 outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 w-[240px] transition-all placeholder:text-slate-400"
+                           placeholder="Buscar colaborador…"
+                           type="text"/>
+                </div>
+            </div>
+
+            <div class="flex flex-col gap-3">
+                <p-table [value]="filteredRequests()">
+                    <ng-template #header>
+                        <tr>
+                            <th>Colaborador</th>
+                            <th>Estatus general</th>
+                            <th>Acciones</th>
+                        </tr>
+
+                    </ng-template>
+                    <ng-template #body let-item>
+                        <tr>
+                            <td>
+                                <div class="flex-1 min-w-0">
+                                    <!-- row 1 -->
+                                    <div class="flex items-center gap-3 mb-1">
+                                        <span
+                                            class="font-semibold text-sm text-slate-900">{{ item.emp.nombreCompleto }}</span>
+                                        <span class="text-xs text-slate-500">{{ item.emp.unidad }}</span>
+                                        <!--                                <span class="ml-auto font-mono text-xs text-slate-400">#{{ item.req.folio }}</span>-->
+                                    </div>
+                                    <!-- pipeline mini -->
+                                    <div class="flex items-center gap-2 mb-3">
+                                        <div
+                                            [ngClass]="getStepCircleClasses(item.req.dias[0]?.primerResponsable?.estatus)"
+                                            class="w-5 h-5 rounded-full border-2 flex items-center justify-center text-[9px] font-bold">
+                                            {{
+                                                item.req.dias[0]?.primerResponsable?.estatus === 'APROBADA' ? '✓' :
+                                                    item.req.dias[0]?.primerResponsable?.estatus === 'RECHAZADA' ? '✗' : '1'
+                                            }}
+                                        </div>
+                                        <div
+                                            [class.bg-green-500]="item.req.dias[0]?.primerResponsable?.estatus === 'APROBADA'"
+                                            [class.bg-slate-300]="item.req.dias[0]?.primerResponsable?.estatus !== 'APROBADA'"
+                                            class="h-px w-6">
+                                        </div>
+                                        <div
+                                            [ngClass]="getStepCircleClasses(item.req.dias[0]?.segundoResponsable?.estatus)"
+                                            class="w-5 h-5 rounded-full border-2 flex items-center justify-center text-[9px] font-bold">
+                                            {{
+                                                item.req.dias[0]?.segundoResponsable?.estatus === 'APROBADA' ? '✓' :
+                                                    item.req.dias[0]?.segundoResponsable?.estatus === 'RECHAZADA' ? '✗' : '2'
+                                            }}
+                                        </div>
+                                        <span class="text-xs ml-2 text-slate-500 font-mono">
+                                    {{ getApprovedOrEnjoyedCount(item.req) }} / {{ item.req.dias?.length || 0 }} días aprobados
+                                </span>
+                                    </div>
+                                    <!-- days -->
+                                    <div class="flex flex-wrap gap-1.5 mt-2">
+                                        @for (day of item.req.dias; track day.id) {
+                                            <div
+                                                [class.bg-green-100]="day.estatus==='APROBADA'"
+                                                [class.bg-red-100]="day.estatus==='CANCELADA'"
+                                                [class.bg-yellow-100]="day.estatus==='PENDIENTE'"
+                                                class="inline-flex justify-start items-center pl-1 pr-3 py-1 border rounded-sm w-[135px]">
+                                                <div
+                                                    class=" w-8 h-8 rounded-full flex items-center justify-center text-lg font-black mr-2">
+                                                    {{ day.fecha | date:'dd' }}
+                                                </div>
+                                                <div class="flex flex-col justify-center">
+            <span class="text-[10px] font-bold uppercase leading-none tracking-tighter">
+                {{ day.fecha  | date:'MMM' }}
+            </span>
+                                                    <span class=" text-[9px] uppercase leading-none mt-0.5">
+                {{ day.fecha | date:'yyyy' }}
+            </span>
+                                                </div>
+                                                <div class="mx-2 h-4 w-px bg-slate-700"></div>
+                                                <span class="text-[10px] font-bold uppercase">
+            {{ day.fecha  | date:'EEEE' }}
+        </span>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                 <span
+                                     [ngClass]="getBadgeClasses(item.req.estatus)"
+                                     class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold border">
+                                    {{ item.req.estatus }}
+                                </span>
+                            </td>
+                            <td>
+                                <p-button (onClick)="openDialog(item)" label="Mostrar"/>
+                            </td>
+                        </tr>
+                    </ng-template>
+                </p-table>
+                @if (filteredRequests().length === 0) {
+                    <div class="text-center py-16 text-slate-500 text-sm">Sin solicitudes que coincidan.</div>
+                }
+            </div>
+        </p-tabpanel>
+        <p-tabpanel value="1">
+            <div class="p-8 animate-fade-in-up">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                    @for (emp of empleados(); track emp.empleadoId) {
+                        <div
+                            (click)="openEmpDetail(emp)"
+                            class="bg-white border border-slate-200 rounded-xl p-5 cursor-pointer hover:shadow-md transition-shadow hover:border-slate-300">
+                            <div class="flex items-center gap-4 mb-4">
+                                <div
+                                    [ngStyle]="{'background-color': getAvatarColor(emp) + '22', 'color': getAvatarColor(emp)}"
+                                    class="w-11 h-11 rounded-full flex items-center justify-center text-sm font-bold">
+                                    {{ getInitials(emp.nombreCompleto) }}
+                                </div>
+                                <div class="flex-1 overflow-hidden">
+                                    <p class="font-semibold text-sm text-slate-900 truncate">{{ emp.nombreCompleto }}</p>
+                                    <p class="text-xs text-slate-500 truncate mt-0.5">{{ emp.unidad }}</p>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-3 gap-2 text-center mb-4">
+                                <div class="bg-slate-50 rounded-lg py-2 border border-slate-100">
+                                    <p class="font-mono font-bold text-sm text-slate-900">{{ getVacationsEnabled(emp) }}</p>
+                                    <p class="text-[10px] text-slate-500 uppercase tracking-wider mt-0.5">Hab.</p>
+                                </div>
+                                <div class="bg-slate-50 rounded-lg py-2 border border-slate-100">
+                                    <p class="font-mono font-bold text-sm text-red-600">{{ getVacationsUsed(emp) }}</p>
+                                    <p class="text-[10px] text-slate-500 uppercase tracking-wider mt-0.5">Usados</p>
+                                </div>
+                                <div class="bg-slate-50 rounded-lg py-2 border border-slate-100">
+                                    <p class="font-mono font-bold text-sm text-green-600">{{
+                                            getVacationsEnabled(emp) -
+                                            getVacationsUsed(emp)
+                                        }}</p>
+                                    <p class="text-[10px] text-slate-500 uppercase tracking-wider mt-0.5">Restan</p>
+                                </div>
+                            </div>
+                            <div class="h-1.5 rounded-full bg-slate-200 overflow-hidden">
+                                <div
+                                    [style.background-color]="(getVacationsUsed(emp) / getVacationsEnabled(emp)) > 0.8 ? '#f05c5c' : '#22c97a'"
+                                    [style.width.%]="(getVacationsUsed(emp) / getVacationsEnabled(emp)) * 100"
+                                    class="h-full rounded-full transition-all duration-300">
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </p-tabpanel>
+    </p-tabpanels>
+</p-tabs>
+
+
+<!-- ════════════════════════════════════════════════════════ MODAL DETALLE -->
+<p-dialog [breakpoints]="{ '960px': '85vw', '640px': '100vw' }" [draggable]="false" [maximizable]="true"
+          [modal]="true"
+          [style]="{ width: '100vw', maxWidth: '780px', margin: '0 1rem' }" [visible]="visibleDialog()"
+          header="Detalle de Solicitud Gestor">
+
+    <ng-template #header>
+        <div class="flex items-center gap-4 w-full">
+            @if (selectedRequest(); as item) {
+                <div
+                    [ngStyle]="{'background-color': getAvatarColor(item.emp) + '22', 'color': getAvatarColor(item.emp)}"
+                    class="w-11 h-11 rounded-full flex items-center justify-center text-sm font-bold shrink-0">
+                    {{ getInitials(item.emp.nombreCompleto) }}
+                </div>
+                <div class="flex-1">
+                    <div class="font-bold text-slate-900 text-base leading-tight">{{ item.emp.nombreCompleto }}</div>
+                    <div class="text-xs text-slate-500 mt-0.5">{{ item.emp.unidad }}</div>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span
+                        [ngClass]="getBadgeClasses(item.req.estatus)"
+                        class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border tracking-wide">
+                        {{ item.req.estatus }}
+                    </span>
+                </div>
+            }
+        </div>
+    </ng-template>
+    <div
+        class="flex items-center gap-2 text-sm bg-slate-50 border border-slate-200 rounded-md px-3 py-2 mb-4">
+        <i class="pi pi-info-circle"></i>
+        <span class="leading-snug">Se marcará como<span class="font-semibold text-green-600"> Aprobada </span>cuando todos los días activos estén aprobados.</span>
+    </div>
+    @if (selectedRequest(); as item) {
+        <div class="flex flex-col gap-3 py-2">
+            <p-panel header="Saldos">
+                <div class="flex flex-col gap-2.5 mb-5">
+                    <div class="flex justify-between items-center text-sm">
+                        <span class="text-slate-600 font-medium">Días habilitados</span>
+                        <span class="font-mono font-bold text-slate-900">{{ getVacationsEnabled(item.emp) }}</span>
+                    </div>
+                    <div class="flex justify-between items-center text-sm">
+                        <div class="flex items-center gap-2">
+                            <span class="w-3 h-3 rounded bg-green-200 border border-green-400 block"></span>
+                            <span class="text-slate-600 font-medium">Ya disfrutados (pasado)</span>
+                        </div>
+                        <span class="font-mono font-bold text-slate-500">−{{ getVacationsUsed(item.emp) }}</span>
+                    </div>
+                    <div class="flex justify-between items-center text-sm">
+                        <div class="flex items-center gap-2">
+                            <span class="w-3 h-3 rounded bg-green-500 border border-green-600 block"></span>
+                            <span class="text-slate-600 font-medium">Comprometidos (aprobados futuros)</span>
+                        </div>
+                        <span class="font-mono font-bold text-green-600">−{{
+                                committedDays(item.emp.empleadoId,
+                                    item.req.folio)
+                            }}</span>
+                    </div>
+                    <div class="flex justify-between items-center text-sm pb-3 border-b border-slate-200">
+                        <div class="flex items-center gap-2">
+                            <span
+                                class="w-3 h-3 rounded bg-blue-100 border-2 border-blue-400 block animate-pulse"></span>
+                            <span class="text-blue-600 font-bold">Esta solicitud</span>
+                        </div>
+                        <span class="font-mono font-bold text-blue-600">−{{ item.req.dias.length }}</span>
+                    </div>
+                    <div class="flex justify-between items-center pt-1">
+                        <span class="text-sm font-bold text-slate-900">Disponible real si se aprueba</span>
+                        <span
+                            [ngClass]="realBalance(item.emp.empleadoId, item.req.folio) >= 0 ? 'text-green-600' : 'text-red-600'"
+                            class="font-mono font-bold text-lg">
+                            {{ realBalance(item.emp.empleadoId, item.req.folio) }} días
+                        </span>
+                    </div>
+                </div>
+
+                <!-- stacked bar -->
+                <div
+                    class="h-2.5 rounded-full bg-slate-200 overflow-hidden flex relative w-full mb-1 border border-slate-300">
+                    <div [style.width.%]="(getVacationsUsed(item.emp) / getVacationsEnabled(item.emp)) * 100"
+                         class="h-full bg-green-200"></div>
+                    <div
+                        [style.width.%]="(committedDays(item.emp.empleadoId, item.req.folio) / getVacationsEnabled(item.emp)) * 100"
+                        class="h-full bg-green-500">
+                    </div>
+                    <div [style.width.%]="(item.req.dias.length / getVacationsEnabled(item.emp)) * 100"
+                         class="h-full bg-blue-400 border-x border-blue-600 relative z-10"></div>
+                </div>
+                <div class="flex justify-between mt-1 text-[10px] font-mono text-slate-400">
+                    <span>0</span>
+                    <span>{{ getVacationsEnabled(item.emp) }} días</span>
+                </div>
+
+                @if (realBalance(item.emp.empleadoId, item.req.folio) < 0) {
+                    <div
+                        class="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2">
+                        Excede el saldo por xx día(s)
+                    </div>
+                }
+            </p-panel>
+            <p-panel header="Estatus de aprobación">
+                <div class="flex items-start">
+
+                    <!-- Step 1 -->
+                    <div class="flex items-start flex-1 group">
+                        <div class="flex flex-col items-center flex-1">
+                            <div
+                                [ngClass]="getStepCircleClasses(item.req.dias[0]?.primerResponsable?.estatus)"
+                                class="w-8 h-8 mb-3 rounded-full flex items-center justify-center text-xs font-bold border-2 shrink-0 transition-colors">
+                                {{
+                                    item.req.dias[0]?.primerResponsable?.estatus === 'APROBADA' ? '✓' :
+                                        item.req.dias[0]?.primerResponsable?.estatus === 'RECHAZADA' ? '✗' : '1'
+                                }}
+                            </div>
+                            <div class="bg-white border border-slate-200 rounded-xl p-4 w-full text-center shadow-sm">
+                                <p class="text-sm font-bold text-slate-900">{{
+                                        item.req.dias[0]?.primerResponsable?.nombre ||
+                                        item.emp.primerJefe || 'Revisor 1'
+                                    }}</p>
+                                <p class="text-[11px] text-slate-500 mt-1 mb-3 font-medium">1er Nivel</p>
+                                @if (item.req.dias[0]?.primerResponsable?.estatus === 'PENDIENTE') {
+                                    <div class="flex flex-col gap-2 w-full">
+                                        <span
+                                            class="inline-flex items-center justify-center px-3 py-1 rounded-full text-[10px] font-bold border bg-amber-100 text-amber-700 border-amber-200 mb-1 mx-auto">Pendiente</span>
+                                        <p-button (onClick)="approveAll(item.req)" label="Aprobar solicitud"
+                                                  severity="info"
+                                                  styleClass="w-full"></p-button>
+                                        <p-button (onClick)="rejectReq(item.req)" label="Rechazar" severity="danger"
+                                                  styleClass="w-full"></p-button>
+                                    </div>
+                                } @else {
+                                    <span
+                                        [ngClass]="getBadgeClasses(item.req.dias[0]?.primerResponsable?.estatus)"
+                                        class="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold border">
+                                        {{ item.req.dias[0]?.primerResponsable?.estatus === 'APROBADA' ? 'Aprobó' : (item.req.dias[0]?.primerResponsable?.estatus || 'PENDIENTE') }}
+                                    </span>
+                                    <p class="text-[10px] font-mono text-slate-400 mt-2">{{ item.req.dias[0]?.fecha | date:'dd MMM yyyy' }}</p>
+                                    <p class="text-[10px] text-slate-500 italic mt-1 font-medium select-none">
+                                        «{{ item.req.dias[0]?.primerResponsable?.estatus }}»</p>
+                                }
+                                <p *ngIf="false" class="text-[10px] text-slate-500 italic mt-2">«Comentario demo»</p>
+                            </div>
+                        </div>
+                        <div class="w-6 flex items-center mt-4">
+                            <div [class.bg-green-500]="item.req.dias[0]?.primerResponsable?.estatus === 'APROBADA'"
+                                 [class.bg-slate-200]="item.req.dias[0]?.primerResponsable?.estatus !== 'APROBADA'"
+                                 class="h-0.5 w-full transition-colors"></div>
+                        </div>
+                    </div>
+
+                    <!-- Step 2 -->
+                    <div class="flex items-start flex-1 group">
+                        <div class="flex flex-col items-center flex-1">
+                            <div
+                                [ngClass]="getStepCircleClasses(item.req.dias[0]?.segundoResponsable?.estatus)"
+                                class="w-8 h-8 mb-3 rounded-full flex items-center justify-center text-xs font-bold border-2 shrink-0 transition-colors">
+                                {{
+                                    item.req.dias[0]?.segundoResponsable?.estatus === 'APROBADA' ? '✓' :
+                                        item.req.dias[0]?.segundoResponsable?.estatus === 'RECHAZADA' ? '✗' : '2'
+                                }}
+                            </div>
+                            <div class="bg-white border border-slate-200 rounded-xl p-4 w-full text-center shadow-sm">
+                                <p class="text-sm font-bold text-slate-900">{{
+                                        item.req.dias[0]?.segundoResponsable?.nombre ||
+                                        item.emp.segundoJefe || 'Revisor 2'
+                                    }}</p>
+                                <p class="text-[11px] text-slate-500 mt-1 mb-3 font-medium">2do Nivel</p>
+                                @if (item.req.dias[0]?.segundoResponsable?.estatus === 'PENDIENTE') {
+                                    <div class="flex flex-col gap-2 w-full">
+                                        <span
+                                            class="inline-flex items-center justify-center px-3 py-1 rounded-full text-[10px] font-bold border bg-amber-100 text-amber-700 border-amber-200 mb-1 mx-auto">Pendiente</span>
+                                        <p-button (onClick)="approveAll(item.req)" label="Aprobar solicitud"
+                                                  severity="info"
+                                                  styleClass="w-full"></p-button>
+                                        <p-button (onClick)="rejectReq(item.req)" label="Rechazar" severity="danger"
+                                                  styleClass="w-full"></p-button>
+                                    </div>
+                                } @else {
+                                    <span
+                                        [ngClass]="getBadgeClasses(item.req.dias[0]?.segundoResponsable?.estatus)"
+                                        class="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold border">
+                                        {{ item.req.dias[0]?.segundoResponsable?.estatus === 'APROBADA' ? 'Aprobó' : (item.req.dias[0]?.segundoResponsable?.estatus || 'PENDIENTE') }}
+                                    </span>
+                                    @if (item.req.dias[0]?.segundoResponsable?.estatus) {
+                                        <p class="text-[10px] font-mono text-slate-400 mt-2">{{ item.req.dias[0]?.fecha | date:'dd MMM yyyy' }}</p>
+                                        <p class="text-[10px] text-slate-500 italic mt-1 font-medium select-none">
+                                            «{{ item.req.dias[0]?.segundoResponsable?.estatus }}»</p>
+                                    }
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </p-panel>
+            <!-- DÍAS DE ESTA SOLICITUD -->
+            <p-panel header="Días solicitados">
+                <!--                <ng-template pTemplate="header">-->
+                <ng-template #icons>
+                    <div class="flex items-center rounded-md overflow-hidden border border-slate-200 text-[10px]">
+
+                        <div class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-700">
+                            <i class="pi pi-check text-[10px] opacity-80"></i>
+                            {{ getApprovedOrEnjoyedCount(item.req) }}
+                        </div>
+
+                        <div
+                            class="flex items-center gap-1 px-2 py-1 bg-amber-50 text-amber-700 border-l border-slate-200">
+                            <i class="pi pi-clock text-[10px] opacity-80"></i>
+                            {{ getDaysByStatus(item.req, 'PENDIENTE').length }}
+                        </div>
+
+                        <div class="flex items-center gap-1 px-2 py-1 bg-red-50 text-red-600 border-l border-slate-200">
+                            <i class="pi pi-times text-[10px] opacity-80"></i>
+                            {{ getDaysByStatus(item.req, 'CANCELADA').length }}
+                        </div>
+
+                    </div>
+                </ng-template>
+                <div class="px-2 pb-3 text-[11px] space-y-1.5">
+                    <!-- progress -->
+                    <div class="h-1 rounded bg-slate-200 overflow-hidden">
+                        <div
+                            [style.width.%]="getApprovalPercentage(item.req)"
+                            class="h-full bg-green-500 transition-all duration-300">
+                        </div>
+                    </div>
+
+                </div>
+                <!--                </ng-template>-->
+
+                <p-table [scrollable]="true" [value]="item.req.dias" scrollHeight="420px"
+                         styleClass="p-datatable-sm w-full text-left">
+                    <ng-template #header>
+                        <tr>
+                            <th class="text-[10px] font-bold uppercase tracking-widest text-slate-500 py-3 bg-slate-50">
+                                Fecha
+                            </th>
+                            <th class="text-[10px] font-bold uppercase tracking-widest text-slate-500 py-3 bg-slate-50">
+                                Estado
+                            </th>
+                            <th class="text-[10px] font-bold uppercase tracking-widest text-slate-500 py-3 bg-slate-50">
+                                Observaciones
+                            </th>
+                            <th class="text-right text-[10px] font-bold uppercase tracking-widest text-slate-500 py-3 bg-slate-50">
+                                Acciones
+                            </th>
+                        </tr>
+                    </ng-template>
+
+                    <ng-template let-day pTemplate="body">
+                        @let estatus = (day.nuevoEstatus || day.estatus);
+                        <tr class="group hover:bg-slate-50/50 transition-colors border-b border-slate-100 last:border-0">
+                            <td class="py-3 px-2">
+                                <div class="flex flex-col">
+                                    <span
+                                        class="text-sm font-bold text-slate-700">{{ day.fecha | date:'dd MMM' }}</span>
+                                    <span
+                                        class="text-[11px] text-slate-400 font-medium">{{ day.fecha | date:'EEEE' }}</span>
+                                </div>
+                            </td>
+                            <td class="py-3 px-2">
+                                <div class="flex items-center gap-2">
+                                    <span [class.bg-amber-400]="estatus === 'PENDIENTE' || estatus === 'EN_REVISION'"
+                                          [class.bg-emerald-500]="estatus === 'APROBADA'"
+                                          [class.bg-rose-500]="estatus === 'CANCELADA'"
+                                          class="w-2 h-2 rounded-full">
+                                    </span>
+                                    <span [class.text-amber-600]="estatus === 'PENDIENTE' || estatus === 'EN_REVISION'"
+                                          [class.text-emerald-600]="estatus === 'APROBADA'"
+                                          [class.text-red-500]="estatus === 'CANCELADA'"
+                                          class="text-[11px] font-semibold tracking-tight">
+                                        {{ estatus }}
+                                    </span>
+                                </div>
+                            </td>
+                            <td class="py-3 px-2">
+                                @if (estatus !== 'APROBADA') {
+                                    <input [(ngModel)]="day.comentario"
+                                           class="w-full bg-transparent border-b border-transparent hover:border-slate-200 focus:border-blue-500 focus:outline-none text-sm text-slate-600 transition-all py-1 placeholder:text-slate-300"
+                                           placeholder="Escribir nota..."
+                                           type="text"/>
+                                } @else {
+                                    <span class="text-sm text-slate-400 italic">{{ day.comentario || '-' }}</span>
+                                }
+                            </td>
+                            <td class="py-3 px-2 text-right">
+                                <div class="inline-flex p-1 rounded-lg gap-1">
+                                    @if (estatus === 'PENDIENTE' || estatus === 'EN_REVISION') {
+                                        <p-button (onClick)="marcarDia(day, 'APROBADA')" [rounded]="true"
+                                                  icon="pi pi-check" label="Aprobar" size="small"/>
+                                    }
+                                    @if (estatus !== 'CANCELADA') {
+                                        <p-button (onClick)="marcarDia(day, 'CANCELADA', 'Cancelado por RRHH')"
+                                                  [rounded]="true" icon="pi pi-times" label="Cancelar" severity="warn"
+                                                  size="small"/>
+                                    }
+                                    @if (estatus === 'APROBADA' || estatus === 'CANCELADA') {
+                                        <p-button (onClick)="marcarDia(day, 'PENDIENTE')" [rounded]="true"
+                                                  icon="pi pi-undo" label="Restaurar" severity="info" size="small"/>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    </ng-template>
+                </p-table>
+            </p-panel>
+
+            <!-- SALDO REAL -->
+            <p-panel header="Historial del año">
+                <div class=" p-5 flex flex-col gap-6">
+                    @for (month of calendarMonths(item.emp.empleadoId, item.req.folio); track month.label) {
+                        <div>
+                            <div class="flex items-center justify-between mb-3 border-b border-slate-200 pb-2">
+                                <span class="text-xs font-bold text-red-500 uppercase">{{ month.label }}</span>
+                                <div class="flex items-center gap-3 text-[10px] font-mono font-bold">
+                                    @if (month.usedCount > 0) {
+                                        <span class="text-green-600">{{ month.usedCount }}
+                                            disfrutados</span>
+                                    }
+                                    @if (month.approvedCount > 0) {
+                                        <span class="text-green-600">{{ month.approvedCount }}
+                                            aprobados</span>
+                                    }
+                                    @if (month.pendingCount > 0) {
+                                        <span class="text-amber-600">{{ month.pendingCount }} en
+                            revisión</span>
+                                    }
+                                    @if (month.thisCount > 0) {
+                                        <span class="text-blue-600">{{ month.thisCount }} esta sol.</span>
+                                    }
+                                </div>
+                            </div>
+                            <div class="flex flex-wrap gap-1.5">
+                                @for (day of month.days; track day.num) {
+                                    <div
+                                        [ngClass]="getDotClass(day.type)"
+                                        class="w-7 h-7 rounded flex items-center justify-center text-[10px] font-semibold cursor-default hover:scale-110 transition-transform relative group">
+                                        {{ day.num }}
+                                        @if (day.tip) {
+                                            <div
+                                                class="hidden group-hover:block absolute bottom-full mb-1 left-1/2 -translate-x-1/2 whitespace-nowrap bg-slate-800 text-white text-[10px] px-2 py-1 rounded shadow-lg z-20 pointer-events-none">
+                                                {{ day.tip }}
+                                            </div>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+
+
+                </div>
+                <ng-template #footer>
+                    <!-- legend -->
+                    <div class="flex flex-wrap gap-5 pt-4 mt-2 border-t border-slate-200">
+                        <div class="flex items-center gap-2">
+                            <div class="w-3.5 h-3.5 rounded bg-green-200 border border-green-300"></div>
+                            <span
+                                class="text-[11px] text-slate-600 font-medium">Disfrutado</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <div class="w-3.5 h-3.5 rounded bg-green-500 border border-green-600"></div>
+                            <span
+                                class="text-[11px] text-slate-600 font-medium">Aprobado futuro</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <div class="w-3.5 h-3.5 rounded bg-amber-100 border border-amber-300"></div>
+                            <span
+                                class="text-[11px] text-slate-600 font-medium">En revisión</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <div
+                                class="w-3.5 h-3.5 rounded bg-blue-100 border border-blue-400 ring-2 ring-blue-300 ring-offset-1">
+                            </div>
+                            <span class="text-[11px] text-slate-600 font-bold">Esta solicitud</span>
+                        </div>
+                    </div>
+                </ng-template>
+            </p-panel>
+            <!-- FLUJO DE APROBACION -->
+
+        </div>
+    }
+
+    <ng-template #footer>
+        <p-button (onClick)="guardarCambios()" label="Guardar Cambios"></p-button>
+    </ng-template>
+</p-dialog>
+
+<!-- ════════════════════════════════════════════════════════ MODAL EMPLEADO -->
+<p-dialog (visibleChange)="visibleEmpDialog.set($event)" [draggable]="false" [modal]="true"
+          [resizable]="false" [style]="{ width: '90vw', maxWidth: '520px' }"
+          [visible]="visibleEmpDialog()"
+          header="Perfil del Colaborador" styleClass="rounded-2xl shadow-xl overflow-hidden">
+
+    @if (selectedEmp(); as emp) {
+        <div class="flex flex-col pb-4">
+            <div class="flex items-center gap-5 p-6 bg-slate-50 border-b border-slate-200">
+                <div
+                    [ngStyle]="{'background-color': getAvatarColor(emp) + '22', 'color': getAvatarColor(emp)}"
+                    class="w-16 h-16 rounded-full flex items-center justify-center text-xl font-bold border-2 border-white shadow-sm">
+                    {{ getInitials(emp.nombreCompleto) }}
+                </div>
+                <div class="flex-1">
+                    <p class="font-bold text-lg text-slate-900 leading-tight mb-1">{{ emp.nombreCompleto }}</p>
+                    <p class="text-sm font-medium text-slate-600">{{ emp.unidad }}</p>
+                </div>
+            </div>
+
+            <div class="p-6">
+                <p class="text-[11px] font-bold tracking-widest text-slate-400 mb-4 uppercase">RESUMEN ANUAL</p>
+                <div class="grid grid-cols-3 gap-3 mb-6">
+                    <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 text-center">
+                        <p class="text-2xl font-mono font-bold text-slate-900">{{ getVacationsEnabled(emp) }}</p>
+                        <p class="text-[10px] uppercase font-bold text-slate-400 mt-1">Habilitados</p>
+                    </div>
+                    <div class="bg-red-50 border border-red-200 rounded-xl p-4 text-center">
+                        <p class="text-2xl font-mono font-bold text-red-600">{{ getVacationsUsed(emp) }}</p>
+                        <p class="text-[10px] uppercase font-bold text-red-400 mt-1">Utilizados</p>
+                    </div>
+                    <div class="bg-green-50 border border-green-200 rounded-xl p-4 text-center">
+                        <p class="text-2xl font-mono font-bold text-green-600">{{
+                                getVacationsEnabled(emp) -
+                                getVacationsUsed(emp)
+                            }}</p>
+                        <p class="text-[10px] uppercase font-bold text-green-500 mt-1">Restantes</p>
+                    </div>
+                </div>
+
+                <p class="text-[11px] font-bold tracking-widest text-slate-400 mb-4 uppercase mt-2">REGISTRO DE
+                    SOLICITUDES
+                </p>
+                <div class="flex flex-col gap-3 max-h-[240px] overflow-y-auto pr-1 custom-scrollbar">
+                    @for (req of emp.solicitudes; track req.folio) {
+                        <div
+                            (click)="visibleEmpDialog.set(false); openDialog({emp: emp, req: req})"
+                            class="bg-white border border-slate-200 rounded-xl p-4 cursor-pointer hover:border-slate-300 hover:shadow-sm transition-all shadow-sm">
+                            <div class="flex items-center justify-between mb-3 border-b border-slate-100 pb-2">
+                                <span
+                                    class="font-mono text-xs font-semibold text-slate-500">Folio #{{ req.folio }}</span>
+                                <span
+                                    [ngClass]="getBadgeClasses(req.estatus)"
+                                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold border tracking-widest uppercase">
+                            {{ req.estatus }}
+                        </span>
+                            </div>
+                            <div class="flex flex-wrap gap-1.5">
+                                @for (day of req.dias; track day.id) {
+                                    <span
+                                        [ngClass]="(day.nuevoEstatus || day.estatus) === 'CANCELADA' ? 'border-red-200 text-red-600 bg-red-50' : (day.nuevoEstatus || day.estatus) === 'APROBADA' ? 'border-green-200 text-green-700 bg-green-50' : 'border-amber-200 text-amber-700 bg-amber-50'"
+                                        class="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-slate-50 border text-[10px] font-semibold">
+                            <span class="text-[11px] leading-none">{{
+                                    getDayIcon(day.nuevoEstatus || day.estatus)
+                                }}</span> {{ formatDateShort(day.fecha) }}
+                        </span>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+</p-dialog>

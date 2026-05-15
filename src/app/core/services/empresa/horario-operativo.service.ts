@@ -1,8 +1,8 @@
-import { inject, Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
-import { ResponseData } from '@/core/responseData';
-import { environment } from '@env/environment';
-import { AbstractService } from '@/core/services/abstract-service';
+import {Injectable} from '@angular/core';
+import {Observable} from 'rxjs';
+import {ResponseData} from '@/core/responseData';
+import {environment} from '@env/environment';
+import {AbstractService} from '@/core/services/abstract-service';
 
 export interface HorarioOperativoDto {
     idOperatividad: number;
@@ -20,7 +20,7 @@ export interface GuardarHorariosRequest {
     providedIn: 'root'
 })
 export class HorarioOperativoService extends AbstractService {
-    private readonly apiUrl = `${environment.integraApi}/operatividades/horarios`;
+    private readonly apiUrl=`${environment.integraApi}/operatividades/horarios`;
 
     constructor() {
         super();

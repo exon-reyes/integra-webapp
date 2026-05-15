@@ -2,3 +2,7 @@
 /dist/
 /.idea/
 /.angular/
+
+src/environments/environment.ts
+
+src/environments/environment.development.ts

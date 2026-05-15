@@ -7,6 +7,7 @@ import {ConfirmDialog} from "primeng/confirmdialog";
 import {Toast} from "primeng/toast";
 import {SpinnerComponent} from "@/components/spinner.component";
 import {JWTService, UserSession} from "@/core/security/JWTService";
+import {AvatarService} from "@/core/services/usuario/avatar.service";
 
 @Component({
     selector: 'app-layout', standalone: true, imports: [
@@ -106,7 +107,6 @@ import {JWTService, UserSession} from "@/core/security/JWTService";
                             (click)="toggleUserMenu($event)"
                             class="flex items-center gap-4 px-3 py-2
                rounded-lg border border-transparent
-               hover:border-slate-200 hover:bg-white
                transition-all focus:outline-none group">
 
                             <!-- Identidad -->
@@ -135,9 +135,14 @@ import {JWTService, UserSession} from "@/core/security/JWTService";
                                 class="w-9 h-9 rounded-md
                    bg-gradient-to-br from-slate-200 to-slate-300
                    flex items-center justify-center
-                   shadow-sm ring-1 ring-slate-300">
-
-                                <i class="pi pi-user" style="color: #1d75b8"></i>
+                   shadow-sm ring-1 ring-slate-300 overflow-hidden">
+                                @if (avatarService.avatarActual()) {
+                                    <img
+                                        [src]="avatarService.obtenerRutaAvatar(avatarService.avatarActual(), usuarioSession.employeeName.id)"
+                                        alt="Avatar" class="w-full h-full object-cover">
+                                } @else {
+                                    <i class="pi pi-user" style="color: #1d75b8"></i>
+                                }
                             </div>
                         </button>
 
@@ -193,11 +198,16 @@ export class AppLayout implements OnInit {
 
     constructor(protected spinnerService: SpinnerService,
                 private jwtService: JWTService,
+                protected avatarService: AvatarService,
                 private router: Router) {
     }
 
     ngOnInit(): void {
         this.usuarioSession=this.jwtService.getUser()
+        // Inicializamos la señal global con el avatar de la sesión actual (del employeeName en localStorage)
+        // El employeeName se actualiza cuando se cambia el avatar en el perfil
+        const avatarFromSession=(this.usuarioSession?.employeeName as any)?.avatar;
+        this.avatarService.setAvatarSource(avatarFromSession);
     }
 
     @HostListener('document:click') closeMenus() {
@@ -225,6 +235,7 @@ export class AppLayout implements OnInit {
 
     logout() {
         this.jwtService.logout()
+        this.avatarService.setAvatarSource(null);
         this.router.navigate(['/']); // Ajustar a ruta de login
         this.isUserMenuOpen=false;
     }

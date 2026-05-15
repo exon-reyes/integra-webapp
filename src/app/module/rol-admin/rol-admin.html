@@ -14,7 +14,8 @@
             <!-- Caption: acciones -->
             <ng-template #caption>
                 <div class="flex">
-                    <p-button (onClick)="mostrarDialogoNuevoRol=true" icon="pi pi-plus" label="Nuevo rol"
+                    <p-button (onClick)="mostrarDialogoNuevoRol=true" *hasPermission="Autoridades.ROLES_CREAR"
+                              icon="pi pi-plus" label="Nuevo rol"
                               severity="success"/>
                 </div>
             </ng-template>
@@ -139,7 +140,7 @@
             <!-- Acciones y Advertencia -->
             <div class="mb-4 flex items-center justify-between gap-4">
                 @if (modoEdicion()) {
-                    <div class="text-lg flex items-center py-3 space-x-4">
+                    <div class="text-sm flex items-center py-3 space-x-4">
                         <i class="pi pi-info-circle" style="font-size: 2rem"></i><span>Revisa cuidadosamente los permisos antes de guardar</span>
                     </div>
                 }
@@ -153,7 +154,8 @@
                                   severity="secondary"
                                   size="small"></p-button>
                     } @else if (!selectedRol()?.rolDefault) {
-                        <p-button (onClick)="modoEdicion.set(true)" *hasPermission="Autoridades.ROLES_EDITAR" icon="pi pi-lock-open"
+                        <p-button (onClick)="modoEdicion.set(true)" *hasPermission="Autoridades.ROLES_EDITAR"
+                                  icon="pi pi-lock-open"
                                   label="Editar Permisos"
                                   severity="info"
                                   size="small"></p-button>

@@ -10,7 +10,7 @@ import {NgOptimizedImage} from '@angular/common';
             <!-- Imagen con NgOptimizedImage -->
             @if (hasValidImage) {
                 <div
-                    class="flex items-center justify-center w-11 h-11 min-w-11 min-h-11 mr-3 bg-white rounded-lg shadow-sm p-2.5 shrink-0">
+                    class="flex items-center justify-center w-11 h-11 min-w-11 min-h-11 mr-3 bg-white rounded-lg shadow-sm border-b border-gray-200 p-2.5 shrink-0">
                     <img
                         [ngSrc]="imageSrc"
                         [priority]="priority"
@@ -40,7 +40,7 @@ import {NgOptimizedImage} from '@angular/common';
             <div class="flex-1">
                 <span class="text-xl font-bold block">{{ title }}</span>
                 @if (description) {
-                    <p class="text-inherit text-sm mt-0.5 mb-0">{{ description }}</p>
+                    <p class="text-inherit text-md  mb-0">{{ description }}</p>
                 }
             </div>
         </div>

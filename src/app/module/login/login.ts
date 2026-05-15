@@ -12,16 +12,11 @@ import {Password} from "primeng/password";
 import {Message} from "primeng/message";
 import {isControlInvalid} from "@/shared/util/form-validator";
 
-interface LoginForm {
-    username: string;
-    password: string;
-}
-
 @Component({
     selector: 'app-login',
     standalone: true,
     imports: [
-        ReactiveFormsModule, RouterLink, NgOptimizedImage, Button, AlertComponent, InputText, Password, Message,
+        ReactiveFormsModule, RouterLink, NgOptimizedImage, Button, AlertComponent, InputText, Message, Password,
     ],
     templateUrl: './login.html',
     styleUrl: './login.scss',
@@ -54,7 +49,7 @@ export class Login implements OnInit,
 
         this.loginForm=new FormGroup({
             username: new FormControl(null, [Validators.required]),
-            password: new FormControl(null, [Validators.required, Validators.minLength(6)]),
+            password: new FormControl(null, [Validators.required, Validators.minLength(4)]),
         });
     }
 

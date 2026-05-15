@@ -2,218 +2,238 @@
 
 
     @if (perfil()) {
-    <header class="flex flex-col md:flex-row md:items-center gap-4 md:gap-6 pb-8 border-b border-blue-100">
+        <header class="flex flex-col md:flex-row md:items-center gap-4 md:gap-6 pb-8 border-b border-blue-100">
 
-        <!-- Avatar -->
-        <div class="relative shrink-0 self-start md:self-auto group cursor-pointer" (click)="abrirModalAvatar()">
-            <div
-                class="w-14 h-14 md:w-16 md:h-16 bg-blue-50 border border-blue-200 rounded-lg flex items-center justify-center overflow-hidden relative">
-                @if (selectedAvatar()) {
-                @if (selectedAvatar()?.startsWith('data:image/')) {
-                <img [src]="selectedAvatar()" alt="Avatar" class="w-full h-full object-cover">
-                } @else {
-                <img [src]="'assets/avatars/' + selectedAvatar()" alt="Avatar" class="w-full h-full object-cover">
-                }
-                } @else {
-                <svg class="w-8 h-8 md:w-10 md:h-10 text-blue-300" fill="currentColor" viewBox="0 0 24 24">
-                    <path
-                        d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
-                </svg>
-                }
-                <!-- Edit overlay -->
+            <!-- Avatar -->
+            <div (click)="abrirModalAvatar()" class="relative shrink-0 self-start md:self-auto group cursor-pointer">
                 <div
-                    class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                    <i class="pi pi-pencil text-white text-xl"></i>
+                    class="w-14 h-14 md:w-16 md:h-16 bg-blue-50 border border-blue-200 rounded-lg flex items-center justify-center overflow-hidden relative">
+                    @if (selectedAvatar()) {
+                        <img [src]="avatarService.obtenerRutaAvatar(selectedAvatar(), perfil()!.id)" alt="Avatar"
+                             class="w-full h-full object-cover">
+                    } @else {
+                        <svg class="w-8 h-8 md:w-10 md:h-10 text-blue-300" fill="currentColor" viewBox="0 0 24 24">
+                            <path
+                                d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                        </svg>
+                    }
+                    <!-- Edit overlay -->
+                    <div
+                        class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <i class="pi pi-pencil text-white text-xl"></i>
+                    </div>
+                </div>
+                <div
+                    class="absolute -bottom-2 -right-2 px-2 py-0.5 bg-blue-600 text-[10px] font-bold text-white rounded border-2 border-white leading-none z-10">
+                    @switch (perfil().estatus) {
+                        @case ('A') {
+                            Activo
+                        }
+                        @case ('R') {
+                            Reingreso
+                        }
+                        @default {
+                            Inactivo
+                        }
+                    }
                 </div>
             </div>
-            <div
-                class="absolute -bottom-2 -right-2 px-2 py-0.5 bg-blue-600 text-[10px] font-bold text-white rounded border-2 border-white leading-none z-10">
-                @switch (perfil().estatus) {
-                @case ('A') {
-                Activo
-                }
-                @case ('R') {
-                Reingreso
-                }
-                @default {
-                Inactivo
-                }
-                }
-            </div>
-        </div>
 
-        <!-- Bloque central: nombre + puesto + contacto -->
-        <div class="flex-1 min-w-0">
-            <div class="text-xl font-semibold text-slate-900 tracking-tight truncate">
-                {{ perfil().nombre.toUpperCase() }} {{ perfil().apellidoPaterno.toUpperCase() }}
-            </div>
-            <div class="flex flex-wrap items-center gap-x-2 text-sm font-medium text-slate-700 mt-0.5">
-                <span class="truncate">{{ perfil().puesto.nombre }}</span>
-                <span class="text-slate-300 hidden sm:inline">|</span>
-                <span class="hidden sm:inline">{{ perfil().departamento?.nombre }}</span>
-            </div>
-            <div class="flex flex-wrap gap-x-4 gap-y-0.5 text-sm text-slate-400 mt-0.5">
-                <span class="truncate">{{ perfil().contacto?.email }}</span>
-                <span>{{ perfil().contacto?.telefono }}</span>
-            </div>
+            <!-- Bloque central: nombre + puesto + contacto -->
+            <div class="flex-1 min-w-0">
+                <div class="text-xl font-semibold text-slate-900 tracking-tight truncate">
+                    {{ perfil().nombre.toUpperCase() }} {{ perfil().apellidoPaterno.toUpperCase() }}
+                </div>
+                <div class="flex flex-wrap items-center gap-x-2 text-sm font-medium text-slate-700 mt-0.5">
+                    <span class="truncate">{{ perfil().puesto.nombre }}</span>
+                    <span class="text-slate-300 hidden sm:inline">|</span>
+                    <span class="hidden sm:inline">{{ perfil().departamento?.nombre }}</span>
+                </div>
+                <div class="flex flex-wrap gap-x-4 gap-y-0.5 text-sm text-slate-400 mt-0.5">
+                    <span class="truncate">{{ perfil().contacto?.email }}</span>
+                    <span>{{ perfil().contacto?.telefono }}</span>
+                </div>
 
-            <!-- Clave + Unidad: visible solo en móvil (debajo del contacto) -->
-            <div class="flex items-center gap-3 mt-2 md:hidden">
+                <!-- Clave + Unidad: visible solo en móvil (debajo del contacto) -->
+                <div class="flex items-center gap-3 mt-2 md:hidden">
                 <span class="font-mono text-xs font-semibold text-blue-500 tracking-wide">
                     {{ perfil().codigo }}
                 </span>
-                <span class="text-slate-300 text-xs">·</span>
-                <span class="text-xs text-slate-400 truncate">
+                    <span class="text-slate-300 text-xs">·</span>
+                    <span class="text-xs text-slate-400 truncate">
                     {{ perfil().unidad.nombreCompleto }}
                 </span>
+                </div>
             </div>
-        </div>
 
-        <!-- Clave + Unidad: visible solo en md+ (extremo derecho) -->
-        <div class="hidden md:flex flex-col items-end gap-1 text-right shrink-0">
+            <!-- Clave + Unidad: visible solo en md+ (extremo derecho) -->
+            <div class="hidden md:flex flex-col items-end gap-1 text-right shrink-0">
             <span class="font-mono text-sm font-semibold text-blue-500 tracking-wide">
                 {{ perfil().codigo }}
             </span>
-            <span class="text-sm text-slate-700 max-w-[180px] text-right font-medium leading-snug">
+                <span class="text-sm text-slate-700 max-w-[180px] text-right font-medium leading-snug">
                 {{ perfil().unidad?.nombreCompleto }}
             </span>
-        </div>
-
-    </header>
-
-    <main class="grid grid-cols-1 md:grid-cols-12 gap-y-10 gap-x-12 mt-10">
-
-        <section class="md:col-span-4">
-            <h6>Información Personal</h6>
-            <dl class="space-y-5">
-                <div>
-                    <dt class="text-slate-400 text-sm font-medium mb-1">Nombre completo</dt>
-                    <dd class="font-medium">
-                        {{ perfil().nombre }} {{ perfil().apellidoPaterno }} {{ perfil().apellidoMaterno }}
-                    </dd>
-                </div>
-                <div>
-                    <dt class="text-slate-400 text-sm font-medium mb-1">Sexo</dt>
-                    <dd class="font-medium">{{ perfil().sexo }}</dd>
-                </div>
-            </dl>
-        </section>
-
-        <section class="md:col-span-4">
-            <h6>Integración</h6>
-            <div class="relative border-blue-50 space-y-8">
-                <div>
-                    <dt class="text-slate-400 text-sm font-medium mb-1">Fecha alta</dt>
-                    <dd class="text-[13px] font-semibold text-slate-700">{{ perfil().fechaAlta | date:'dd MMM yyyy' }}
-                    </dd>
-                </div>
-                @if (perfil().fechaAlta) {
-                <div>
-                    <dt class="text-slate-400 text-sm font-medium mb-1">Reingreso</dt>
-                    <dd class="text-[13px] font-semibold text-blue-600">{{ perfil().fechaReingreso | date:'dd MMM yyyy'
-                        }}</dd>
-                </div>
-                }
-                @if (perfil().fechaBaja) {
-                <div>
-                    <dt class="text-slate-400 text-sm font-medium mb-1">Baja</dt>
-                    <dd class="text-[13px] font-semibold text-slate-400">{{ perfil().fechaBaja | date:'dd MMM yyyy' }}
-                    </dd>
-                </div>
-                }
             </div>
-        </section>
 
-        <section class="md:col-span-4">
-            <h6>Responsables</h6>
-            <div class="space-y-6">
-                @for (item of perfil().gestores; track item.id) {
-                <div class="p-3 bg-blue-50/50 rounded border border-blue-100/50">
-                    <dt class="text-sm text-blue-400 font-semibold mb-1">Nivel {{ item.nivel }} - {{item.proceso}}</dt>
-                    <dd class="text-[13px] font-medium text-slate-800">{{ item.nombreCompleto }}</dd>
-                </div>
-                }
-            </div>
-        </section>
+        </header>
 
-    </main>
+        <main class="grid grid-cols-1 md:grid-cols-12 gap-y-10 gap-x-12 mt-10">
 
-    <footer class="mt-16 pt-6 border-t border-slate-100 flex justify-between items-center text-[10px] text-slate-400">
-        <span>Expediente informativo</span>
-        <span class="font-mono">Solo lectura</span>
-    </footer>
-
-    } @else {
-    <!--    Spinner-->
-    <div class="flex justify-center">
-        <div class="spinner-border text-gray-200" role="status">
-            <span class="sr-only">Loading...</span>
-        </div>
-    </div>
-    }
-
-    <!-- Avatar Dialog Modal -->
-    <p-dialog header="Selecciona o Sube un Avatar" [(visible)]="mostrarModalAvatar" [modal]="true"
-        [style]="{width: '90vw', maxWidth: '500px'}" [draggable]="false" [resizable]="false">
-
-        <div class="flex flex-col gap-6 p-4">
-
-            <div class="flex flex-col items-center gap-4">
-                <input type="file" #fileInput accept="image/png, image/jpeg, image/webp" class="hidden"
-                    (change)="onFileSelected($event)">
-
-                @if (previewUrl()) {
-                <div class="relative w-24 h-24 rounded-full overflow-hidden shadow-md group">
-                    <img [src]="previewUrl()" alt="Vista previa" class="w-full h-full object-cover">
-                    <div class="absolute inset-0 bg-black/50 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer text-white"
-                        (click)="removerSeleccion()">
-                        <i class="pi pi-trash text-xl mb-1"></i>
-                        <span class="text-[10px] font-medium leading-none">Quitar</span>
+            <section class="md:col-span-4">
+                <h6>Información Personal</h6>
+                <dl class="space-y-5">
+                    <div>
+                        <dt class="text-slate-400 text-sm font-medium mb-1">Nombre completo</dt>
+                        <dd class="font-medium">
+                            {{ perfil().nombre }} {{ perfil().apellidoPaterno }} {{ perfil().apellidoMaterno }}
+                        </dd>
                     </div>
-                </div>
-                }
+                    <div>
+                        <dt class="text-slate-400 text-sm font-medium mb-1">Sexo</dt>
+                        @switch (perfil().sexo) {
+                            @case ('M') {
+                                <dd class="font-medium">Masculino</dd>
+                            }
+                            @case ('F') {
+                                <dd class="font-medium">Femenino</dd>
+                            }
+                            @default {
+                                <dd class="font-medium">No especificado</dd>
+                            }
+                        }
+                    </div>
+                </dl>
+            </section>
 
-                <button type="button" (click)="fileInput.click()"
-                    class="px-4 py-2 bg-slate-50 hover:bg-slate-100 text-slate-700 font-medium text-sm rounded-lg transition-colors border border-slate-300 flex items-center gap-2">
-                    <i class="pi pi-upload"></i>
-                    Subir foto desde dispositivo
-                </button>
-            </div>
-
-            <div class="relative flex py-2 items-center">
-                <div class="flex-grow border-t border-slate-200"></div>
-                <span class="flex-shrink-0 mx-4 text-slate-400 text-sm font-medium">o elige uno predeterminado</span>
-                <div class="flex-grow border-t border-slate-200"></div>
-            </div>
-
-            <div class="grid grid-cols-4 gap-4">
-                @for (avatar of avatars; track avatar) {
-                <div class="cursor-pointer border-2 rounded-lg transition-all overflow-hidden aspect-square flex items-center justify-center bg-slate-50 hover:border-blue-400 hover:shadow-md"
-                    [class.border-blue-600]="avatar === tempAvatar()" [class.bg-blue-50]="avatar === tempAvatar()"
-                    [class.shadow]="avatar === tempAvatar()" [class.border-transparent]="avatar !== tempAvatar()"
-                    (click)="avatar === tempAvatar() ? removerSeleccion() : seleccionarAvatar(avatar)">
-                    <img [src]="'assets/avatars/' + avatar" [alt]="avatar" class="w-full h-full object-cover">
-                </div>
-                }
-            </div>
-        </div>
-
-        <ng-template pTemplate="footer">
-            <div class="flex justify-between items-center w-full pt-2">
-                <div>
-                    @if (selectedAvatar()) {
-                    <p-button label="Eliminar foto" icon="pi pi-trash" (click)="eliminarFotoGuardada()"
-                        [loading]="eliminandoAvatar()"
-                        styleClass="p-button-danger p-button-text p-button-sm"></p-button>
+            <section class="md:col-span-4">
+                <h6>Integración</h6>
+                <div class="relative border-blue-50 space-y-8">
+                    <div>
+                        <dt class="text-slate-400 text-sm font-medium mb-1">Fecha alta</dt>
+                        <dd class="text-[13px] font-semibold text-slate-700">{{ perfil().fechaAlta | date:'dd MMM yyyy' }}
+                        </dd>
+                    </div>
+                    @if (perfil().fechaAlta) {
+                        <div>
+                            <dt class="text-slate-400 text-sm font-medium mb-1">Reingreso</dt>
+                            <dd class="text-[13px] font-semibold text-blue-600">{{
+                                    perfil().fechaReingreso | date:'dd MMM yyyy'
+                                }}
+                            </dd>
+                        </div>
+                    }
+                    @if (perfil().fechaBaja) {
+                        <div>
+                            <dt class="text-slate-400 text-sm font-medium mb-1">Baja</dt>
+                            <dd class="text-[13px] font-semibold text-slate-400">{{ perfil().fechaBaja | date:'dd MMM yyyy' }}
+                            </dd>
+                        </div>
                     }
                 </div>
-                <div class="flex gap-2">
-                    <p-button label="Cancelar" icon="pi pi-times" (click)="mostrarModalAvatar = false"
-                        styleClass="p-button-text p-button-secondary"></p-button>
-                    <p-button label="Guardar" icon="pi pi-check" (click)="guardarAvatar()" [loading]="guardandoAvatar()"
-                        [disabled]="!tempAvatar() && !previewUrl()"></p-button>
+            </section>
+
+            <section class="md:col-span-4">
+                <h6>Responsables</h6>
+                <div class="space-y-6">
+                    <div class="p-3 bg-blue-50/50 rounded border border-blue-100/50">
+
+                        <h6>Primer gestor de vacaciones/permisos</h6>
+                        {{ perfil().primerJefe?.nombreCompleto }}
+                        <h6>Segundo gestor de vacaciones/permisos</h6>
+                        {{ perfil().segundoJefe?.nombreCompleto }}
+                    </div>
+
+                </div>
+            </section>
+
+        </main>
+
+        <footer
+            class="mt-16 pt-6 border-t border-slate-100 flex justify-between items-center text-[10px] text-slate-400">
+            <span>Expediente informativo</span>
+            <span class="font-mono">Solo lectura</span>
+        </footer>
+
+    } @else {
+        <!--    Spinner-->
+        <div class="flex justify-center">
+            <div class="spinner-border text-gray-200" role="status">
+                <span class="sr-only">Loading...</span>
+            </div>
+        </div>
+    }
+    @defer (when mostrarModalAvatar) {
+        <p-dialog [(visible)]="mostrarModalAvatar" [draggable]="false" [modal]="true" [resizable]="false"
+                  [style]="{width: '90vw', maxWidth: '500px'}" header="Selecciona un Avatar">
+
+            <div class="flex flex-col gap-6 p-4">
+
+                <div class="flex flex-col items-center gap-4">
+                    <input #fileInput (change)="onFileSelected($event)" accept="image/png, image/jpeg, image/webp"
+                           class="hidden" type="file">
+
+                    @if (previewUrl()) {
+                        <div class="relative w-24 h-24 rounded-full overflow-hidden shadow-md group">
+                            <img [src]="previewUrl()" alt="Vista previa" class="w-full h-full object-cover">
+                            <div (click)="removerSeleccion()"
+                                 class="absolute inset-0 bg-black/50 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer text-white">
+                                <i class="pi pi-trash text-xl mb-1"></i>
+                                <span class="text-[10px] font-medium leading-none">Quitar</span>
+                            </div>
+                        </div>
+                    }
+
+                    <button (click)="fileInput.click()"
+                            class="px-4 py-2 bg-slate-50 hover:bg-slate-100 text-slate-700 font-medium text-sm rounded-lg transition-colors border border-slate-300 flex items-center gap-2"
+                            type="button">
+                        <i class="pi pi-upload"></i>
+                        Subir foto desde dispositivo
+                    </button>
+                </div>
+
+                <div class="relative flex py-2 items-center">
+                    <div class="flex-grow border-t border-slate-200"></div>
+                    <span
+                        class="flex-shrink-0 mx-4 text-slate-400 text-sm font-medium">o elige uno predeterminado</span>
+                    <div class="flex-grow border-t border-slate-200"></div>
+                </div>
+
+                <div class="grid grid-cols-4 gap-4">
+                    @for (avatar of avatars; track avatar) {
+                        <div (click)="avatar === tempAvatar() ? removerSeleccion() : seleccionarAvatar(avatar)"
+                             [class.bg-blue-50]="avatar === tempAvatar()"
+                             [class.border-blue-600]="avatar === tempAvatar()"
+                             [class.border-transparent]="avatar !== tempAvatar()"
+                             [class.shadow]="avatar === tempAvatar()"
+                             class="cursor-pointer border-2 rounded-lg transition-all overflow-hidden aspect-square flex items-center justify-center bg-slate-50 hover:border-blue-400 hover:shadow-md">
+                            <img [alt]="avatar" [src]="'assets/avatars/' + avatar" class="w-full h-full object-cover">
+                        </div>
+                    }
                 </div>
             </div>
-        </ng-template>
-    </p-dialog>
+
+            <ng-template pTemplate="footer">
+                <div class="flex justify-between items-center w-full pt-2">
+                    <div>
+                        @if (selectedAvatar()) {
+                            <p-button (click)="eliminarFotoGuardada()" [loading]="eliminandoAvatar()" icon="pi pi-trash"
+                                      label="Eliminar foto"
+                                      styleClass="p-button-danger p-button-text p-button-sm"></p-button>
+                        }
+                    </div>
+                    <div class="flex gap-2">
+                        <p-button (click)="mostrarModalAvatar = false" icon="pi pi-times" label="Cancelar"
+                                  styleClass="p-button-text p-button-secondary"></p-button>
+                        <p-button (click)="guardarAvatar()" [disabled]="!tempAvatar() && !previewUrl()"
+                                  [loading]="guardandoAvatar()" icon="pi pi-check" label="Guardar"></p-button>
+                    </div>
+                </div>
+            </ng-template>
+        </p-dialog>
+    } @loading {
+        <app-spinner></app-spinner>
+    }
+    <!-- Avatar Dialog Modal -->
+
 </div>

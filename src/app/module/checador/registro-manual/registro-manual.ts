@@ -17,7 +17,7 @@ import {Panel} from "primeng/panel";
 import {StateComponent} from "@/components/state.component";
 import {PhotoViewerComponent} from '@/shared/component/photo-viewer/photo-viewer.component';
 import {PhotoViewerService} from '@/shared/component/photo-viewer/photo-viewer.service';
-import {AsistenciaCardComponent} from '@/shared/component/asistencia-card/asistencia-card.component';
+import {AsistenciaCardComponent} from '@/components/asistencia/asistencia-card/asistencia-card.component';
 import {ConfirmationService, MessageService} from "primeng/api";
 import {ConfirmDialogModule} from 'primeng/confirmdialog';
 import {
@@ -551,11 +551,7 @@ export class RegistroManualComponent implements OnInit,
             tipo: string,
             fecha: string): void {
         const urlCompleta=`${this.asistenciaService.apiUrlImagen}/${pathFoto}`;
-
-        const fechaFormateada=new Date(fecha).toLocaleDateString('es-MX', {
-            day: '2-digit', month: '2-digit', year: 'numeric',
-        });
-        const titulo=`${tipo} - ${fechaFormateada}`;
+        const titulo=`${tipo} - ${fecha}`;
         this.photoViewerService.open(urlCompleta, titulo);
     }
 

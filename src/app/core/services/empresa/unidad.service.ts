@@ -1,5 +1,5 @@
 import {Injectable} from '@angular/core';
-import {Observable} from 'rxjs';
+import {Observable, shareReplay} from 'rxjs';
 import {ResponseData} from '@/core/responseData';
 import {environment} from '@env/environment';
 import {Unidad} from '@/models/empresa/unidad';
@@ -11,10 +11,17 @@ import {AbstractService} from '@/core/services/abstract-service';
 })
 export class UnidadService extends AbstractService {
     private readonly apiUrl=`${environment.integraApi}`;
-    private data?: ResponseData<Unidad[]>;
+    private cacheActivas$?: Observable<ResponseData<Unidad[]>>;
 
     constructor() {
         super();
+    }
+
+    obtenerActivas(): Observable<ResponseData<Unidad[]>> {
+        if(!this.cacheActivas$) {
+            this.cacheActivas$=this.filtrar({activo: true}).pipe(shareReplay(1));
+        }
+        return this.cacheActivas$;
     }
 
     obtenerContacto(idUnidad): Observable<ResponseData<Unidad>> {

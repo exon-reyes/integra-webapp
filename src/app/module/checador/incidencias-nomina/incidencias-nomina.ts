@@ -238,7 +238,7 @@
 //                 zona: emp.zona,
 //                 supervisor: emp.supervisor,
 //                 totales,
-//                 horasExtras: {total: 0, autorizo: '', motivo: ''},
+//                 horasExtras: {total: 0, autorizo: '', comentario: ''},
 //                 comentario: '',
 //                 incidencias,
 //                 ventas,
@@ -413,7 +413,7 @@
 //
 //             row.getCell(col++).value=emp.horasExtras.total;
 //             row.getCell(col++).value=emp.horasExtras.autorizo;
-//             row.getCell(col++).value=emp.horasExtras.motivo;
+//             row.getCell(col++).value=emp.horasExtras.comentario;
 //
 //             row.getCell(col++).value=emp.comentario;
 //

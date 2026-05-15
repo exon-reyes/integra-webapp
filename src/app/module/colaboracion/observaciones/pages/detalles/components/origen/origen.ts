@@ -18,6 +18,18 @@ interface OrigenState {
 export class Origen {
     // Input signal
     readonly observacionId=input.required<number>();
+    // Servicio inyectado
+    private readonly observacionService=inject(ObservacionService);
+    // State signal
+    private readonly origenState=signal<OrigenState>({
+        data: undefined,
+        loading: false,
+        error: undefined,
+    });
+    // Computed properties derivadas del state
+    readonly loading=computed(() => this.origenState().loading);
+    readonly error=computed(() => this.origenState().error);
+    readonly origen=computed(() => this.origenState().data);
     // Computed properties para la UI con fallbacks
     readonly departamentoOrigen=computed(() => this.origen()?.departamentoOrigen?.nombre ?? 'Auditoría Interna');
     readonly farmacia=computed(() => {
@@ -35,18 +47,6 @@ export class Origen {
         }
         return '-';
     });
-    // Servicio inyectado
-    private readonly observacionService=inject(ObservacionService);
-    // State signal
-    private readonly origenState=signal<OrigenState>({
-        data: undefined,
-        loading: false,
-        error: undefined,
-    });
-    // Computed properties derivadas del state
-    readonly loading=computed(() => this.origenState().loading);
-    readonly error=computed(() => this.origenState().error);
-    readonly origen=computed(() => this.origenState().data);
 
     // Effect para manejar cambios en observacionId
     constructor() {

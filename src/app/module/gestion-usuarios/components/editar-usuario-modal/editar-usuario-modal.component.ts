@@ -147,7 +147,7 @@ export class EditarUsuarioModalComponent implements OnInit,
             const updateRequest={
                 id: this.usuarioEditar.id,
                 username: formData.username,
-                password:formData.password || null,
+                password: formData.password || null,
                 empleadoId: formData.idEmpleado,
                 idRoles: formData.roles,
             };

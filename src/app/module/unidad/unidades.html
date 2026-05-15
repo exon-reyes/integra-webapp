@@ -2,7 +2,7 @@
     description="Administra la información básica de las unidades"
     iconClass="isc i-contact"
     title="Catálago de Unidades"/>
-<div class="grid grid-cols-1 gap-8 md:grid-cols-3 my-4">
+<div class="grid grid-cols-1 gap-4 md:grid-cols-3 my-4">
     <app-stat-widget [title]="stats().activas" color="green" icon="pi pi-building" subtitle="Unidades activas"/>
     <app-stat-widget [title]="stats().inactivas" color="yellow" icon="pi pi-arrow-circle-down"
                      subtitle="Unidades inactivas"/>
@@ -50,9 +50,9 @@
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div class="flex gap-2">
                     <p-button *hasPermission="Autoridades.UNIDADES_CREAR"
-                              routerLink="nueva"
                               icon="pi pi-plus"
-                              label="Agregar"/>
+                              label="Agregar"
+                              routerLink="nueva"/>
                     <p-button (onClick)="sincronizar()" icon="pi pi-sync" label="Sincronizar"/>
 
                     <p-button
@@ -79,16 +79,16 @@
             </tr>
         </ng-template>
         <ng-template #body let-unidad>
-            <tr >
+            <tr>
                 <td class="py-3 px-4">{{ unidad.nombreCompleto }}</td>
                 <td>{{ unidad.supervisor?.nombreCompleto }}</td>
                 <td class="py-3 px-4">{{ unidad.contacto?.zona?.nombre }}</td>
                 <td class="py-3 px-4">
-          <span
-              class="inline-flex items-center gap-2 px-2 py-1 rounded-full text-xs font-medium {{ unidad.activo ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-            <i class="pi {{ unidad.activo ? 'pi-check-circle' : 'pi-arrow-circle-down' }}"></i>
-              {{ unidad.activo ? 'Activo' : 'Inactivo' }}
-          </span>
+                    @if (unidad.activo) {
+                        <app-status-badge color="green" label="Activo"></app-status-badge>
+                    } @else {
+                        <app-status-badge color="yellow" label="Inactivo"></app-status-badge>
+                    }
                 </td>
                 <td class="py-3 px-4">
                     <div class="flex gap-1">
