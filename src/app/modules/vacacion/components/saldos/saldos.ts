@@ -28,6 +28,18 @@ import {ContextoConsultaService, RestriccionUsuario} from '@/service/contexto-co
 import {normalizeProperties} from '@/shared/util/object.util';
 import {SpinnerService} from '@/shared/service/spinner.service';
 import {StateComponent} from "@/components/state.component";
+import {FiltroStorageService} from '@/shared/service/filtro-storage.service';
+
+/** Prefijo de todas las claves de filtro de este módulo en localStorage */
+const STORAGE_KEY = 'vacacion:saldos:filtros';
+
+const KEYS = {
+    empleadoId:  `${STORAGE_KEY}:empleadoId`,
+    unidadId:    `${STORAGE_KEY}:unidadId`,
+    supervisorId:`${STORAGE_KEY}:supervisorId`,
+    estatus:     `${STORAGE_KEY}:estatus`,
+    anioLaboral: `${STORAGE_KEY}:anioLaboral`,
+} as const;
 
 type TagSev='success' | 'info' | 'warn' | 'danger' | 'secondary' | 'contrast';
 
@@ -111,6 +123,7 @@ function tagSeverity(e: string): TagSev {
 })
 export class Saldos implements OnInit {
     private readonly catalogoEmpleadoService=inject(CatalogoEmpleadoService);
+    private readonly filtroStorage=inject(FiltroStorageService);
     readonly mesFmt='MMMM y';
     // ── Datos del backend ──────────────────────────────────────────────
     saldosData=signal<PeriodoVacacionalResumen[]>([]);
@@ -120,12 +133,12 @@ export class Saldos implements OnInit {
     empleados=signal<CatalogoEmpleado[]>([]);
     supervisores=signal<CatalogoEmpleado[]>([]);
     unidades=signal<Unidad[]>([]);
-    // ── Filtros individuales ───────────────────────────────────────────
-    filtroEmpleadoId=signal<number | null>(null);
-    filtroUnidadId=signal<number | null>(null);
-    filtroSupervisorId=signal<number | null>(null);
-    filtroEstatus=signal<string | null>(null);
-    filtroAnioLaboral=signal<number | null>(null);
+    // ── Filtros individuales (se restauran desde localStorage al iniciar) ──
+    filtroEmpleadoId=signal<number | null>(this.filtroStorage.leer<number | null>(KEYS.empleadoId, null));
+    filtroUnidadId=signal<number | null>(this.filtroStorage.leer<number | null>(KEYS.unidadId, null));
+    filtroSupervisorId=signal<number | null>(this.filtroStorage.leer<number | null>(KEYS.supervisorId, null));
+    filtroEstatus=signal<string | null>(this.filtroStorage.leer<string | null>(KEYS.estatus, null));
+    filtroAnioLaboral=signal<number | null>(this.filtroStorage.leer<number | null>(KEYS.anioLaboral, null));
     // ── Paginación ─────────────────────────────────────────────────────
     currentPage=signal(0);
     pageSize=signal(500);
@@ -191,6 +204,10 @@ export class Saldos implements OnInit {
     }
 
     onFiltroChange(): void {
+        this.filtroStorage.guardar(KEYS.empleadoId, this.filtroEmpleadoId());
+        this.filtroStorage.guardar(KEYS.unidadId, this.filtroUnidadId());
+        this.filtroStorage.guardar(KEYS.supervisorId, this.filtroSupervisorId());
+        this.filtroStorage.guardar(KEYS.anioLaboral, this.filtroAnioLaboral());
         this.currentPage.set(0);
         this.cargarPeriodos();
         this.cargarAniversarios();
@@ -198,6 +215,7 @@ export class Saldos implements OnInit {
 
     onEstatusFilterChange(value: string | null): void {
         this.filtroEstatus.set(value);
+        this.filtroStorage.guardar(KEYS.estatus, value);
         this.currentPage.set(0);
         this.cargarPeriodos();
     }
@@ -208,6 +226,7 @@ export class Saldos implements OnInit {
         this.filtroSupervisorId.set(null);
         this.filtroEstatus.set(null);
         this.filtroAnioLaboral.set(null);
+        this.filtroStorage.limpiarPorPrefijo(STORAGE_KEY);
         this.currentPage.set(0);
         this.cargarPeriodos();
         this.cargarAniversarios();
