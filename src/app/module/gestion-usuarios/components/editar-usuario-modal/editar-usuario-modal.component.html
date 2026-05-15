@@ -7,7 +7,8 @@
             <label class="block text-sm font-medium text-gray-700 mb-1" for="username">
                 Usuario
             </label>
-            <input [class.ng-invalid]="usuarioForm.get('username')?.invalid && usuarioForm.get('username')?.touched" class="w-full" formControlName="username" id="username"
+            <input [class.ng-invalid]="usuarioForm.get('username')?.invalid && usuarioForm.get('username')?.touched"
+                   class="w-full" formControlName="username" id="username"
                    pInputText
                    placeholder="Ingrese el nombre de usuario"/>
             <small *ngIf="usuarioForm.get('username')?.invalid && usuarioForm.get('username')?.touched"
@@ -22,9 +23,11 @@
                 Contraseña
                 <span class="text-xs text-gray-500 font-normal ml-1">(Dejar en blanco para mantener actual)</span>
             </label>
-            <p-password [class.ng-invalid]="usuarioForm.get('password')?.invalid && usuarioForm.get('password')?.touched" [feedback]="false" [toggleMask]="true"
-                        formControlName="password" inputStyleClass="w-full" placeholder="Ingrese la contraseña"
-                        class="w-full"/>
+            <p-password
+                [class.ng-invalid]="usuarioForm.get('password')?.invalid && usuarioForm.get('password')?.touched"
+                [feedback]="false" [toggleMask]="true"
+                class="w-full" formControlName="password" inputStyleClass="w-full"
+                placeholder="Ingrese la contraseña"/>
         </div>
 
         <!-- Colaborador -->
@@ -47,7 +50,8 @@
             <label class="block text-sm font-medium text-gray-700 mb-1" for="rol">
                 Roles <span class="text-red-500">*</span>
             </label>
-            <p-multiSelect [class.ng-invalid]="usuarioForm.get('roles')?.invalid && usuarioForm.get('roles')?.touched" [loading]="loadingRoles()" [options]="roles()" appendTo="body"
+            <p-multiSelect [class.ng-invalid]="usuarioForm.get('roles')?.invalid && usuarioForm.get('roles')?.touched"
+                           [loading]="loadingRoles()" [options]="roles()" appendTo="body"
                            class="w-full" formControlName="roles" optionLabel="nombre"
                            optionValue="id"
                            placeholder="Seleccione uno o más roles"/>

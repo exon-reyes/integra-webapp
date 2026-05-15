@@ -55,7 +55,7 @@
         </div>
 
         <!-- Supervisor -->
-        @if (!supRestringido) {
+        @if (!tieneRestriccion) {
             <div>
                 <label class="block text-sm font-medium text-gray-600 mb-1">Supervisor</label>
                 <p-select (onChange)="cargarCompensacion()" [(ngModel)]="filtroSupervisor" [filter]="true"

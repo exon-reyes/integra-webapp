@@ -7,7 +7,8 @@
             <label class="block text-sm font-medium text-gray-700 mb-1" for="username">
                 Usuario
             </label>
-            <input [class.ng-invalid]="usuarioForm.get('username')?.invalid && usuarioForm.get('username')?.touched" class="w-full" formControlName="username" id="username"
+            <input [class.ng-invalid]="usuarioForm.get('username')?.invalid && usuarioForm.get('username')?.touched"
+                   class="w-full" formControlName="username" id="username"
                    pInputText
                    placeholder="Ingrese el nombre de usuario"/>
             <small *ngIf="usuarioForm.get('username')?.invalid && usuarioForm.get('username')?.touched"
@@ -21,9 +22,11 @@
             <label class="block text-sm font-medium text-gray-700 mb-1" for="password">
                 Contraseña
             </label>
-            <p-password [class.ng-invalid]="usuarioForm.get('password')?.invalid && usuarioForm.get('password')?.touched" [feedback]="true" [toggleMask]="true"
-                        formControlName="password" inputStyleClass="w-full" placeholder="Ingrese la contraseña"
-                        styleClass="w-full"/>
+            <p-password
+                [class.ng-invalid]="usuarioForm.get('password')?.invalid && usuarioForm.get('password')?.touched"
+                [feedback]="true" [toggleMask]="true"
+                formControlName="password" inputStyleClass="w-full" placeholder="Ingrese la contraseña"
+                styleClass="w-full"/>
             <small *ngIf="usuarioForm.get('password')?.invalid && usuarioForm.get('password')?.touched"
                    class="text-red-500 block mt-1">
                 La contraseña es requerida (mínimo 6 caracteres)
@@ -50,7 +53,8 @@
             <label class="block text-sm font-medium text-gray-700 mb-1" for="rol">
                 Roles <span class="text-red-500">*</span>
             </label>
-            <p-multiSelect [class.ng-invalid]="usuarioForm.get('rol')?.invalid && usuarioForm.get('rol')?.touched" [loading]="loadingRoles()" [options]="roles()" appendTo="body"
+            <p-multiSelect [class.ng-invalid]="usuarioForm.get('rol')?.invalid && usuarioForm.get('rol')?.touched"
+                           [loading]="loadingRoles()" [options]="roles()" appendTo="body"
                            class="w-full" formControlName="rol" optionLabel="nombre"
                            optionValue="id"
                            placeholder="Seleccione uno o más roles"/>

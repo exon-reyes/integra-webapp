@@ -30,6 +30,7 @@ import {StatWidgetComponent} from "@/components/stat-widget";
 import {EditarUnidad} from "@/module/unidad/editar-unidad/editar-unidad";
 import {ZonaService} from "@/core/services/ubicacion/zona.service";
 import {RouterLink} from "@angular/router";
+import {StatusBadgeComponent} from "@/components/StatusBadgeComponent";
 
 @Component({
     selector: 'app-sucursal', standalone: true, imports: [
@@ -55,6 +56,7 @@ import {RouterLink} from "@angular/router";
         StatWidgetComponent,
         EditarUnidad,
         RouterLink,
+        StatusBadgeComponent,
     ], templateUrl: './unidades.html',
 })
 export class Unidades implements OnInit {

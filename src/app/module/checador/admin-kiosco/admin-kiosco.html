@@ -185,7 +185,7 @@
                              currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} kioscos"
                              scrollHeight="calc(100vh - 400px)">
 
-                        <ng-template pTemplate="header">
+                        <ng-template #header>
                             <tr class="bg-gray-50">
                                 <th class="py-3 px-4" pSortableColumn="nombreCompleto">Unidad
                                     <p-sortIcon field="nombreCompleto"/>
@@ -201,7 +201,7 @@
                             </tr>
                         </ng-template>
 
-                        <ng-template let-kiosco pTemplate="body">
+                        <ng-template #body let-kiosco>
                             <tr class="text-sm hover:bg-gray-50 transition-colors">
                                 <td>{{ kiosco.nombreCompleto }}</td>
                                 @if (puedeCambiarEstatusCamara) {
@@ -261,7 +261,7 @@
                             </tr>
                         </ng-template>
 
-                        <ng-template pTemplate="emptymessage">
+                        <ng-template #emptymessage>
                             <tr>
                                 <td class="text-center py-8 text-gray-500" colspan="5">
                                     <i class="pi pi-inbox text-4xl mb-2 block"></i>

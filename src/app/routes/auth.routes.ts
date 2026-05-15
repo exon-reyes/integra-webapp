@@ -1,5 +1,6 @@
 import {Routes} from '@angular/router';
 import {LoginGuard} from '@/core/security/LoginGuard';
+
 export default [
     {path: 'denied', loadComponent: () => import('@/module/denied').then((value) => value.Denied)},
     {

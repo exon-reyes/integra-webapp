@@ -1,5 +1,4 @@
-import {Component, Input} from '@angular/core';
-import {CommonModule} from '@angular/common';
+import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 
 export interface InfoItem {
     subtitle: string;
@@ -9,7 +8,7 @@ export interface InfoItem {
 @Component({
     selector: 'app-info-card',
     standalone: true,
-    imports: [CommonModule],
+    changeDetection: ChangeDetectionStrategy.OnPush,
     template: `
         @if (isVisible) {
             <div
@@ -22,7 +21,7 @@ export interface InfoItem {
                     <div class="flex-grow">
                         <div class="text-base font-bold text-gray-800">{{ title }}</div>
                         @for (item of items; track $index) {
-                            <div class="text-sm text-gray-700 mt-1">
+                            <div class="text-sm font-medium mt-1">
                                 <span class="font-semibold text-indigo-700">{{ item.subtitle }}
                                     :</span> {{ item.description }}
                             </div>

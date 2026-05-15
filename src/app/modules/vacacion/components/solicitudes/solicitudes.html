@@ -1,0 +1,138 @@
+<app-title description="Solicitudes de ausencias registradas" iconClass="i-autcalendar"
+           title="Gestor de ausencias"></app-title>
+<p-menubar class="mt-3">
+    <ng-template #start>
+        <div class="flex flex-row gap-2">
+            <p-button *hasPermission="Autoridades.VACACIONES_GESTOR_NUEVO_REGISTRO" icon="pi pi-plus"
+                      severity="success"></p-button>
+            <p-button (onClick)="cargarSolicitudes()" icon="pi pi-refresh"></p-button>
+            <p-button (onClick)="exportarDatosActuales()"
+                      *hasPermission="Autoridades.VACACIONES_SALDO_EXPORTAR_CATALOGO_VACACIONES"
+                      icon="pi pi-file-excel"
+                      label="Vacaciones"></p-button>
+            <p-button (onClick)="exportarSolicitudes()"
+                      [disabled]="!fechaDesde() || !fechaHasta()"
+                      icon="pi pi-file-excel"
+                      label="Solicitudes"
+                      severity="secondary"
+                      pTooltip="Selecciona el período (Desde y Hasta) para exportar"
+                      tooltipPosition="bottom"></p-button>
+        </div>
+    </ng-template>
+</p-menubar>
+
+<div class="flex flex-col md:flex-row gap-3 mt-2">
+    <!-- Panel de filtros -->
+    <div class="bg-white rounded-lg p-4 border border-slate-200 w-full md:w-72 shrink-0">
+        <div class="flex items-center justify-between mb-4">
+            <span class="font-semibold text-lg">Filtros</span>
+            <p-button (onClick)="limpiarFiltros()" [text]="true" icon="pi pi-filter-slash" severity="secondary"/>
+        </div>
+
+        <div class="flex flex-col gap-4">
+            <div class="flex flex-col gap-1">
+                <label>Fecha de registro</label>
+                <div class="flex gap-1 items-center">
+                    <p-datePicker (onSelect)="onFiltroChange()" (onClear)="onFiltroChange()" [(ngModel)]="fechaDesde" [maxDate]="maxDate" [showClear]="true" placeholder="Desde" dateFormat="dd/mm/yy" appendTo="body" />
+                    <span>-</span>
+                    <p-datePicker (onSelect)="onFiltroChange()" (onClear)="onFiltroChange()" [(ngModel)]="fechaHasta" [maxDate]="maxDate" [showClear]="true" placeholder="Hasta" dateFormat="dd/mm/yy" appendTo="body" />
+                </div>
+            </div>
+            <div class="flex flex-col gap-1">
+                <label class="text-sm font-medium">Colaborador</label>
+                <p-select
+                    (onChange)="onFiltroChange()"
+                    [(ngModel)]="filtroEmpleadoId"
+                    [filter]="true"
+                    [options]="empleados()"
+                    [showClear]="true"
+                    appendTo="body"
+                    filterBy="nombreCompleto,codigo"
+                    optionLabel="nombreCompleto"
+                    optionValue="id"
+                    placeholder="Todos"/>
+            </div>
+
+            <div class="flex flex-col gap-1">
+                <label class="text-sm font-medium">Unidad</label>
+                <p-select
+                    (onChange)="onFiltroChange()"
+                    [(ngModel)]="filtroUnidadId"
+                    [filter]="true"
+                    [options]="unidades()"
+                    [showClear]="true"
+                    appendTo="body"
+                    filterBy="nombreCompleto,codigo"
+                    optionLabel="nombreCompleto"
+                    optionValue="id"
+                    placeholder="Todas"/>
+            </div>
+            @if (!tieneRestriccion) {
+                <div class="flex flex-col gap-1">
+                    <label class="text-sm font-medium">Supervisor</label>
+                    <p-select
+                        (onChange)="onFiltroChange()"
+                        [(ngModel)]="filtroSupervisorId"
+                        [filter]="true"
+                        [options]="supervisores()"
+                        [showClear]="true"
+                        appendTo="body"
+                        filterBy="nombreCompleto"
+                        optionLabel="nombreCompleto"
+                        optionValue="id"
+                        placeholder="Todos"/>
+                </div>
+            }
+
+
+        </div>
+    </div>
+    <!-- Tabla principal -->
+    <div class="bg-white rounded-lg p-3 border border-slate-200 flex-1 min-w-0">
+        <p-selectButton
+            (ngModelChange)="onFilterChange($event)"
+            [ngModel]="statusFilter()"
+            [options]="filterOptions"
+            optionLabel="label"
+            optionValue="value">
+            <ng-template #item let-item>
+                <i class="pi {{item.icon}}"></i>{{ item.label }}
+            </ng-template>
+        </p-selectButton>
+        <app-solicitudes-table
+            (deleteClick)="eliminarSolicitud($event)"
+            (pageChange)="onPageChange($event)"
+            (papeletaClick)="abrirModalPapeleta($event)"
+            [first]="currentPage() * pageSize()"
+            [loading]="loading()"
+            [rows]="pageSize()"
+            [showDetails]="true"
+            [solicitudes]="solicitudes"
+            [totalRecords]="totalRecords()"/>
+    </div>
+</div>
+
+<p-dialog [(visible)]="mostrarDialogoPapeleta" [modal]="true" [style]="{width: '25rem'}" header="Exportar Papeleta">
+    <div class="flex flex-col gap-4 py-4">
+        <label class="font-semibold" for="salario">Salario Diario</label>
+        <p-inputNumber [(ngModel)]="salarioDiario" currency="MXN" inputId="salario" locale="es-MX"
+                       mode="currency"
+                       placeholder="Ej. 350.50"></p-inputNumber>
+
+        <label class="font-semibold mt-2" for="diasAdicionales">Días Adicionales (Opcional)</label>
+        <p-inputNumber [(ngModel)]="diasAdicionales"
+                       [min]="0"
+                       [showButtons]="true"
+                       buttonLayout="horizontal"
+                       decrementButtonIcon="pi pi-minus"
+                       incrementButtonIcon="pi pi-plus"
+                       inputId="diasAdicionales"></p-inputNumber>
+    </div>
+    <ng-template pTemplate="footer">
+        <p-button (onClick)="mostrarDialogoPapeleta.set(false)" icon="pi pi-times" label="Cancelar"
+                  severity="secondary"></p-button>
+        <p-button (onClick)="generarPapeleta()" [disabled]="!folioSeleccionado()" icon="pi pi-check"
+                  label="Generar"></p-button>
+
+    </ng-template>
+</p-dialog>

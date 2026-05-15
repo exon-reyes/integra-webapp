@@ -11,6 +11,8 @@ import {InputIcon} from 'primeng/inputicon';
 import {ConfirmDialogModule} from 'primeng/confirmdialog';
 import {ConfirmationService, MessageService} from 'primeng/api';
 import {Checkbox} from 'primeng/checkbox';
+import {Select} from 'primeng/select';
+import {CatalogoEmpleado, CatalogoEmpleadoService} from '@/service/catalogo-empleado.service';
 
 import {Usuario, UsuarioConRoles, UsuarioService} from '@/core/services/usuario/usuario.service';
 import {PaginatedResponse} from '@/core/services/usuario/paginated-response.interface';
@@ -46,6 +48,7 @@ import {
         EditarUsuarioModalComponent,
         HasPermissionDirective,
         Checkbox,
+        Select,
     ], templateUrl: './gestion-usuarios.html', styleUrls: ['./gestion-usuarios.scss'],
 })
 class GestionUsuarios implements OnInit {
@@ -86,11 +89,18 @@ class GestionUsuarios implements OnInit {
     permisosFromRoles=signal<Set<string>>(new Set());
     permisosEspeciales=signal<Set<string>>(new Set());
     SystemVar!: ParamsDTO;
+    // Filtro por colaborador
+    mostrarDialogoFiltro=false;
+    colaboradoresActivos=signal<CatalogoEmpleado[]>([]);
+    loadingColaboradores=signal(false);
+    colaboradorSeleccionado=signal<CatalogoEmpleado | null>(null);
+    filtroColaboradorActivo=signal<CatalogoEmpleado | null>(null);
     private readonly usuarioService=inject(UsuarioService);
     private readonly confirmService=inject(ConfirmationService);
     private readonly messageService=inject(MessageService);
     private readonly systemValueService=inject(SystemValueService);
     private readonly securityNodeService=inject(SecurityNodeService);
+    private readonly catalogoEmpleadoService=inject(CatalogoEmpleadoService);
 
     ngOnInit() {
         this.cargarVariablesSistema();
@@ -369,7 +379,8 @@ class GestionUsuarios implements OnInit {
 
     cargarUsuarios() {
         this.loading.set(true);
-        this.usuarioService.obtenerUsuarios(this.currentPage(), this.pageSize()).subscribe({
+        const empleadoId=this.filtroColaboradorActivo()?.id ?? null;
+        this.usuarioService.obtenerUsuarios(this.currentPage(), this.pageSize(), empleadoId).subscribe({
             next: (response: PaginatedResponse<UsuarioConRoles>) => {
                 this.usuarios.set(response.data);
                 this.totalRecords.set(response.totalElements);
@@ -388,6 +399,46 @@ class GestionUsuarios implements OnInit {
 
     filtrarUsuarios(texto: string) {
         this.filtroTexto.set(texto);
+    }
+
+    abrirDialogoFiltro() {
+        this.colaboradorSeleccionado.set(this.filtroColaboradorActivo());
+        this.mostrarDialogoFiltro=true;
+        if(this.colaboradoresActivos().length === 0) {
+            this.cargarColaboradoresActivos();
+        }
+    }
+
+    aplicarFiltroColaborador() {
+        this.filtroColaboradorActivo.set(this.colaboradorSeleccionado());
+        this.mostrarDialogoFiltro=false;
+        this.cargarUsuarios();
+    }
+
+    limpiarFiltroColaborador() {
+        this.colaboradorSeleccionado.set(null);
+        this.filtroColaboradorActivo.set(null);
+        this.mostrarDialogoFiltro=false;
+        this.cargarUsuarios();
+    }
+
+    private cargarColaboradoresActivos() {
+        this.loadingColaboradores.set(true);
+        this.catalogoEmpleadoService.obtenerEmpleados({activos: true}).subscribe({
+            next: (response) => {
+                this.colaboradoresActivos.set(response.data ?? []);
+                this.loadingColaboradores.set(false);
+            },
+            error: () => {
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: 'No se pudieron cargar los colaboradores',
+                    life: 3000,
+                });
+                this.loadingColaboradores.set(false);
+            },
+        });
     }
 
     private cargarVariablesSistema() {

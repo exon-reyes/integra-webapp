@@ -17,13 +17,13 @@
                         Operatividad
                     </label>
                     <p-select
-                        inputId="operatividad-select"
-                        [ngModel]="selectedOperatividad()"
                         (ngModelChange)="selectedOperatividad.set($event)"
+                        [ngModel]="selectedOperatividad()"
                         [options]="operatividades()"
+                        class="w-full"
+                        inputId="operatividad-select"
                         optionLabel="nombre"
                         placeholder="Seleccionar"
-                        class="w-full"
                     />
                 </div>
 
@@ -33,11 +33,11 @@
                         Hora de apertura
                     </label>
                     <input
+                        (change)="apertura.set($any($event.target).value)"
+                        [value]="apertura()"
+                        class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition"
                         id="hora-apertura"
                         type="time"
-                        [value]="apertura()"
-                        (change)="apertura.set($any($event.target).value)"
-                        class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition"
                     />
                 </div>
 
@@ -47,19 +47,19 @@
                         Hora de cierre
                     </label>
                     <input
+                        (change)="cierre.set($any($event.target).value)"
+                        [value]="cierre()"
+                        class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition"
                         id="hora-cierre"
                         type="time"
-                        [value]="cierre()"
-                        (change)="cierre.set($any($event.target).value)"
-                        class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition"
                     />
                 </div>
 
                 <!-- Activo -->
                 <div class="flex items-center gap-3 mt-4">
                     <p-toggleswitch
-                        [ngModel]="activo()"
                         (ngModelChange)="activo.set($event)"
+                        [ngModel]="activo()"
                         inputId="toggle-activo"
                     />
                     <label class="block text-sm font-medium text-slate-700" for="toggle-activo">
@@ -70,11 +70,11 @@
                 <!-- Botón agregar -->
                 <div class="pt-2">
                     <p-button
-                        severity="warn"
+                        (onClick)="agregarHorario()"
                         icon="pi pi-plus"
                         label="Precargar horario operativo"
+                        severity="warn"
                         styleClass="w-full"
-                        (onClick)="agregarHorario()"
                     />
                 </div>
 
@@ -86,7 +86,8 @@
             <div class="border border-slate-200 rounded-xl overflow-hidden">
                 <div class="px-6 py-4 bg-slate-50 border-b border-slate-200">
                     <div class="text-lg font-semibold">Horarios precargados</div>
-                    <p class="text-sm">Los siguientes horarios serán asignados a la unidad, verifique antes de guardar</p>
+                    <p class="text-sm">Los siguientes horarios serán asignados a la unidad, verifique antes de
+                        guardar</p>
                 </div>
 
                 <div class="overflow-x-auto">
@@ -108,21 +109,21 @@
                                     <td class="px-6 py-4">{{ h.cierre }}</td>
                                     <td class="px-6 py-4 text-center">
                     <span
-                        class="px-2 py-1 rounded-full text-xs font-medium"
                         [class.bg-emerald-100]="h.activo"
                         [class.bg-red-100]="!h.activo"
                         [class.text-emerald-700]="h.activo"
                         [class.text-red-700]="!h.activo"
+                        class="px-2 py-1 rounded-full text-xs font-medium"
                     >
                       {{ h.activo ? 'Activo' : 'Inactivo' }}
                     </span>
                                     </td>
                                     <td class="px-6 py-4 text-center">
                                         <button
-                                            type="button"
-                                            class="text-red-500 hover:text-red-600 text-sm font-medium transition"
                                             (click)="eliminarHorario(h.operatividad.id)"
                                             [attr.aria-label]="'Eliminar horario ' + h.operatividad.nombre"
+                                            class="text-red-500 hover:text-red-600 text-sm font-medium transition"
+                                            type="button"
                                         >
                                             Eliminar
                                         </button>
@@ -131,7 +132,9 @@
                             } @empty {
                                 <tr>
                                     <td class="px-6 py-8 text-center text-slate-500" colspan="5">
-                                    <app-state description="Sin registros asociados, ingrese horarios de apertura y cierre" title="Horarios precargados"></app-state>
+                                        <app-state
+                                            description="Sin registros asociados, ingrese horarios de apertura y cierre"
+                                            title="Horarios precargados"></app-state>
                                     </td>
                                 </tr>
                             }
@@ -143,9 +146,9 @@
             <!-- Botón guardar -->
             <div class="flex justify-end mt-6">
                 <p-button
-                    label="Guardar configuración"
-                    [loading]="saving()"
                     (onClick)="guardarConfiguracion()"
+                    [loading]="saving()"
+                    label="Guardar configuración"
                 />
             </div>
         </div>

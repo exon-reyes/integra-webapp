@@ -21,7 +21,8 @@ import {Actividad} from '@/models/checklist/actividad';
                     </h5>
                     @if (checklist?.totalActividades > 0) {
                         <div class="flex items-center gap-2 text-sm text-gray-600">
-                            <span>{{ checklist?.actividadesCompletadas }} de {{ checklist?.totalActividades }} completadas</span>
+                            <span>{{ checklist?.actividadesCompletadas }} de {{ checklist?.totalActividades }}
+                                completadas</span>
                             <span class="text-blue-600 font-medium">{{ checklist?.porcentajeCompletado }}%</span>
                         </div>
                     }
@@ -29,7 +30,8 @@ import {Actividad} from '@/models/checklist/actividad';
                 @if (checklist?.totalActividades > 0) {
                     <div class="mt-2">
                         <div class="w-full bg-gray-200 rounded-full h-2">
-                            <div class="bg-blue-600 h-2 rounded-full transition-all duration-300" [style.width.%]="checklist?.porcentajeCompletado"></div>
+                            <div class="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                                 [style.width.%]="checklist?.porcentajeCompletado"></div>
                         </div>
                     </div>
                 }
@@ -39,10 +41,15 @@ import {Actividad} from '@/models/checklist/actividad';
                 @if (checklist?.actividades?.length > 0) {
                     <div class="space-y-3">
                         @for (actividad of checklist?.actividades; track actividad.id || $index) {
-                            <div class="flex items-start gap-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-                                <p-checkbox [(ngModel)]="actividad.completada" (onChange)="onActividadChange(actividad, $event)" [disabled]="actualizando()" [binary]="true"></p-checkbox>
+                            <div
+                                class="flex items-start gap-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                                <p-checkbox [(ngModel)]="actividad.completada"
+                                            (onChange)="onActividadChange(actividad, $event)"
+                                            [disabled]="actualizando()" [binary]="true"></p-checkbox>
                                 <div class="flex-1">
-                                    <p class="text-sm font-medium text-gray-900" [class.line-through]="actividad.completada" [class.text-gray-500]="actividad.completada">
+                                    <p class="text-sm font-medium text-gray-900"
+                                       [class.line-through]="actividad.completada"
+                                       [class.text-gray-500]="actividad.completada">
                                         {{ actividad.descripcion }}
                                     </p>
                                     @if (actividad.fechaCompletado) {

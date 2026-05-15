@@ -24,6 +24,7 @@ export class RegisterRequestComponent {
     message='';
     error='';
     submitted=false;
+    protected readonly isControlInvalid=isControlInvalid;
 
     onSubmit() {
         if(this.form.invalid) return;
@@ -42,6 +43,4 @@ export class RegisterRequestComponent {
                 },
             });
     }
-
-    protected readonly isControlInvalid=isControlInvalid;
 }

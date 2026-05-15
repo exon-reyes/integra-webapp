@@ -7,12 +7,14 @@
 
     <!-- Encabezado descriptivo -->
     <ng-template #caption>
-        <app-alert type="info" title="Administración de zonas" description="Administración de regiones operativas, las zonas inhabilitadas no apareceran disponibles en los formularios de asignación de unidades"></app-alert>
+        <app-alert description="Administración de regiones operativas, las zonas inhabilitadas no apareceran disponibles en los formularios de asignación de unidades" title="Administración de zonas"
+                   type="info"></app-alert>
         <!-- Estadísticas -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 my-3">
-            <app-stat-widget icon="pi pi-arrow-up-right" color="green" [title]="zonasActivas" subtitle="Zonas activas"/>
-            <app-stat-widget icon="pi pi-arrow-circle-down" color="red" [title]="zonasInactivas" subtitle="Zonas Inactivas"/>
-            <app-stat-widget icon="pi pi-map" color="blue" [title]="totalZonas" subtitle="Totales"/>
+            <app-stat-widget [title]="zonasActivas" color="green" icon="pi pi-arrow-up-right" subtitle="Zonas activas"/>
+            <app-stat-widget [title]="zonasInactivas" color="red" icon="pi pi-arrow-circle-down"
+                             subtitle="Zonas Inactivas"/>
+            <app-stat-widget [title]="totalZonas" color="blue" icon="pi pi-map" subtitle="Totales"/>
         </div>
 
         <!-- Formulario superior -->
@@ -23,8 +25,8 @@
             <input
                 [(ngModel)]="nombreZona"
                 [disabled]="loading"
-                class="w-full"
                 [placeholder]="zonaEditando ? 'Editando zona' : 'Nueva zona'"
+                class="w-full"
                 pInputText
             >
 

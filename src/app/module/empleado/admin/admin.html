@@ -131,31 +131,19 @@
 
 
                 <!-- Estatus -->
+
                 <td>
-                    <div [ngClass]="{
-                    'bg-emerald-50 text-emerald-700 border-emerald-200': empleado.estatus === 'A',
-                    'bg-amber-50 text-amber-700 border-amber-200': empleado.estatus === 'R',
-                    'bg-rose-50 text-rose-700 border-rose-200': empleado.estatus === 'B'
-                }" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border">
-                    <span [ngClass]="{
-                        'bg-emerald-500': empleado.estatus === 'A',
-                        'bg-amber-500': empleado.estatus === 'R',
-                        'bg-rose-500': empleado.estatus === 'B'
-                    }" class="w-2 h-2 rounded-full"></span>
-                        <span class="text-xs font-semibold">
-                        @switch (empleado.estatus) {
-                            @case ('A') {
-                                Activo
-                            }
-                            @case ('R') {
-                                Reingreso
-                            }
-                            @default {
-                                Inactivo
-                            }
+                    @switch (empleado.estatus) {
+                        @case ('A') {
+                            <app-status-badge label="Activo"></app-status-badge>
                         }
-                    </span>
-                    </div>
+                        @case ('R') {
+                            <app-status-badge color="yellow" label="Reingreso"></app-status-badge>
+                        }
+                        @default {
+                            <app-status-badge color="red" label="Inactivo"></app-status-badge>
+                        }
+                    }
                 </td>
 
                 <!-- Cronología -->
