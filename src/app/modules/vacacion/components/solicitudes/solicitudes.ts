@@ -23,6 +23,7 @@ import {MessageService} from "primeng/api";
 import {DatePicker} from "primeng/datepicker";
 import {DatePipe} from "@angular/common";
 import {TooltipModule} from "primeng/tooltip";
+import {FiltroStorageService} from "@/shared/service/filtro-storage.service";
 
 export interface FiltroSolicitudes extends Paginator,
                                            FiltroResponsabilidad {
@@ -31,6 +32,25 @@ export interface FiltroSolicitudes extends Paginator,
     empleadoId?: number;
     fechaDesde?: string;
     fechaHasta?: string;
+}
+
+/** Prefijo de todas las claves de filtro de este módulo en localStorage */
+const STORAGE_KEY = 'vacacion:solicitudes:filtros';
+
+const KEYS = {
+    statusFilter:  `${STORAGE_KEY}:statusFilter`,
+    empleadoId:    `${STORAGE_KEY}:empleadoId`,
+    unidadId:      `${STORAGE_KEY}:unidadId`,
+    supervisorId:  `${STORAGE_KEY}:supervisorId`,
+    fechaDesde:    `${STORAGE_KEY}:fechaDesde`,
+    fechaHasta:    `${STORAGE_KEY}:fechaHasta`,
+} as const;
+
+/** Convierte un ISO string guardado en storage a Date, o devuelve null */
+function isoToDate(iso: string | null): Date | null {
+    if (!iso) return null;
+    const d = new Date(iso);
+    return isNaN(d.getTime()) ? null : d;
 }
 
 @Component({
@@ -57,26 +77,30 @@ export class Solicitudes implements OnInit {
         {label: 'Aprobadas', value: 'APROBADA', icon: 'pi-check-circle'},
         {label: 'Canceladas', value: 'CANCELADA', icon: 'pi-times'}
     ];
-    statusFilter=signal<string>('PENDIENTE');
+
+    private readonly filtroStorage=inject(FiltroStorageService);
+
+    // ── Filtros (se restauran desde localStorage al iniciar) ───────────
+    statusFilter=signal<string>(this.filtroStorage.leer<string>(KEYS.statusFilter, 'PENDIENTE'));
+    // Catálogos
     loading=signal(false);
     currentPage=signal(0);
     pageSize=signal(50);
     totalRecords=signal(0);
-    // Catálogos
     empleados=signal<CatalogoEmpleado[]>([]);
     supervisores=signal<CatalogoEmpleado[]>([]);
     unidades=signal<Unidad[]>([]);
     // Filtros de consulta
-    filtroEmpleadoId=signal<number | null>(null);
-    filtroUnidadId=signal<number | null>(null);
-    filtroSupervisorId=signal<number | null>(null);
+    filtroEmpleadoId=signal<number | null>(this.filtroStorage.leer<number | null>(KEYS.empleadoId, null));
+    filtroUnidadId=signal<number | null>(this.filtroStorage.leer<number | null>(KEYS.unidadId, null));
+    filtroSupervisorId=signal<number | null>(this.filtroStorage.leer<number | null>(KEYS.supervisorId, null));
+    fechaDesde=signal<Date | null>(isoToDate(this.filtroStorage.leer<string | null>(KEYS.fechaDesde, null)));
+    fechaHasta=signal<Date | null>(isoToDate(this.filtroStorage.leer<string | null>(KEYS.fechaHasta, null)));
     // Modal Papeleta
     mostrarDialogoPapeleta=signal(false);
     folioSeleccionado=signal<number | null>(null);
     salarioDiario=signal<number | null>(null);
     diasAdicionales=signal<number>(0);
-    fechaDesde=signal<Date | null>(null);
-    fechaHasta=signal<Date | null>(null);
     readonly maxDate = new Date();
 
     protected solicitudes: SolicitudesGestionDTO[]=[];
@@ -107,6 +131,7 @@ export class Solicitudes implements OnInit {
 
     onFilterChange(value: string): void {
         this.statusFilter.set(value);
+        this.filtroStorage.guardar(KEYS.statusFilter, value);
         this.currentPage.set(0);
         this.cargarSolicitudes();
     }
@@ -217,6 +242,13 @@ export class Solicitudes implements OnInit {
     }
 
     onFiltroChange(): void {
+        this.filtroStorage.guardar(KEYS.empleadoId, this.filtroEmpleadoId());
+        this.filtroStorage.guardar(KEYS.unidadId, this.filtroUnidadId());
+        this.filtroStorage.guardar(KEYS.supervisorId, this.filtroSupervisorId());
+        const d = this.fechaDesde();
+        const h = this.fechaHasta();
+        this.filtroStorage.guardar(KEYS.fechaDesde, d ? d.toISOString() : null);
+        this.filtroStorage.guardar(KEYS.fechaHasta, h ? h.toISOString() : null);
         this.currentPage.set(0);
         this.cargarSolicitudes();
     }
@@ -227,6 +259,7 @@ export class Solicitudes implements OnInit {
         this.filtroSupervisorId.set(null);
         this.fechaDesde.set(null);
         this.fechaHasta.set(null);
+        this.filtroStorage.limpiarPorPrefijo(STORAGE_KEY);
         this.currentPage.set(0);
         this.cargarSolicitudes();
     }
