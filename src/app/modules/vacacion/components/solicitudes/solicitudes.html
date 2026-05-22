@@ -9,7 +9,7 @@
             <p-button (onClick)="exportarDatosActuales()"
                       *hasPermission="Autoridades.VACACIONES_SALDO_EXPORTAR_CATALOGO_VACACIONES"
                       icon="pi pi-file-excel"
-                      label="Vacaciones"></p-button>
+                      label="Saldos vacacionales"></p-button>
             <p-button (onClick)="exportarSolicitudes()"
                       [disabled]="!fechaDesde() || !fechaHasta()"
                       icon="pi pi-file-excel"
@@ -31,7 +31,7 @@
 
         <div class="flex flex-col gap-4">
             <div class="flex flex-col gap-1">
-                <label>Fecha de registro</label>
+                <label>Fecha registro de solicitud</label>
                 <div class="flex gap-1 items-center">
                     <p-datePicker (onSelect)="onFiltroChange()" (onClear)="onFiltroChange()" [(ngModel)]="fechaDesde" [maxDate]="maxDate" [showClear]="true" placeholder="Desde" dateFormat="dd/mm/yy" appendTo="body" />
                     <span>-</span>
@@ -50,7 +50,14 @@
                     filterBy="nombreCompleto,codigo"
                     optionLabel="nombreCompleto"
                     optionValue="id"
-                    placeholder="Todos"/>
+                    placeholder="Todos">
+                    <ng-template #item let-value>
+                        {{value.codigo}} {{value.nombreCompleto}}
+                    </ng-template>
+                    <ng-template let-value #selectedItem>
+                        {{value.codigo}} {{value.nombreCompleto}}
+                    </ng-template>
+                </p-select>
             </div>
 
             <div class="flex flex-col gap-1">
