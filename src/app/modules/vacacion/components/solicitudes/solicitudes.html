@@ -54,6 +54,9 @@
                     <ng-template #item let-value>
                         {{value.codigo}} {{value.nombreCompleto}}
                     </ng-template>
+                    <ng-template let-value #selectedItem>
+                        {{value.codigo}} {{value.nombreCompleto}}
+                    </ng-template>
                 </p-select>
             </div>
 
