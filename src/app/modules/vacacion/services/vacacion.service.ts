@@ -61,14 +61,9 @@ export class VacacionAdminService {
     }
 
 
-    cancelarSolicitud(id: number,
-                      usuarioId: number,
-                      tipo: string) {
+    cancelarSolicitud(id: number, usuarioId: number) {
         return this.http.patch<ResponseData<void>>(`${this.baseUrl}/gestion/${id}/cancelar`, null, {
-            params: {
-                usuarioId: usuarioId,
-                tipo: tipo
-            }
+            params: { usuarioId: usuarioId }
         })
     }
 

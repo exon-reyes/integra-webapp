@@ -160,7 +160,11 @@ export interface DetalleSolicitudDTO {
     anioGestion: number;
     id?: number;
     diasHabilitados: number;
-    diasSolicitados: number;
+    diasSolicitados: number;       // Global: todas las solicitudes activas del periodo
+    diasEstaSolicitud: number;     // Solo los días de esta solicitud específica (no cancelados)
+    diasAprobadosEstaSolicitud: number;   // Días aprobados granularmente en esta solicitud
+    diasPendientesEstaSolicitud: number;  // Días pendientes granularmente en esta solicitud
+    diasCanceladosEstaSolicitud: number;  // Días cancelados granularmente en esta solicitud
     diasTomados: number;
     estatusGlobal: string;
     empleado: CatalogoEmpleado;
@@ -215,6 +219,7 @@ export interface PeriodoVacacionalResumen {
     fechaFin: string;
     diasHabilitados: number;
     diasTomados: number;
+    diasRestantes: number;
     estatus: string;
 }
 

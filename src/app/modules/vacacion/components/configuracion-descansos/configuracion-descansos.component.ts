@@ -244,7 +244,7 @@ export class ConfiguracionDescansosComponent implements OnInit {
 
     protected cancelarDescanso(descansoId: number) {
         this.guardando.set(true);
-        this.vacacionAdminService.cancelarSolicitud(descansoId, this.empleadoId(), 'DESCANSO').subscribe({
+        this.vacacionAdminService.cancelarSolicitud(descansoId, this.empleadoId()).subscribe({
             next: () => {
                 this.messageService.add({
                     severity: 'success', summary: 'Proceso completado', detail: 'Descanso cancelado correctamente',

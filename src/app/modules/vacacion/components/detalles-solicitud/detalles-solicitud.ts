@@ -265,6 +265,10 @@ export class DetallesSolicitud {
         return null;
     }
 
+    diasRange(n: number): number[] {
+        return Array.from({length: n}, (_, i) => i);
+    }
+
     private recargarDetalles(): void {
         this.vacacionService.obtenerDetallesSolicitud(this.folio()).subscribe({
             next: (res) => {

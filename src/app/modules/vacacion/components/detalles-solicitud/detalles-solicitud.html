@@ -34,12 +34,19 @@
                 </div>
                 <div class="flex justify-between items-center text-sm pb-3 border-b border-slate-200">
                     <div class="flex items-center gap-2">
-                        <span class="w-3 h-3 rounded bg-blue-100 border-2 border-blue-400 block animate-pulse"></span>
-                        <span class="text-blue-600 font-bold">Esta solicitud (pendientes/aprobados)</span>
+                        <span class="w-3 h-3 rounded bg-orange-300 border border-orange-400 block"></span>
+                        <span class="text-orange-600 font-bold">Días de esta solicitud</span>
                     </div>
-                    <span class="font-mono font-bold text-blue-600">{{
-                            data.diasHabilitados - data.diasTomados - data.restanteSiAprueba
-                        }}</span>
+                    <span class="font-mono font-bold text-orange-600">{{ data.diasEstaSolicitud }}</span>
+                </div>
+                <div class="flex justify-between items-center text-sm pb-3 border-b border-slate-200">
+                    <div class="flex items-center gap-2">
+                        <span class="w-3 h-3 rounded bg-blue-100 border-2 border-blue-400 block animate-pulse"></span>
+                        <span class="text-blue-600 font-bold">
+                            {{ data.estatusGlobal === 'APROBADA' ? 'Otras solicitudes pendientes' : 'Total en solicitud (todas)' }}
+                        </span>
+                    </div>
+                    <span class="font-mono font-bold text-blue-600">{{ data.diasSolicitados }}</span>
                 </div>
                 <div class="flex justify-between items-center pt-1">
                     <span class="text-sm font-bold text-slate-900">Días disponible si se aprueba la solicitud</span>
@@ -50,19 +57,35 @@
                 </div>
             </div>
 
-            <div
-                class="h-2.5 rounded-full bg-slate-200 overflow-hidden flex relative w-full mb-1 border border-slate-300">
-                <!-- Porcentaje Disfrutados -->
-                <div [style.width.%]="(data.diasTomados / data.diasHabilitados) * 100"
-                     class="h-full bg-green-400"></div>
-                <!-- Porcentaje Esta Solicitud -->
-                <div
-                    [style.width.%]="((data.diasHabilitados - data.diasTomados - data.restanteSiAprueba) / data.diasHabilitados) * 100"
-                    class="h-full bg-blue-400 border-x border-blue-600 relative z-10"></div>
+            <!-- Barra de cuadros -->
+            <!-- Zonas: [diasTomados=verde] [diasPendientesEstaSolicitud=naranja] [diasSolicitados(otras)=amarillo] [restante=azul] -->
+            <div class="flex gap-1 flex-wrap mt-2 mb-1">
+                @for (i of diasRange(data.diasHabilitados); track i) {
+                    <div
+                        class="h-7 w-7 rounded border flex items-center justify-center text-[10px] font-bold"
+                        [class.bg-green-400]="i < data.diasTomados"
+                        [class.border-green-500]="i < data.diasTomados"
+                        [class.text-green-900]="i < data.diasTomados"
+                        [class.bg-orange-300]="i >= data.diasTomados && i < (data.diasTomados + data.diasPendientesEstaSolicitud)"
+                        [class.border-orange-400]="i >= data.diasTomados && i < (data.diasTomados + data.diasPendientesEstaSolicitud)"
+                        [class.text-orange-900]="i >= data.diasTomados && i < (data.diasTomados + data.diasPendientesEstaSolicitud)"
+                        [class.bg-yellow-200]="i >= (data.diasTomados + data.diasPendientesEstaSolicitud) && i < (data.diasTomados + data.diasPendientesEstaSolicitud + data.diasSolicitados)"
+                        [class.border-yellow-400]="i >= (data.diasTomados + data.diasPendientesEstaSolicitud) && i < (data.diasTomados + data.diasPendientesEstaSolicitud + data.diasSolicitados)"
+                        [class.text-yellow-900]="i >= (data.diasTomados + data.diasPendientesEstaSolicitud) && i < (data.diasTomados + data.diasPendientesEstaSolicitud + data.diasSolicitados)"
+                        [class.bg-blue-200]="i >= (data.diasTomados + data.diasPendientesEstaSolicitud + data.diasSolicitados)"
+                        [class.border-blue-400]="i >= (data.diasTomados + data.diasPendientesEstaSolicitud + data.diasSolicitados)"
+                        [class.text-blue-900]="i >= (data.diasTomados + data.diasPendientesEstaSolicitud + data.diasSolicitados)"
+                    >{{ i + 1 }}</div>
+                }
             </div>
-            <div class="flex justify-between mt-1 text-[10px] font-mono text-slate-400">
-                <span>0</span>
-                <span>{{ data.diasHabilitados }} días</span>
+            <div class="flex flex-wrap gap-4 mt-2 text-xs text-slate-500 font-medium">
+                <span>Días habilitados: <b class="text-slate-700">{{ data.diasHabilitados }}</b></span>
+                <span class="text-orange-500">Esta solicitud (pendientes): <b>{{ data.diasPendientesEstaSolicitud }}</b></span>
+                @if (data.diasSolicitados > 0) {
+                    <span class="text-yellow-600">Otras solicitudes pendientes: <b>{{ data.diasSolicitados }}</b></span>
+                }
+                <span class="text-blue-500">Disponible: <b>{{ data.restanteSiAprueba >= 0 ? data.restanteSiAprueba : 0 }}</b></span>
+                <span class="text-slate-700 border-l border-slate-300 pl-4">Por tomar: <b>{{ data.diasHabilitados - data.diasTomados }}</b></span>
             </div>
 
             @if (data.restanteSiAprueba < 0) {
@@ -317,7 +340,6 @@
                         }
                     </div>
                 </div>
-
                 <div class="flex flex-col gap-3">
                     <span class="p-panel-title">02. Aplicar nuevo estatus</span>
                     <div class="flex bg-slate-50 rounded-full p-1 shadow-inner border border-slate-200">

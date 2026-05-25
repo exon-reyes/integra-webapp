@@ -352,7 +352,7 @@ export class SolicitudVacacionesComponent implements OnInit {
     protected cancelarSolicitud(solicitudId: number) {
         this.guardando.set(true)
         console.log(this.empleadoId())
-        this.vacacionAdminService.cancelarSolicitud(solicitudId, this.empleadoId()!, 'VACACION').subscribe({
+        this.vacacionAdminService.cancelarSolicitud(solicitudId, this.empleadoId()!).subscribe({
             next: () => {
                 this.messageService.add({
                     severity: 'success', summary: 'Éxito', detail: 'Solicitud cancelada correctamente',

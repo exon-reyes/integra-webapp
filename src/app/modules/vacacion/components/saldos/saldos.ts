@@ -316,6 +316,11 @@ export class Saldos implements OnInit {
     }
 
     diasRestantes(row: PeriodoVacacionalResumen): number {
+        // Usar diasRestantes del backend (ya descuenta días pendientes de solicitudes)
+        // Fallback: diasHabilitados - diasTomados si diasRestantes no está disponible
+        if (row.diasRestantes !== undefined && row.diasRestantes !== null) {
+            return row.diasRestantes;
+        }
         return (row.diasHabilitados ?? 0) - (row.diasTomados ?? 0);
     }
 
