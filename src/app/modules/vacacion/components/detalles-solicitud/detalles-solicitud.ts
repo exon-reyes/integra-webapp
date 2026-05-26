@@ -163,7 +163,19 @@ export class DetallesSolicitud {
 
     getSplitButtonMainAction(nivel: 1 | 2,
                              estatus: string | undefined): any {
-        if(estatus === 'PENDIENTE') {
+        // Nivel 2 no puede aprobar si nivel 1 ya canceló
+        const nivel1Cancelo = nivel === 2 && this.detalles()?.estatusPrimerResponsable === 'CANCELADA';
+
+        if (estatus === 'PENDIENTE') {
+            if (nivel1Cancelo) {
+                return {
+                    label: 'Nivel 1 canceló',
+                    icon: 'pi pi-ban',
+                    severity: 'danger',
+                    disabled: true,
+                    command: () => {}
+                };
+            }
             return {
                 label: 'Aprobar',
                 icon: 'pi pi-check',
@@ -188,9 +200,12 @@ export class DetallesSolicitud {
                             estatus: string | undefined): MenuItem[] {
         if(!estatus) return [];
 
+        // Nivel 2 no puede aprobar si nivel 1 ya canceló
+        const nivel1Cancelo = nivel === 2 && this.detalles()?.estatusPrimerResponsable === 'CANCELADA';
+
         const items: MenuItem[]=[];
 
-        if(estatus !== 'APROBADA') {
+        if(estatus !== 'APROBADA' && !nivel1Cancelo) {
             items.push({
                 label: 'Aprobar',
                 icon: 'pi pi-check',
